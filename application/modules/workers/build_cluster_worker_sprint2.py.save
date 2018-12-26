@@ -1,0 +1,227 @@
+from application.common.util import generate_tasks, find_dep_tasks
+import psycopg2
+import pymongo
+from bson.objectid import ObjectId
+import uuid
+from application import conn_string, mongo_conn_string, db
+import datetime
+from application.models.models import TblTask, TblAgent, TblCustomerRequest, TblCluster, TblFeatureType, TblTaskType,TblKafkaPublisher, TblKafkaTopic, TblMetaNodeRoles
+from application.modules.azure.createvm import vmcreation
+from application.common.loggerfile import my_logger
+def installcluster(request_id):
+    # Connecting to postgresql
+    print "this is cluster worker program"
+    try:
+
+        customer_data = db.session.query(TblCustomerRequest.txt_payload_id, TblCustomerRequest.uid_customer_id,
+                                         TblCustomerRequest.char_feature_id).filter(
+            TblCustomerRequest.uid_request_id == request_id)
+        payloadid = customer_data[0][0]
+        customer_id = customer_data[0][1]
+	print payloadid,"payload_id"
+	print customer_id,"customer_id"
+        feature_id = customer_data[0][2]
+	print "connected to database and got customer data"
+
+        # Generating clusterid
+
+        cluster_id = str(uuid.uuid1())
+        cluster_insertion = TblCluster(uid_cluster_id=cluster_id, uid_customer_id=customer_id)
+        db.session.add(cluster_insertion)
+        db.session.commit()
+        topiclist = ['tasks', 'taskstatus', 'metrics']
+        for individualtopic in topiclist:
+            topicid = uuid.uuid1()
+ 	    topicname = individualtopic + "_" + str(customer_id) + "_" + str(cluster_id)
+            kafka_topic_name_insertion = TblKafkaTopic(uid_topic_id=str(topicid), var_topic_name=topicname,
+                                                       var_topic_type=individualtopic)
+            db.session.add(kafka_topic_name_insertion)
+            db.session.commit()
+
+	    print topicid,individualtopic
+            kafka_topic_id_insertion = TblKafkaPublisher(uid_topic_id=str(topicid), uid_cluster_id=cluster_id,
+                                                         uid_customer_id=customer_id)
+	    print "kafka topic insertion done"
+            db.session.add(kafka_topic_id_insertion)
+            db.session.commit()
+	    print 'tablee insertion commiting done'
+        # Retreiving data from mongodb to build cluster
+
+        mongo_connection = pymongo.MongoClient(mongo_conn_string)
+        database_connection = mongo_connection['haas']
+        collection_connection = database_connection['highgear']
+        build_cluster_information = collection_connection.find_one({"_id": ObjectId(payloadid)})
+        print build_cluster_information,"this is mongo collection information"
+	cluster_information_dict = {}
+        vm_creation_info = []
+	
+        for nodename, nodeinformation in build_cluster_information.items():
+	    print nodename,nodeinformation
+            vm_creation_list = []
+            agentid = str(uuid.uuid1())
+            registered_datetime = datetime.datetime.now()
+
+            # Creating agent
+	    if nodename!="cluster_location" and nodename!="cloud_type":
+            	agent_insertion = TblAgent(str_agent_version='1.0', uid_agent_id=str(agentid), uid_cluster_id=cluster_id,
+                                       uid_customer_id=customer_id, ts_registered_datetime=registered_datetime)
+            	db.session.add(agent_insertion)
+            	db.session.commit()
+            if nodename != '_id':
+                if nodename ==  'role':
+			vm_creation_list.append(cluster_id)
+               		vm_creation_list.append(customer_id)
+                	vm_creation_list.append(agentid)
+                	vm_creation_list.append(nodeinformation)
+                	vm_creation_info.append(vm_creation_list)
+                	cluster_information_dict[agentid] = nodeinformation
+	print feature_id,"feature_id"
+        task_types_id_list = db.session.query(TblFeatureType.char_task_type_id).filter(
+            TblFeatureType.char_feature_id == feature_id)
+	print task_types_id_list
+
+        # Generating task types information in dictionary format
+
+        task_types_info_dict = {}
+        for task_types in task_types_id_list:
+            task_type_role_info = db.session.query(TblTaskType.int_vm_roles).filter(
+                TblTaskType.char_task_type_id == task_types[0]).all()
+            task_types_info_list = db.session.query(TblMetaNodeRoles.vm_roles).filter(
+                TblMetaNodeRoles.srl_id == task_type_role_info[0][0]).all()
+            task_types_info_dict[task_types[0]] = task_types_info_list[0][0]
+
+        # Generated tasks
+
+        task_generator = generate_tasks(dict_nodes=cluster_information_dict, dict_tasktypes=task_types_info_dict)
+
+        # Creating slaves file and host dns file
+	slave = open("slaves.txt", "w")
+        host = open("hosts.txt", "w")
+
+	for vm_data in vm_creation_info:
+        	vm_information=vmcreation(vm_data)
+        #for vm_info_list in vm_information:
+                vm_ip = vm_information["vm_ip"]
+                vm_fqdn = str(vm_information["name"]) + ".kwartile"
+                vm_role=vm_information["role"]
+                host.write("%s %s\n" % (vm_ip, vm_fqdn))
+                if vm_role == 'datanode':
+                    slave.write("%s\n" % vm_ip)
+                if vm_role == 'namenode':
+                    database_connection.configurenamenode.insert_one({"content": vm_ip})
+                    namenode_ip_info = database_connection.configurenamenode.find_one({"content": vm_ip})
+                    namenode_ip_payload = namenode_ip_info["_id"]
+
+        # Inserting slaves file in mongodb
+
+        slave.close()
+        openslave = open("slaves.txt")
+        slave_text = openslave.read()
+        slaves_content = {"file_name": "slaves.txt", "content": slave_text}
+        database_connection.slaves.insert_one(slaves_content)
+        slaves_content_query = database_connection.slaves.find_one(slaves_content)
+        slaves_content_objectid = str(slaves_content_query["_id"])
+
+        # Appending slaves payload to list
+        for task_information in task_generator:
+            if task_information[2] == 'F1_  ':
+                tasktype = str(task_information[2]).replace('10a  ', '10a')
+                task_information[2] = tasktype
+
+        for task_information in task_generator:
+            if task_information[2] == '11a  ':
+                tasktype = str(task_information[2]).replace('11a  ', "11a")
+                task_information[2] = tasktype
+
+        for task_information in task_generator:
+            print(task_information[2])
+
+            tasktype = str(task_information[2]).replace("   ", "")
+            task_information[2] = tasktype
+            if task_information[2] == '3a':
+                print('yes')
+                task_information.append(slaves_content_objectid)
+
+        # Inserting hostdns file to mongodb
+
+        host.close()
+        opendns = open("hosts.txt")
+        host_text = opendns.read()
+        host_content = {"file_name": "host.txt", "content": host_text}
+        database_connection.hostdns.insert_one(host_content)
+        host_content_query = database_connection.hostdns.find_one(host_content)
+        host_content_objectid = str(host_content_query["_id"])
+
+        # Appending hosts payload to list
+
+        for task_information in task_generator:
+            if task_information[2] in ('1a', '2a'):
+                task_information.append(host_content_objectid)
+
+        # Appending configure payload to list
+
+        namenode_ip_payload = '12ws23sas-21wqsa023wss-qw'
+        for task_information in task_generator:
+            if task_information[2] in ('4a', '11a'):
+                task_information.append(namenode_ip_payload)
+        # Dependency tasks
+
+        task_tasktype_mapping_dict = {}
+        for task_information in task_generator:
+            task_tasktype_mapping_dict[task_information[1]] = task_information[2]
+
+        list_dependent_tasks_dict = {}
+        for task_type_feature in task_types_id_list:
+            dependency_task_types_info = db.session.query(TblTaskType.char_task_type_id,
+                                                          TblTaskType.txt_dependency_task_id).filter(
+                TblTaskType.char_task_type_id == task_type_feature[0])
+            dependencytaskids = dependency_task_types_info[0][0].replace('   ', '')
+            if dependency_task_types_info[0][1] == None:
+                list_dependent_tasks_dict[dependencytaskids] = []
+            else:
+                list_of_dependencies_string = dependency_task_types_info[0][1].split(",")
+                list_of_dependencies_string = map(str, list_of_dependencies_string)
+                list_dependent_tasks_dict[dependencytaskids] = list_of_dependencies_string
+        list_dependent_tasks_dict['11a'] = list_dependent_tasks_dict['11a  ']
+        del list_dependent_tasks_dict['11a  ']
+        list_dependent_tasks_dict['10a'] = list_dependent_tasks_dict['10a  ']
+        del list_dependent_tasks_dict['10a  ']
+        dependent_task_info = find_dep_tasks(dict_tasktypes=list_dependent_tasks_dict,
+                                             dict_tasks=task_tasktype_mapping_dict)
+
+        for task_information in task_generator:
+            for taskid, dependency_tasks in dependent_task_info.items():
+                if task_information[1] == taskid:
+                    listoftasks = ''
+                    for taskids in dependency_tasks:
+                        listoftasks += '"' + taskids + '",'
+                    task_information.append(listoftasks[:-1])
+        for task_information in task_generator:
+            if len(task_information) == 6:
+                if task_information[5] == '':
+                    task_insertion = TblTask(uid_task_id=task_information[1], char_task_type_id=task_information[2],
+                                             uid_request_id=request_id, char_feature_id=feature_id,
+                                             uid_customer_id=customer_id, txt_payload_id=task_information[4],
+                                             uid_agent_id=task_information[0])
+                else:
+                    task_insertion = TblTask(uid_task_id=task_information[1], char_task_type_id=task_information[2],
+                                             uid_request_id=request_id, char_feature_id=feature_id,
+                                             uid_customer_id=customer_id, txt_payload_id=task_information[4],
+                                             txt_dependent_task_id=task_information[5],
+                                             uid_agent_id=task_information[0])
+            else:
+                if task_information[4] == '':
+                    task_insertion = TblTask(uid_task_id=task_information[1], char_task_type_id=task_information[2],
+                                             uid_request_id=request_id, char_feature_id=feature_id,
+                                             uid_customer_id=customer_id, uid_agent_id=task_information[0])
+                else:
+                    task_insertion = TblTask(uid_task_id=task_information[1], char_task_type_id=task_information[2],
+                                             uid_request_id=request_id, char_feature_id=feature_id,
+                                             uid_customer_id=customer_id, txt_dependent_task_id=task_information[4],
+                                             uid_agent_id=task_information[0])
+            db.session.add(task_insertion)
+            db.session.commit()
+
+    except Exception as e:
+	my_logger.error(e)
+        return e.message
