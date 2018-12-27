@@ -93,12 +93,12 @@ def vmcreation(required_data_list):
             print vm_size
 
             vm_information = {}
-            # vm_information['name'] = 'vm-' + str(int(round(time.time() * 1000)))
-            # vm_information['vm_id'] = uuid.uuid1()
-            # vm_information['vm_ip'] = "10.0.0.3"
-            # vm_information['role'] = role
-            # if True:
-            #    return vm_information
+            vm_information['name'] = 'vm-' + str(int(round(time.time() * 1000)))
+            vm_information['vm_id'] = uuid.uuid1()
+            vm_information['vm_ip'] = "10.0.0.3"
+            vm_information['role'] = role
+            if True:
+                return vm_information
             # subnet_id = '/subscriptions/cfed96cf-1241-4c76-827e-785b6d5cff7c/resourceGroups/haas/providers/Microsoft.Network/virtualNetworks/haas/subnets/SUB1539665969989'
             tobestring = """#cloud-config
     write_files:

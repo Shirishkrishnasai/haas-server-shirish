@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 
-db_url = 'postgres://postgres:password@192.168.100.81/haas_demo2'
+db_url = 'postgres://postgres:password@192.168.100.42/haas_demo2'
 
 engine = create_engine(db_url)
 
@@ -47,6 +47,7 @@ class TblCustomer(Base):
     ts_modified_datetime = Column(DateTime)
 
     tbl_azure_app_gateway = relationship(u'TblAzureAppGateway')
+
     tbl_plan=relationship(u'TblPlan')
 
 
@@ -167,6 +168,7 @@ class TblCluster(Base):
     srl_id = Column(Integer, primary_key=True)
     uid_cluster_id = Column(UUID, nullable=False, unique=True)
     txt_fqdn = Column(Text)
+    int_size_id = Column(ForeignKey(u'highgear.tbl_size.srl_id'))
     uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
     uid_cluster_type_id = Column(ForeignKey(u'highgear.tbl_cluster_type.uid_cluster_type_id'))
     var_cluster_name = Column(String(15))
@@ -176,11 +178,11 @@ class TblCluster(Base):
     var_modified_by = Column(String(20))
     ts_created_datetime = Column(DateTime)
     ts_modified_datetime = Column(DateTime)
+    valid_cluster = Column(Boolean)
 
     tbl_cluster_type = relationship(u'TblClusterType')
     tbl_customer = relationship(u'TblCustomer')
     tbl_size = relationship(u'TblSize')
-
 
 class TblCustomerAzureResourceGroup(Base):
     __tablename__ = 'tbl_customer_azure_resource_group'
@@ -216,6 +218,15 @@ class TblFeatureType(Base):
     tbl_task_types = relationship('TblTaskType')
     tbl_feature = relationship('TblFeature')
 
+class TblMetaFileUpload(Base):
+    __tablename__ = 'tbl_meta_file_upload'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
+    var_share_name = Column(String(60))
+    var_directory_name = Column(String(60))
+
+    tbl_customer = relationship(u'TblCustomer')
 
 class TblKafkaConsumerGroup(Base):
     __tablename__ = 'tbl_kafka_consumer_group'
@@ -249,6 +260,32 @@ class TblVmCreation(Base):
     ts_created_datetime = Column(DateTime)
     ts_modified_datetime = Column(DateTime)
 
+class TblMetaHdfsUpload(Base):
+    __tablename__ = 'tbl_meta_hdfs_upload'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    var_upload_id = Column(String(50))
+    txt_hdfs_file_path = Column(Text)
+    uid_request_id = Column(ForeignKey(u'highgear.tbl_customer_request.uid_request_id'))
+
+class TblFileDownload(Base):
+    __tablename__ = 'tbl_file_download'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    uid_agent_id = Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
+    uid_upload_id = Column(ForeignKey(u'highgear.tbl_file_upload.uid_upload_id'))
+    var_file_name = Column(String(60))
+    var_username = Column(ForeignKey(u'highgear.tbl_users.var_user_name'))
+    txt_file_url = Column(Text)
+    ts_file_expiry_time = Column(DateTime)
+    ts_requested_time = Column(DateTime)
+
+    tbl_agent = relationship(u'TblAgent')
+    tbl_users = relationship(u'TblUsers')
+    tbl_file_upload = relationship(u'TblFileUpload')
+
+
+
 class TblCustomerRequest(Base):
     __tablename__ = 'tbl_customer_request'
     __table_args__ = {u'schema': 'highgear'}
@@ -260,9 +297,9 @@ class TblCustomerRequest(Base):
     char_feature_id = Column(ForeignKey(u'highgear.tbl_feature.char_feature_id'))
     uid_cluster_id = Column(ForeignKey(u'highgear.tbl_cluster.uid_cluster_id'))
     ts_requested_time = Column(DateTime)
-    var_request_status = Column(String(25))
+    int_request_status = Column(ForeignKey(u'highgear.tbl_meta_request_status.srl_id'))
     txt_dependency_request_id = Column(Text)
-    var_provisioning_type=Column(String(5))
+    var_provisioning_type = Column(String(5))
     ts_completed_time = Column(DateTime)
     txt_message = Column(Text)
     bool_assigned = Column(Boolean, default=False)
@@ -274,7 +311,7 @@ class TblCustomerRequest(Base):
     tbl_customer = relationship(u'TblCustomer')
     tbl_feature = relationship(u'TblFeature')
     tbl_cluster = relationship(u'TblCluster')
-
+    tbl_meta_request_status = relationship(U'TblMetaRequestStatus')
 
 class TblKafkaTopic(Base):
     __tablename__ = 'tbl_kafka_topic'
@@ -400,6 +437,16 @@ class TblNodeInformation(Base):
     tbl_cluster = relationship(u'TblCluster')
     tbl_vm_information = relationship(u'TblVmInformation')
 
+class TblPlanClusterSize(Base):
+    __tablename__ = 'tbl_plan_cluster_size'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    int_size_id=Column(ForeignKey(u'highgear.tbl_size.int_size_id'))
+    int_plan_id = Column(ForeignKey(u'highgear.tbl_plan.int_plan_id'))
+    int_nodes =Column(Integer)
+
+    tbl_plan = relationship(u'TblPlan')
+    tbl_size = relationship(u'TblSize')
 
 class TblService(Base):
     __tablename__ = 'tbl_services'
@@ -512,6 +559,14 @@ class TblTask(Base):
     tbl_task_types = relationship('TblTaskType')
     tbl_agent = relationship(u'TblAgent')
 
+class TblFileUploadTasks(Base):
+    __tablename__ = 'tbl_file_upload_tasks'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
+    uid_agent_id = Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
+    uid_task_id = Column(UUID)
+    uid_upload_id = Column
 
 class TblImage(Base):
     __tablename__ = 'tbl_image'
@@ -522,7 +577,6 @@ class TblImage(Base):
     var_application_version = Column(String(60)),
     txt_image_id = Column(Text)
     var_linux_flavour = Column(String(60))
-
 
 class TblAzureAppGateway(Base):
     __tablename__ = 'tbl_azure_app_gateway'
@@ -542,6 +596,13 @@ class TblAzureAppGateway(Base):
     tbl_customer_azure_resource_group = relationship(u'TblCustomerAzureResourceGroup')
 
 
+class TblMetaNodeRoles(Base):
+    __tablename__ = 'tbl_meta_node_roles'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    vm_roles = Column(String(30))
+    txt_description = Column(Text)
+
 
 class TblUsers(Base):
     __tablename__ = 'tbl_users'
@@ -549,36 +610,13 @@ class TblUsers(Base):
     srl_id = Column(Integer, primary_key=True)
 
     uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
-    var_user_name = Column(String(60),unique=True)
+    var_user_name = Column(String(60))
     txt_dn = Column(Text)
     bool_active = Column(Boolean)
     ts_created_time = Column(DateTime)
     var_created_by = Column(String(30))
 
     tbl_customer = relationship(u'TblCustomer')
-
-
-class TblAgentStatus(Base):
-
-     __tablename__ = 'tbl_agent_status'
-     __table_args__ = {u'schema': 'highgear'}
-     srl_id = Column(Integer, primary_key=True)
-     uid_agent_id =  Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
-     ts_heart_beat_time = Column(DateTime)
-     var_created_by = Column(String(20))
-     var_modified_by = Column(String(20))
-     ts_created_datetime = Column(DateTime)
-     ts_modified_datetime = Column(DateTime)
-
-    tbl_agent = relationship(u'TblAgent')
-
-
-class TblMetaTaskStatus(Base):
-    __tablename__ = 'tbl_meta_task_status'
-    __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    var_task_status = Column(String(15))
-
 
 class TblTaskStatusLog(Base):
     __tablename__ = 'tbl_task_status_log'
@@ -591,6 +629,26 @@ class TblTaskStatusLog(Base):
     tbl_tasks = relationship(u'TblTask')
     tbl_meta_task_status = relationship(u'TblMetaTaskStatus')
 
+class TblAgentStatus(Base):
+     __tablename__ = 'tbl_agent_status'
+     __table_args__ = {u'schema': 'highgear'}
+     srl_id = Column(Integer, primary_key=True)
+     uid_agent_id =  Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
+     ts_heart_beat_time = Column(DateTime)
+     var_created_by = Column(String(20))
+     var_modified_by = Column(String(20))
+     ts_created_datetime = Column(DateTime)
+     ts_modified_datetime = Column(DateTime)
+     tbl_agent = relationship(u'TblAgent')
+
+
+class TblMetaTaskStatus(Base):
+    __tablename__ = 'tbl_meta_task_status'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    var_task_status = Column(String(15))
+
+
 
 class TblMetaRequestStatus(Base):
     __tablename__ = 'tbl_meta_request_status'
@@ -598,12 +656,6 @@ class TblMetaRequestStatus(Base):
     srl_id = Column(Integer, primary_key=True)
     var_request_status = Column(String(20))
 
-
-class TblMetaFeatureStatus(Base):
-    __tablename__ = 'tbl_meta_feature_status'
-    __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    var_feature_status = Column(String(20))
 
 class TblTaskRequestLog(Base):
     __tablename__ = 'tbl_task_request_log'
@@ -614,6 +666,14 @@ class TblTaskRequestLog(Base):
     ts_time_updated = Column(DateTime)
 
     tbl_meta_request_status = relationship(u'TblMetaRequestStatus')
+    tbl_customer_request = relationship(u'TblCustomerRequest')
+
+class TblMetaFeatureStatus(Base):
+    __tablename__ = 'tbl_meta_feature_status'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    var_feature_status = Column(String(20))
+
 
 class TblAgentConfig(Base):
     __tablename__ = 'tbl_agent_config'
@@ -625,37 +685,6 @@ class TblAgentConfig(Base):
     var_modified_by = Column(String(60))
     ts_created_datetime = Column(DateTime)
     ts_modified_datetime = Column(DateTime)
-
-class TblMetaCloudType(Base):
-    __tablename__ = 'tbl_meta_cloud_type'
-    __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    float_ram = Column(Float)
-    float_disk_size = Column(Float)
-    float_cpu = Column(Float)
-    txt_vm_type = Column(Text)
-    txt_cloud_type = Column(Text)
-
-    tbl_customer = relationship(u'TblCustomer')
-    tbl_vm_information = relationship(u'TblVmInformation')
-
-class TblAgentConfig(Base):
-    __tablename__ = 'tbl_agent_config'
-    __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    config_entity_name = Column(String(100))
-    config_entity_value = Column(String(100))
-    var_created_by = Column(String(60))
-    var_modified_by = Column(String(60))
-    ts_created_datetime = Column(DateTime)
-    ts_modified_datetime = Column(DateTime)
-
-class TblMetaNodeRoles(Base):
-    __tablename__ = 'tbl_meta_node_roles'
-    __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    vm_roles = Column(String(30),unique=True)
-    txt_description = Column(Text)
 
 class TblPlan(Base):
     __tablename__ = 'tbl_plan'
@@ -671,29 +700,6 @@ class TblSize(Base):
     int_size_id=Column(Integer,unique=True)
     var_size_type=Column(String(50),unique=True)
 
-class TblPlanClusterSize(Base):
-    __tablename__ = 'tbl_plan_cluster_size'
-    __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    int_size_id=Column(ForeignKey(u'highgear.tbl_size.int_size_id'))
-    int_plan_id = Column(ForeignKey(u'highgear.tbl_plan.int_plan_id'))
-    int_nodes =Column(Integer)
-
-    tbl_plan = relationship(u'TblPlan')
-    tbl_size = relationship(u'TblSize')
-
-class TblPlanClusterSizeConfig(Base):
-    __tablename__ = 'tbl_plan_cluster_size_config'
-    __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    int_size_id = Column(ForeignKey(u'highgear.tbl_size.int_size_id'))
-    int_plan_id = Column(ForeignKey(u'highgear.tbl_plan.int_plan_id'))
-    var_role = Column(String(100))
-    int_role_count= Column(Integer)
-
-    tbl_size = relationship(u'TblSize')
-    tbl_plan = relationship(u'TblPlan')
-
 class TblMetaCloudType(Base):
     __tablename__ = 'tbl_meta_cloud_type'
     __table_args__ = {u'schema': 'highgear'}
@@ -701,18 +707,15 @@ class TblMetaCloudType(Base):
     float_ram = Column(Float)
     float_disk_size = Column(Float)
     float_cpu = Column(Float)
-    var_vm_type = Column(String(100),unique=True)
+    var_vm_type = Column(String(100))
     var_cloud_type = Column(String(100))
 
-    tbl_size = relationship(u'TblSize')
-    tbl_plan = relationship(u'TblPlan')
 
 
 class TblMetaVmSize(Base):
     __tablename__ = 'tbl_meta_vm_size'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
-
     int_size_id = Column(ForeignKey(u'highgear.tbl_size.int_size_id'))
     int_plan_id = Column(ForeignKey(u'highgear.tbl_plan.int_plan_id'))
     var_role = Column(ForeignKey(u'highgear.tbl_meta_node_roles.vm_roles'))
@@ -723,57 +726,46 @@ class TblMetaVmSize(Base):
     tbl_meta_node_roles = relationship(u'TblMetaNodeRoles')
     tbl_meta_cloud_type= relationship(u'TblMetaCloudType')
 
-class TblMetaFileUpload(Base):
-    __tablename__ = 'tbl_meta_file_upload'
+class TblCustomerJobRequest(Base):
+    __tablename__ = 'tbl_customer_job_request'
     __table_args__ = {u'schema': 'highgear'}
+
     srl_id = Column(Integer, primary_key=True)
+    uid_request_id = Column(UUID, nullable=False, unique=True)
     uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
-    var_share_name = Column(String(60))
-    var_directory_name = Column(String(60))
-
-    tbl_customer = relationship(u'TblCustomer')
-
-class TblFileUpload(Base):
-    __tablename__ = 'tbl_file_upload'
-    __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    uid_upload_id = Column(UUID)
-    uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
-    uid_agent_id = Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
-    var_share_name = Column(String(60))
-    var_directory_name = Column(String(60))
-    var_file_name = Column(String(60))
-    var_username = Column(ForeignKey(u'highgear.tbl_users.var_user_name'))
-    ts_uploaded_time = Column(DateTime)
-
-    tbl_customer = relationship(u'TblCustomer')
-    tbl_users = relationship(u'TblUsers')
-    tbl_agent = relationship(u'TblAgent')
-
-
-
-class TblFileDownload(Base):
-    __tablename__ = 'tbl_file_download'
-    __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    uid_agent_id = Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
-    uid_upload_id = Column(ForeignKey(u'highgear.tbl_file_upload.uid_upload_id'))
-    var_file_name = Column(String(60))
-    var_username = Column(ForeignKey(u'highgear.tbl_users.var_user_name'))
-    txt_file_url = Column(Text)
-    ts_file_expiry_time = Column(DateTime)
+    var_user_name = Column(ForeignKey(u'hi'
+                                      u'ghgear.tbl_users.var_user_name'))
+    txt_payload_id = Column(Text)
+    uid_cluster_id = Column(ForeignKey(u'highgear.tbl_cluster.uid_cluster_id'))
+    uid_conf_upload_id = Column(UUID)
+    uid_jar_upload_id = Column(UUID)
+    var_job_name = Column(String(100))
+    txt_job_description = Column(Text)
+    var_input_file_path = Column(String(200))
+    var_output_file_path = Column(String(200))
     ts_requested_time = Column(DateTime)
+    int_request_status = Column(Integer,default=7)
+    var_application_id=Column(String(100))
+    var_job_diagnostics=Column(Text)
+    conf_mapred_job_tracker=Column(String(50))
+    conf_mapreduce_framework_name = Column(String(50))
+    conf_mapreduce_task_io_sort_mb = Column(Integer)
+    conf_mapreduce_task_io_sort_factor= Column(Integer)
+    conf_mapreduce_map_sort_spill_percent = Column(Float)
+    conf_mapreduce_job_maps = Column(Integer)
+    conf_mapreduce_job_reduces = Column(Integer)
+    conf_output_compress = Column(Boolean)
+    ts_completed_time = Column(DateTime)
+    txt_message = Column(Text)
+    bool_assigned = Column(Boolean, default=False)
+    var_created_by = Column(String(20))
+    var_modified_by = Column(String(20))
+    ts_created_datetime = Column(DateTime)
+    ts_modified_datetime = Column(DateTime)
 
-    tbl_agent = relationship(u'TblAgent')
+    tbl_customer = relationship(u'TblCustomer')
+    tbl_cluster = relationship(u'TblCluster')
     tbl_users = relationship(u'TblUsers')
-    tbl_file_upload = relationship(u'TblFileUpload')
-
-class TblHiveMetaStatus(Base):
-    __tablename__ = 'tbl_hive_meta_status'
-    __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    var_status = Column(String(60))
-
 
 
 class TblHiveRequest(Base):
@@ -800,6 +792,20 @@ class TblHiveRequest(Base):
     tbl_agent = relationship(u'TblAgent')
     tbl_hive_meta_status = relationship(u'TblHiveMetaStatus')
 
+class TblHiveMetaStatus(Base):
+    __tablename__ = 'tbl_hive_meta_status'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    var_status = Column(String(60))
+
+class TblAzureFileStorageCredentials(Base):
+    __tablename__ = 'tbl_azure_file_storage_credentials'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    account_name = Column(String(100))
+    account_primary_key = Column(Text)
+    account_secondary_key = Column(Text)
+
 class TblEdgenode(Base):
     __tablename__ = 'tbl_edgenode'
     __table_args__ = {u'schema': 'highgear'}
@@ -810,27 +816,56 @@ class TblEdgenode(Base):
     var_role = Column(String(60))
     int_role_count = Column(Integer)
 
-
-
     tbl_size = relationship(u'TblSize')
     tbl_plan = relationship(u'TblPlan')
     tbl_feature = relationship(u'TblFeature')
 
-class TblAzureFileStorageCredentials(Base):
-    __tablename__ = 'tbl_azure_file_storage_credentials'
+
+class TblFileUpload(Base):
+    __tablename__ = 'tbl_file_upload'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
-    account_name = Column(String(100))
-    account_primary_key = Column(Text)
-    account_secondary_key = Column(Text)
+    uid_upload_id = Column(UUID)
+    uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
+    uid_agent_id = Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
+    var_share_name = Column(String(60))
+    var_directory_name = Column(String(60))
+    var_file_name = Column(String(60))
+    var_username = Column(ForeignKey(u'highgear.tbl_users.var_user_name'))
+    ts_uploaded_time = Column(DateTime)
+
+    tbl_customer = relationship(u'TblCustomer')
+    tbl_users = relationship(u'TblUsers')
+    tbl_agent = relationship(u'TblAgent')
+
+class TblPlanClusterSizeConfig(Base):
+    __tablename__ = 'tbl_plan_cluster_size_config'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    int_size_id = Column(ForeignKey(u'highgear.tbl_size.int_size_id'))
+    int_plan_id = Column(ForeignKey(u'highgear.tbl_plan.int_plan_id'))
+    var_role = Column(String(100))
+    int_role_count= Column(Integer)
+
+    tbl_size = relationship(u'TblSize')
+    tbl_plan = relationship(u'TblPlan')
 
 
+class TblMetaMrRequestStatus(Base):
+    __tablename__ = 'tbl_meta_mr_request_status'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    var_mr_request_status = Column(String(15))
 
-
-
-
+class TblMetaCloudLocation(Base):
+    __tablename__ = 'tbl_meta_cloud_location'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    var_cloud_type = Column(String(40))
+    var_location = Column(Text)
 
 Base.metadata.create_all(bind = engine)
 ins = inspect(engine)
 for _t in ins.get_table_names():
     print(_t)
+ 

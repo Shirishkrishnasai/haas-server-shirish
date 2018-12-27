@@ -99,11 +99,14 @@ def customercreation():
 
     virtual_network_id_query=db.session.query(func.max(TblVirtualNetwork.srl_id)).all()
     virtual_network_ip_info=db.session.query(TblVirtualNetwork.inet_ip_range).filter(TblVirtualNetwork.srl_id==virtual_network_id_query[0][0]).all()
-    print virtual_network_ip_info[0][0],"info"
-    if virtual_network_ip_info[0][0] == None:
+    print virtual_network_ip_info,"info",type(virtual_network_ip_info)
+    print "handling it"
+    if len(virtual_network_ip_info) == 0:
+    #if virtual_network_ip_info[0][0] == None:
         print "into if"
         vn_ip = "10.0.0.0/24"
     else:
+	print "it has got into else, cant help"
         ip_of_previous_cluster = virtual_network_ip_info[0][0]
         print ip_of_previous_cluster
         splitting_vn_ip = ip_of_previous_cluster.split('.')

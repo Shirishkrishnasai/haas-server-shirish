@@ -1,3 +1,5 @@
+from apscheduler.schedulers.background import BackgroundScheduler
+
 import io
 from azure.storage.file import FileService,FilePermissions
 from configparser import ConfigParser
@@ -68,3 +70,10 @@ def selectQueryUrl():
             db_session.close()
 
 
+
+def hgSelectQueryUrlScheduler():
+	scheduler = BackgroundScheduler()
+	scheduler.add_job(selectQueryUrl,'cron',minute='*/1')
+	scheduler.start()
+	my_logger.debug("in hgselectqueryurl")
+	pass

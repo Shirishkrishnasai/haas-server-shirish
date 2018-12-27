@@ -7,7 +7,7 @@ setup(
     platforms='any',
     install_requires=[
         'Flask==1.0.2',
-        'requests==2.19.0',
+        'requests==2.20.0',
         'psycopg2==2.7.4',
         'Flask-Cors==3.0.6',
         'apscheduler==3.5.1',
@@ -19,7 +19,9 @@ setup(
 
 	    'pymongo==3.7.1',
 	    'azure==4.0.0',
-        'python-ldap'
+        'python-ldap',
+	'pyyaml',
+	'ConfigParser'
 
     ],
 

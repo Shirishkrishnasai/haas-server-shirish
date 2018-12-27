@@ -15,16 +15,16 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['Access-Control-Allow-Origin'] = '*'
-conn_string = "host='192.168.100.81' user='postgres' password='password' dbname='haas_demo2'"
-postgres_conn = 'postgres://postgres:password@192.168.100.81/haas_demo2'
+conn_string = "host='192.168.100.42' user='postgres' password='password' dbname='haas_demo2'"
+postgres_conn = 'postgres://postgres:password@192.168.100.42/haas_demo2'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:password@192.168.100.81/haas_demo2'
-mongo_conn_string="mongodb://192.168.100.81:27017"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:password@192.168.100.42/haas_demo2'
+mongo_conn_string="mongodb://192.168.100.41:27017"
 
 db = SQLAlchemy(app)
 sqlite_string= "/opt/agent/haas"
 
-engine = create_engine("postgres://postgres:password@192.168.100.81/haas_demo2", pool_size=50)
+engine = create_engine("postgres://postgres:password@192.168.100.42/haas_demo2", pool_size=50)
 session_factory = sessionmaker(bind=engine)
 
 
@@ -81,6 +81,10 @@ from application.modules.apis.job_diagnostics_api import jobdiagnostics
 from application.common.email_generation import emailsender
 from application.modules.workers.file_upload_worker import fileuploadworker
 from application.common.big_size_file_download import bigsizefiledownload
+from application.modules.daemons.hive_status_consumer import kafkaHiveStatusConsumer
+from application.modules.daemons.kafka_job_producer import mrjobproducer
+from application.modules.daemons.hive_selectquery_url import hgSelectQueryUrlScheduler
+
 
 app.register_blueprint(azfiledownload,url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
@@ -127,41 +131,40 @@ def site_map():
 
 from application.modules.daemons.metrics_consumer import kafkaconsumer
 from application.modules.daemons.task_status_consumer import kafkataskconsumer
-from application.modules.daemons.hive_status_consumer import kafkaHiveStatusConsumer
-from application.modules.daemons.kafka_job_producer import mrjobproducer
+
 
 def runProcess():
-    #hgsuperscheduler_process = Process(target=hgsuperscheduler)
-    #hgmanagerscheduler_process = Process(target=hgmanagerscheduler)
-    #kafkataskconsumer_process=Process(target=kafkataskconsumer)
-    #kafkaconsumer_process=Process(target=kafkaconsumer)
-    #hgmanager_process=Process(target=hgmanager)
-    #hgsuper_process=Process(target=hgsuper)
+    selecturl_process = Process(target = hgSelectQueryUrlScheduler)
+    selecturl_process.start()
+    hgsuperscheduler_process = Process(target=hgsuperscheduler)
+    hgmanagerscheduler_process = Process(target=hgmanagerscheduler)
+    kafkataskconsumer_process=Process(target=kafkataskconsumer)
+    kafkaconsumer_process=Process(target=kafkaconsumer)
+    hgmanager_process=Process(target=hgmanager)
+    hgsuper_process=Process(target=hgsuper)
 
-    #kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
-    #kafkaHiveStatusConsumer_process.start()
+    kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
+    kafkaHiveStatusConsumer_process.start()
 
     #hgsuperscheduler_process.start()
-    #filebrowsestatus_process=Process(target=filebrowsestatus)
-    #jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
-    #jobDiagnosticConsumer_process.start()
-    #jobStatusConsumer_process = Process(target=statusconsumer)
-    #jobStatusConsumer_process.start()
-    #hiveDatabaseResultConsumer = Process(target=hiveDatabaseResult)
-    #hiveDatabaseResultConsumer.start()
-    #hgsuperscheduler_process.start()
-    #filebrowsestatus_process = Process(target=filebrowsestatus)
-    #filebrowsestatus_process.start()
-    #hgmanagerscheduler_process.start()
-    #kafkataskconsumer_process.start()
-    #mrjobproducer_process = Process(target=mrjobproducer)
-    #customerjobreqestconsumer = Process(target=jobinsertion)
+    filebrowsestatus_process=Process(target=filebrowsestatus)
+    jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
+    jobDiagnosticConsumer_process.start()
+    jobStatusConsumer_process = Process(target=statusconsumer)
+    jobStatusConsumer_process.start()
+    hiveDatabaseResultConsumer = Process(target=hiveDatabaseResult)
+    hiveDatabaseResultConsumer.start()
+    hgsuperscheduler_process.start()
+    filebrowsestatus_process = Process(target=filebrowsestatus)
+    filebrowsestatus_process.start()
+    hgmanagerscheduler_process.start()
+    kafkataskconsumer_process.start()
+    mrjobproducer_process = Process(target=mrjobproducer)
+    customerjobreqestconsumer = Process(target=jobinsertion)
 
-    #mrjobproducer_process.start()
-    #customerjobreqestconsumer.start()
-    #kafkaconsumer_process.start()
-    #hgmanager_process.start()
+    mrjobproducer_process.start()
+    customerjobreqestconsumer.start()
+    kafkaconsumer_process.start()
+    hgmanager_process.start()
     print "Method Ended"
 
-from application.modules.daemons.hive_selectquery_url import selectQueryUrl
-selectQueryUrl()
