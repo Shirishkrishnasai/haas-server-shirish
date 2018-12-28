@@ -11,3 +11,5 @@ lxml
 pymongo==3.7.1
 azure==4.0.0
 python-ldap
+pyyaml
+ConfigParser

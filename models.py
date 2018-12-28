@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 
-db_url = 'postgres://postgres:password@192.168.100.42/haas_demo2'
+db_url = 'postgres://postgres:password@192.168.100.81/haas_demo2'
 
 engine = create_engine(db_url)
 
