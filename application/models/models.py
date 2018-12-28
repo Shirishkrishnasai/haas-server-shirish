@@ -287,6 +287,7 @@ class TblVmCreation(Base,OutputMixin):
     var_role = Column(String(60))
     var_ip = Column(String(100))
     var_name = Column(String(100))
+    bool_edge = Column(Boolean)
     var_created_by = Column(String(20))
     var_modified_by = Column(String(20))
     ts_created_datetime = Column(DateTime)

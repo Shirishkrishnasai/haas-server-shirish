@@ -29,7 +29,8 @@ def installcluster(request_id):
     clusterlocation = build_cluster_information["cluster_location"]
     size_id=build_cluster_information["size_type"]
 
-    plan_info = db_session.query(TblCustomer.int_plan_id).filter(TblCustomer.uid_customer_id == customerid)
+    plan_info = db_session.query(TblCustomer.int_plan_id).filter(TblCustomer.uid_customer_id == customer_id).all()
+    print plan_info
     plan_id = plan_info[0][0]
     print plan_id
     cluster_id = str(uuid.uuid1())
@@ -71,17 +72,17 @@ def installcluster(request_id):
     fqdn=clustername+".kwartile"
     created_by="system"
     modified_by="system"
-    cluster_insertion = TblCluster(uid_cluster_id=cluster_id,
-                                   uid_customer_id=customer_id,
-                                   uid_cluster_type_id=cloudtype,
+    cluster_insertion = TblCluster(uid_cluster_id=str(cluster_id),
+                                   uid_customer_id=str(customer_id),
+                                   uid_cluster_type_id='30055cac-cc88-11e8-b861-000c294fb384',
                                    txt_fqdn=fqdn,
                                     var_cluster_name =clustername,
                                    char_cluster_region =clusterlocation ,
                                    int_size_id = size_id,
                                    var_created_by = created_by,
                                     var_modified_by = modified_by,
-                                    ts_created_datetime = date_time,
-                                    ts_modified_datetime = date_time)
+                                    ts_created_datetime = str(date_time),
+                                    ts_modified_datetime = str(date_time))
 
     db_session.add(cluster_insertion)
     db_session.commit()

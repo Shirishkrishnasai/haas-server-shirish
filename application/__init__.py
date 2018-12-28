@@ -167,4 +167,7 @@ def runProcess():
     kafkaconsumer_process.start()
     hgmanager_process.start()
     print "Method Ended"
-
+    from application.modules.workers.configure_cluster_sprint_2 import configure_cluster
+    #configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
+    from application.modules.workers.hive_config_worker import configure_hive
+    configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")

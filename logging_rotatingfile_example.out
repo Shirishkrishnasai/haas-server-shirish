@@ -1,109 +1,75 @@
-Create Resource Group
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7f117d93d410>
-in hgselectqueryurl
-Create Resource Group
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7f05fef39410>
-in hgselectqueryurl
-Create Resource Group
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7fad6ef84410>
-in hgselectqueryurl
-Create Resource Group
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7f5bab3a2410>
-in hgselectqueryurl
-Create Resource Group
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7f00f4b5b410>
-in hgselectqueryurl
-Create Resource Group
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7fd794c18410>
-in hgselectqueryurl
-Create Resource Group
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7f9f6459e410>
-in hgselectqueryurl
-Create Resource Group
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7f27ea5c3410>
-in hgselectqueryurl
-Create Resource Group
-
-Create Subnet
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7ff091eb0410>
-in hgselectqueryurl
-{u'password': u'password', u'email': u'thiru@gmail.com'}
-1e177293-09a4-11e9-b4fe-000c29da5704
-cn=thiru@gmail.com,cn=thiru,ou=1e177293-09a4-11e9-b4fe-000c29da5704,dc=kwartile,dc=local
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7f8893be9410>
 in hgselectqueryurl
 in hive_task_status_consumer
 Polling consumer
 its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7f8ed2fa4410>
-in hgselectqueryurl
-Create Resource Group
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7f94b8e25410>
-in hgselectqueryurl
-Create Resource Group
-
-Create Subnet
-{u'password': u'password', u'email': u'navya1@gmail.com'}
-e0170b69-09a5-11e9-b4fe-000c29da5704
-cn=navya1@gmail.com,cn=navya12,ou=e0170b69-09a5-11e9-b4fe-000c29da5704,dc=kwartile,dc=local
-{u'password': u'password', u'email': u'navya1@gmail.com'}
-e0170b69-09a5-11e9-b4fe-000c29da5704
-cn=navya1@gmail.com,cn=navya12,ou=e0170b69-09a5-11e9-b4fe-000c29da5704,dc=kwartile,dc=local
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7f4f1bd19410>
+<kafka.consumer.group.KafkaConsumer object at 0x7fac719ce650>
 in hgselectqueryurl
 in hive_task_status_consumer
 Polling consumer
 its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7f287cba6410>
+<kafka.consumer.group.KafkaConsumer object at 0x7f524c9f0650>
 in hgselectqueryurl
 in hive_task_status_consumer
 Polling consumer
 its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7fef64a50410>
+<kafka.consumer.group.KafkaConsumer object at 0x7f7217e96650>
 in hgselectqueryurl
 in hive_task_status_consumer
 Polling consumer
 its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7fd8bea7b410>
+<kafka.consumer.group.KafkaConsumer object at 0x7fd54d55c650>
 in hgselectqueryurl
 in hive_task_status_consumer
 Polling consumer
 its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0x7f3dad565410>
+<kafka.consumer.group.KafkaConsumer object at 0x7fa9188a7650>
 in hgselectqueryurl
+in hive_task_status_consumer
+Polling consumer
+its a 'hello' from while loop
+<kafka.consumer.group.KafkaConsumer object at 0x7f0053d88650>
+in hgselectqueryurl
+in hive_task_status_consumer
+Polling consumer
+its a 'hello' from while loop
+<kafka.consumer.group.KafkaConsumer object at 0x7fe40b3a7650>
+in hgselectqueryurl
+in hive_task_status_consumer
+Polling consumer
+its a 'hello' from while loop
+<kafka.consumer.group.KafkaConsumer object at 0x7fa7114a6650>
+in hgselectqueryurl
+in hive_task_status_consumer
+Polling consumer
+its a 'hello' from while loop
+<kafka.consumer.group.KafkaConsumer object at 0x7fc2b0d5a650>
+in hgselectqueryurl
+in hive_task_status_consumer
+Polling consumer
+its a 'hello' from while loop
+<kafka.consumer.group.KafkaConsumer object at 0x7fa196f4e650>
+in hgselectqueryurl
+in hive_task_status_consumer
+Polling consumer
+its a 'hello' from while loop
+<kafka.consumer.group.KafkaConsumer object at 0x7fc81984f650>
+in hgselectqueryurl
+in hive_task_status_consumer
+Polling consumer
+its a 'hello' from while loop
+<kafka.consumer.group.KafkaConsumer object at 0x7f673ac0d650>
+in hgselectqueryurl
+in hive_task_status_consumer
+Polling consumer
+its a 'hello' from while loop
+<kafka.consumer.group.KafkaConsumer object at 0x7f8c73cf1650>
+in hgselectqueryurl
+in hive_task_status_consumer
+Polling consumer
+its a 'hello' from while loop
+<kafka.consumer.group.KafkaConsumer object at 0x7f9a30593690>
+{u'F12_T4': [u'F12_T3', u'/opt/scripts/start-hiveserver2.sh'], u'F12_T5': [None, u'/opt/agent/application/modules/workers/hostdns.py'], u'F12_T1': [None, u'/opt/agent/application/modules/workers/hadoop-hive-config.py'], u'F12_T2': [u'F12_T1', u'/opt/scripts/hive.sh'], u'F12_T3': [u'F12_T2', u'/opt/scripts/mysql.sh']}
+in hgselectqueryurl
+{u'password': u'password', u'email': u'navya@gmail.com'}
+cf22804d-099d-11e9-b4fe-000c29da5704
+cn=navya@gmail.com,cn=navya,ou=cf22804d-099d-11e9-b4fe-000c29da5704,dc=kwartile,dc=local

@@ -163,6 +163,12 @@ def vmcreation(required_data_list):
             db_session.add(vm_information_insert)
 
             db_session.commit()
+
+            if role == 'namenode' or role == 'datanode' or role == 'resourcemanager':
+                edge = 'f'
+            else:
+                edge = 't'
+
             vm_creation_insert=TblVmCreation(uid_customer_id =customerid,
                                 uid_cluster_id = clusterid,
                                 uid_agent_id=agentid,
@@ -170,6 +176,7 @@ def vmcreation(required_data_list):
                                 var_name =virtual_machine.name,
                                 uid_vm_id=virtual_machine.vm_id,
                                 var_ip = private_ip,
+                                bool_edge = edge,
                                 var_created_by = created_by,
                                 var_modified_by = modified_by,
                                 ts_created_datetime =date_time,
@@ -311,4 +318,5 @@ def create_vm_parameters(encoded, nic_id, OS_DISK_NAME, LOCATION,image_id,vm_siz
 #print __file__,__name__
 #if __name__=="__main__"   :
     #vmcreation([["9a1ada8b-c888-11e8-bace-000c29b9b7fd","9a1ada8b-c888-11e8-bace-000c29b9b7fa","namenode","9a1ada8b-c888-11e8-bace-000c29b9b7fc","south india",1],["9a1ada8b-c888-11e8-bace-000c29b9b7fd","9a1ada8b-c888-11e8-bace-000c29b9b7fa","datanode","9a1ada8b-c888-11e8-bace-000c29b9b7fc","south india",1]])
+
 

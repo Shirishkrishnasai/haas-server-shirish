@@ -1,70 +1,98 @@
-import psycopg2
+from sqlalchemy.orm import scoped_session
+from application import session_factory
 import datetime,time
+import subprocess
 import logging
-
 logging.basicConfig()
-from apscheduler.schedulers.background import BackgroundScheduler
-from application.modules.workers.configure_cluster_sprint_2 import configure_cluster
-from application.config.config_file import schema_statement,assigned_status
+#from apscheduler.schedulers.background import BackgroundScheduler
+#from application.modules.workers.build_cluster_worker_sprint2 import installcluster
+from application.models.models import TblCustomerRequest,TblMetaRequestStatus,TblFeature,TblTaskRequestLog
 from application.common.loggerfile import my_logger
-from application import app,conn_string
 def hgsuper():
 	while True:
-		my_logger.debug("supervisor:hai")
-		try:
-
-			status=assigned_status
+			my_logger.debug("supervisor:hai")
+		#try:
+			db_session = scoped_session(session_factory)
+			metatablestatus = db_session.query(TblMetaRequestStatus.var_request_status, TblMetaRequestStatus.srl_id).all()
+			request_status_values = dict(metatablestatus)
+			completed_request_status_value = request_status_values['COMPLETED']
+			update_request_status_value = request_status_values['ASSIGNED']
 			time_updated=datetime.datetime.now()
-			conn=psycopg2.connect(conn_string)
-			cur=conn.cursor()
 			print "hg supervisor connected to database"
-			cur.execute(schema_statement)
-			select_customer_req_data="select uid_request_id,char_feature_id from tbl_customer_request where bool_assigned='f'"
-			cur.execute(select_customer_req_data)
-			required_data=cur.fetchall()
-			conn.close()
-			my_logger.debug("REquied Data")
-			my_logger.debug(required_data)
-			for row in required_data:
-				request_id=row[0]
-				print request_id
-				# select_worker_path="select txt_worker_path from tbl_feature where char_feature_id='%s'"
-				# cur.execute(select_worker_path % feature_id)
-				# worker_path=cur.fetchone()
-				# subprocess.call(["python",worker_path,req_id],shell=False)
+			customer_req_data=db_session.query(TblCustomerRequest.uid_request_id,TblCustomerRequest.char_feature_id,TblCustomerRequest.txt_dependency_request_id)\
+				.filter(TblCustomerRequest.bool_assigned=='f').all()
+			print customer_req_data
 
-				configure_cluster(request_id)
-				#time.sleep(120)
-				my_logger.debug("Got Request")
-				conn = psycopg2.connect(conn_string)
-				cur = conn.cursor()
-				cur.execute(schema_statement)
-				update_statement="update tbl_customer_request set bool_assigned='t',ts_requested_time='%s' where uid_request_id='%s'"
-				my_logger.debug(update_statement)
-				cur.execute(update_statement % (time_updated,request_id))
-				conn.commit()
-				insert_request_status = "insert into tbl_task_request_log (uid_request_id,int_meta_request_status,ts_time_updated)\
-							 values('%s',%d,'%s')"
-				cur.execute(insert_request_status % (request_id,status,time_updated))
-				conn.commit()
-				conn.close()
-				my_logger.debug("Closing Request")
-			print('install_cluster called')
-			required_data=[]
-		except psycopg2.DatabaseError, e:
-			my_logger.debug(e.pgerror)
-			#return 'database error'
-		except psycopg2.OperationalError, e:
-			my_logger.debug(e.pgerror)
-			#return 'Operational error'
-		except Exception as e:
-			my_logger.error(e)
+			for row in customer_req_data:
+				print 'in customer_req_data'
+
+				request_id=row[0]
+				feature_id=row[1]
+				dependency_id=row[2]
+				select_worker_path = db_session.query(TblFeature.txt_worker_path).filter(
+					TblFeature.char_feature_id == feature_id).first()
+				worker_path = select_worker_path[0]
+				print worker_path
+				if dependency_id == None:
+					print	"in dependency_id== None"
+					subprocess.call(["python", worker_path, request_id], shell=False)
+					my_logger.debug("Got Request")
+					update_object = db_session.query(TblCustomerRequest).filter(
+						TblCustomerRequest.uid_request_id == request_id)
+					update_statement = update_object.update({"bool_assigned": 1, "ts_requested_time": time_updated})
+					my_logger.debug(update_statement)
+					insert_request_status = TblTaskRequestLog(uid_request_id=request_id,
+															  int_meta_request_status=update_request_status_value,
+															  ts_time_updated=time_updated)
+					db_session.add(insert_request_status)
+					db_session.commit()
+					my_logger.debug("Closing Request")
+
+				else:
+					print "in dependency"
+					list_of_dependency_requests = dependency_id.split(',')
+
+					completedrequests = []
+
+
+					for each_id in list_of_dependency_requests:
+						dependency_request_id = each_id.replace('"', '')
+						dependency_request_status = db_session.query(TblCustomerRequest.int_request_status).filter(
+							TblCustomerRequest.uid_request_id == dependency_request_id)
+						print dependency_request_status,'sssssssssttttattttuss'
+						dependency_request_status_value = dependency_request_status[0]
+						if dependency_request_status_value[0] == completed_request_status_value:
+							completedrequests.append(dependency_request_status)
+							print 'done'
+					if len(completedrequests) == len(list_of_dependency_requests):
+						subprocess.call(["python",worker_path,request_id],shell=False)
+						my_logger.debug("Got Request")
+						update_object = db_session.query(TblCustomerRequest).filter(
+							TblCustomerRequest.uid_request_id == request_id)
+						update_statement = update_object.update(
+							{"bool_assigned": 1, "ts_requested_time": time_updated})
+						my_logger.debug(update_statement)
+						insert_request_status = TblTaskRequestLog(uid_request_id=request_id,
+																  int_meta_request_status=update_request_status_value,
+																  ts_time_updated=time_updated)
+						db_session.add(insert_request_status)
+						db_session.commit()
+						my_logger.debug("Closing Request")
+					else:
+						pass
+				time.sleep(15)
+
+
+				required_data=[]
+
+		#except Exception as e:
+			#my_logger.error(e)
 			#return 'not in json format'
-		finally:
+		#finally:
 			#conn.close()
-			my_logger.debug("In  Supervisor Finally..")
-		time.sleep(15)
-		my_logger.debug("running supervisor.. after 15 seconds...")
+			#my_logger.debug("In  Supervisor Finally..")
+		#time.sleep(15)
+		#my_logger.debug("running supervisor.. after 15 seconds...")
 
 def hgsuperscheduler():
 	#scheduler = BackgroundScheduler()
