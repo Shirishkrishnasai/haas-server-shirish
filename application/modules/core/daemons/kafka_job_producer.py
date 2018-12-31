@@ -1,8 +1,11 @@
 import time
-from application.models.models import TblCustomerJobRequest,TblAgent,TblNodeInformation,TblMetaMrRequestStatus
-from application.config.config_file import kafka_bootstrap_server, kafka_api_version
-from sqlalchemy.orm import scoped_session
+
 from application import session_factory
+from application.config.config_file import kafka_bootstrap_server
+from application.models.models import TblCustomerJobRequest, TblAgent, TblNodeInformation, TblMetaMrRequestStatus
+from sqlalchemy.orm import scoped_session
+
+
 def mrjobproducer():
     while True:
         try:

@@ -1,9 +1,12 @@
-import pymongo
-from kafka import KafkaConsumer
 import json
+
+import pymongo
 from application import mongo_conn_string
-from application.config.config_file import kafka_bootstrap_server,kafka_api_version
 from application.common.loggerfile import my_logger
+from application.config.config_file import kafka_bootstrap_server
+from kafka import KafkaConsumer
+
+
 def hiveDatabaseResult():
 
     while True:

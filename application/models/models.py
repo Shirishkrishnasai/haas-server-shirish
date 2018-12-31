@@ -7,8 +7,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from datetime import datetime
 
+
 Base = declarative_base()
+
 metadata = Base.metadata
+
+
+
 
 
 class OutputMixin(object):
@@ -896,4 +901,5 @@ class TblMetaCloudLocation(Base,OutputMixin):
     srl_id = Column(Integer, primary_key=True)
     var_cloud_type = Column(String(40))
     var_location = Column(Text)
+
 

@@ -1,15 +1,13 @@
-from azure.common.credentials import ServicePrincipalCredentials
-from azure.mgmt.resource import ResourceManagementClient
-from azure.mgmt.network import NetworkManagementClient
-from azure.mgmt.compute import ComputeManagementClient
-from azure.mgmt.compute.models import DiskCreateOption
-from msrestazure.azure_exceptions import CloudError
-import json
 import time
 import uuid
+
 import psycopg2
-from flask import request
+from azure.common.credentials import ServicePrincipalCredentials
+from azure.mgmt.network import NetworkManagementClient
+from azure.mgmt.resource import ResourceManagementClient
 from flask import Flask
+from flask import request
+
 app = Flask(__name__)
 @app.route('/res',methods=['POST'])
 def resource():
