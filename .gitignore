@@ -6,3 +6,4 @@ dist
 *.save
 */**.save
 */**.pyc
+*/**.out
