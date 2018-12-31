@@ -1,3 +1,8 @@
 build
 dist
 *.pyc
+.hass_server.egg-info
+.idea
+*.save
+*/**.save
+*/**.pyc
