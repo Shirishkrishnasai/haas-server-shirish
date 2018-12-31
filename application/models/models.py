@@ -621,7 +621,7 @@ class TblAzureAppGateway(Base, OutputMixin):
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
     uid_gateway_id = Column(UUID, unique=True)
-    var_resource_group_name = Column(ForeignKey(u'highgear.tbl_customer_azure_resource_group.var_resource_group_name'))
+    var_resource_group_name = Column(Text)
 
     txt_client_secret = Column(Text)
     txt_app_id = Column(Text)
@@ -631,14 +631,14 @@ class TblAzureAppGateway(Base, OutputMixin):
     ts_created_time = Column(DateTime)
     ts_updated_time = Column(DateTime)
 
-    tbl_customer_azure_resource_group = relationship(u'TblCustomerAzureResourceGroup')
+
 
 
 class TblMetaNodeRoles(Base, OutputMixin):
     __tablename__ = 'tbl_meta_node_roles'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
-    vm_roles = Column(String(30))
+    vm_roles = Column(String(30),unique=True)
     txt_description = Column(Text)
 
 
@@ -648,7 +648,7 @@ class TblUsers(Base, OutputMixin):
     srl_id = Column(Integer, primary_key=True)
 
     uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
-    var_user_name = Column(String(60))
+    var_user_name = Column(String(60),unique=True)
     txt_dn = Column(Text)
     bool_active = Column(Boolean)
     ts_created_time = Column(DateTime)
@@ -745,7 +745,7 @@ class TblMetaCloudType(Base,OutputMixin):
     float_ram = Column(Float)
     float_disk_size = Column(Float)
     float_cpu = Column(Float)
-    var_vm_type = Column(String(100))
+    var_vm_type = Column(String(100),unique=True)
     var_cloud_type = Column(String(100))
 
 
@@ -863,7 +863,7 @@ class TblFileUpload(Base,OutputMixin):
     __tablename__ = 'tbl_file_upload'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
-    uid_upload_id = Column(UUID)
+    uid_upload_id = Column(UUID,unique=True)
     uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
     uid_agent_id = Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
     var_share_name = Column(String(60))
