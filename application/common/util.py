@@ -82,3 +82,10 @@ def identify_tasks_for_assignment(dict_tasks, lst_completed_tasks):
     lst_assign_tasks = list(set_assign_tasks)
     return lst_assign_tasks
 
+def create_azure_share(str_azure_account_name, str_azure_account_key,str_share_name, int_share_quota=100):
+    from azure.storage.file import FileService, FilePermissions
+
+    file_service = FileService(account_name=str_azure_account_name, account_key=str_azure_account_key)
+    bool_created = file_service.create_share(share_name=str_share_name, quota=int_share_quota)
+
+    return bool_created
