@@ -497,3 +497,74 @@ def hiveSelectQueryResult(request_id):
 		my_logger.debug(e)
 
 
+@api.route('/api/customer_plan', methods=['GET'])
+def customerPlan():
+	try:
+		db_session = scoped_session(session_factory)
+
+		plan_select_query_statement = db.session.query(TblPlan.int_plan_id,TblPlan.var_plan_type).all()
+		print plan_select_query_statement
+		result_list = []
+
+		for tups in plan_select_query_statement:
+			plan_dicts = {}
+			plan_dicts['id'] = tups[0]
+			plan_dicts['plan_name'] = str(tups[1])
+			#print plan_dicts,'dulllllllllllll'
+			result_list.append(plan_dicts)
+		print	 result_list
+		return jsonify(cluster_plans=result_list)
+	except Exception as e:
+
+		my_logger.debug(e)
+
+@api.route('/api/cluster_size', methods=['GET'])
+def clusterSize():
+	try:
+		db_session = scoped_session(session_factory)
+
+		size_select_query_statement = db.session.query(TblSize.int_size_id,TblSize.var_size_type).all()
+		print size_select_query_statement
+		result_list = []
+
+		for tups in size_select_query_statement:
+			#print tups,'tuppppppppppppppp'
+			size_dicts = {}
+			size_dicts['id'] = tups[0]
+			size_dicts['size'] = str(tups[1])
+			#print plan_dicts,'dulllllllllllll'
+			result_list.append(size_dicts)
+		print result_list
+		return jsonify(cluster_size=result_list)
+	except Exception as e:
+
+		my_logger.debug(e)
+
+@api.route('/api/cluster/<request_id>', methods=['GET'])
+def clusterStatus(request_id):
+	try:
+		db_session = scoped_session(session_factory)
+
+		status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status).filter(TblCustomerRequest.uid_request_id == request_id).all()
+		print status_select_query_statement,'selectttttttttttttttttttttt'
+		if len(status_select_query_statement) == 0:
+			return jsonify(message="request id not available")
+		else:
+			#result_list = []
+			request_status = status_select_query_statement[0][0]
+			print request_status
+			request_status_select_query_statement = db.session.query(TblMetaRequestStatus.var_request_status).filter(TblMetaRequestStatus.srl_id == request_status).all()
+			print request_status_select_query_statement,len(request_status_select_query_statement),'reqqqqqqqqqqqq'
+			#for request_status in status_select_query_statement[0]:
+			#	print request_status,'reqqqqqqqqqqqqq'
+			if len(request_status_select_query_statement) == 0:
+				return jsonify(request_id=request_id,cluster_status="None")
+			else:
+				status = request_status_select_query_statement[0][0]
+				return jsonify(request_id=request_id,cluster_status=status)
+	except Exception as e:
+
+		my_logger.debug(e)
+
+
+
