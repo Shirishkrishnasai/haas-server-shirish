@@ -1,4 +1,4 @@
-from flask import Flask, url_for
+from flask import Flask, url_for,request,jsonify,g,make_response
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
@@ -38,6 +38,14 @@ sqlite_string = sqlite_string
 engine = create_engine(SQLALCHEMY_DATABASE_URI, pool_size=50)
 session_factory = sessionmaker(bind=engine)
 
+@app.errorhandler(404)
+def page_not_found(e):
+        return make_response(jsonify(error="yes",message="page not found"),404)
+
+@app.errorhandler(500)
+def internal_error(e):
+        output = [str(x) for x in e.args]
+        return make_response(jsonify(error="yes",message=output[0]),500)
 from db_setup import init_db
 
 init_db()
@@ -138,11 +146,9 @@ def runProcess():
     kafkaconsumer_process = Process(target=kafkaconsumer)
     hgmanager_process = Process(target=hgmanager)
     hgsuper_process = Process(target=hgsuper)
-
     kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
     kafkaHiveStatusConsumer_process.start()
-
-    # hgsuperscheduler_process.start()
+    hgsuperscheduler_process.start()
     filebrowsestatus_process = Process(target=filebrowsestatus)
     jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
     jobDiagnosticConsumer_process.start()
@@ -157,11 +163,10 @@ def runProcess():
     kafkataskconsumer_process.start()
     mrjobproducer_process = Process(target=mrjobproducer)
     customerjobreqestconsumer = Process(target=jobinsertion)
-
     mrjobproducer_process.start()
     customerjobreqestconsumer.start()
     kafkaconsumer_process.start()
     hgmanager_process.start()
-
-    # configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
-    # configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
+    #configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
+    #configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
+    print "method ended"
