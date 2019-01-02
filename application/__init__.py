@@ -1,4 +1,4 @@
-from flask import Flask, url_for
+from flask import Flask, url_for,request,jsonify,g,make_response
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
@@ -38,6 +38,14 @@ sqlite_string = sqlite_string
 engine = create_engine(SQLALCHEMY_DATABASE_URI, pool_size=50)
 session_factory = sessionmaker(bind=engine)
 
+@app.errorhandler(404)
+def page_not_found(e):
+        return make_response(jsonify(error="yes",message="page not found"),404)
+
+@app.errorhandler(500)
+def internal_error(e):
+        output = [str(x) for x in e.args]
+        return make_response(jsonify(error="yes",message=output[0]),500)
 from db_setup import init_db
 
 init_db()
