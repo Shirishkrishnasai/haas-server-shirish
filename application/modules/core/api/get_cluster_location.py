@@ -14,7 +14,7 @@ def clusterLocation():
     list_location = []
     location_id_list = []
     cloud_type_id_list = []
-    print meta_cluster_location_query,'meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+    #print meta_cluster_location_query,'meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     for cluster_location in meta_cluster_location_query:
         #print cluster_location
         location_id_dict = {}
@@ -37,9 +37,9 @@ def clusterLocation():
         else:
             dict_location[cloud_type] = [cluster_location[1]]
             #print dict_location,"else"
-    print location_id_list,'loooooooooooooooooooooollllllllllllllll'
+    #print location_id_list,'loooooooooooooooooooooollllllllllllllll'
     #print cloud_type_id_list, 'ccccccccccccloooooooooooooooooooooollllllllllllllll'
-    print dict_location, "dciciciic"
+    #print dict_location, "dciciciic"
     result_dict = {}
     end_list = []
     locations_dict = {}
@@ -57,11 +57,11 @@ def clusterLocation():
             #print values,"lueeeeeeeeeeeeeeeeeeeeee"
             #print vals,"vallllllllllllllllllllllllllll"
             for dicts in location_id_list:
-                print dicts,'sssssssssssddddddddddddddddddddddiiiii'
+                #print dicts,'sssssssssssddddddddddddddddddddddiiiii'
                 for key,value in dicts.items():
                     #if dicts.has_key(keys):
                     if dicts.has_key(keys):
-                        print value,'valolollol'
+                        #print value,'valolollol'
                         result_dict['id'] = dicts[keys]
                         #print result_dict['id'],'ressssssssssssssssss'
                     if vals == key and dicts.has_key(keys):
@@ -74,7 +74,7 @@ def clusterLocation():
 
         end_list.append(result_dict.copy())
 
-    print end_list, "after apendddd"
+    #print end_list, "after apendddd"
     return jsonify(end_list)
 
 #cloudtype=Blueprint('cloudtype',__name__)
