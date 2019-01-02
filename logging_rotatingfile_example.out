@@ -1,5 +1,101 @@
-in hive_task_status_consumer
-Polling consumer
-its a 'hello' from while loop
-<kafka.consumer.group.KafkaConsumer object at 0xb527ebcc>
-in hgselectqueryurl
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+NoBrokersAvailable
+(psycopg2.OperationalError) FATAL:  password authentication failed for user "postgres"
+FATAL:  password authentication failed for user "postgres"
+ (Background on this error at: http://sqlalche.me/e/e3q8)
+(psycopg2.OperationalError) FATAL:  password authentication failed for user "postgres"
+FATAL:  password authentication failed for user "postgres"
+ (Background on this error at: http://sqlalche.me/e/e3q8)
+global name 'TblSize' is not defined
+global name 'TblSize' is not defined
+global name 'TblSize' is not defined
+global name 'TblSize' is not defined
+(psycopg2.OperationalError) FATAL:  password authentication failed for user "postgres"
+FATAL:  password authentication failed for user "postgres"
+ (Background on this error at: http://sqlalche.me/e/e3q8)
+global name 'TblSize' is not defined
+global name 'TblSize' is not defined
+global name 'TblSize' is not defined
+global name 'TblSize' is not defined
+file account credentials ok
+0414
+414414
+file transfer is over
+file created in azure file storage
+now inserting values in database
+passed argument is user_name
+values inserted and now returning file file_upload_url
+HTTPConnectionPool(host='192.168.100.44', port=5000): Max retries exceeded with url: /fileupload?customer_id=9a1ada8b-c888-11e8-bace-000c29b9b7fa&user_name=thor (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0xb35b446c>: Failed to establish a new connection: [Errno 111] Connection refused',))
+done
+file account credentials ok
+0406868
+406868406868
+file transfer is over
+file created in azure file storage
+now inserting values in database
+passed argument is user_name
+values inserted and now returning file file_upload_url
+HTTPConnectionPool(host='192.168.100.44', port=5000): Max retries exceeded with url: /fileupload?customer_id=9a1ada8b-c888-11e8-bace-000c29b9b7fa&user_name=thor (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0xb2a528ec>: Failed to establish a new connection: [Errno 111] Connection refused',))
+done
+(psycopg2.DataError) invalid input syntax for uuid: "4a82d464-0aa0-11e9-ba4c-3ca9f49ab"
+LINE 3: ...RE highgear.tbl_customer_request.uid_request_id = '4a82d464-...
+                                                             ^
+ [SQL: 'SELECT highgear.tbl_customer_request.int_request_status AS highgear_tbl_customer_request_int_request_status \nFROM highgear.tbl_customer_request \nWHERE highgear.tbl_customer_request.uid_request_id = %(uid_request_id_1)s'] [parameters: {'uid_request_id_1': u'4a82d464-0aa0-11e9-ba4c-3ca9f49ab'}] (Background on this error at: http://sqlalche.me/e/9h9h)

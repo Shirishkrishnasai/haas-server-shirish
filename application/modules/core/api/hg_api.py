@@ -16,7 +16,7 @@ from flask import Flask,jsonify,request,Request,Blueprint
 from application import app, db,conn_string,mongo_conn_string,session_factory
 from application.common.loggerfile import my_logger
 from application.config.config_file import schema_statement,request_status,kafka_bootstrap_server
-from application.models.models import TblCustomerRequest, TblAgentConfig, TblAgent, TblNodeInformation, TblHiveMetaStatus,TblHiveRequest,TblFeature
+from application.models.models import TblCustomerRequest, TblAgentConfig, TblAgent, TblNodeInformation, TblHiveMetaStatus,TblHiveRequest,TblFeature, TblPlan,TblSize, TblMetaRequestStatus
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from kafka import KafkaProducer
@@ -198,7 +198,7 @@ def hg_client():
 	#	return e.message
     #finally:
      #   db_session.close()
-		return jsonify(message='success')
+		return jsonify(request_id=request_id[0],message='success')
 
 @api.route('/api/agent/register', methods=['POST'])
 def register():
@@ -545,7 +545,7 @@ def clusterStatus(request_id):
 	try:
 		db_session = scoped_session(session_factory)
 
-		status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status).filter(TblCustomerRequest.uid_request_id == request_id).all()
+		status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_cluster_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
 		print status_select_query_statement,'selectttttttttttttttttttttt'
 		if len(status_select_query_statement) == 0:
 			return jsonify(message="request id not available")
@@ -561,10 +561,8 @@ def clusterStatus(request_id):
 				return jsonify(request_id=request_id,cluster_status="None")
 			else:
 				status = request_status_select_query_statement[0][0]
+				#cluster_name_query = db.session.query()
 				return jsonify(request_id=request_id,cluster_status=status)
 	except Exception as e:
 
 		my_logger.debug(e)
-
-
-
