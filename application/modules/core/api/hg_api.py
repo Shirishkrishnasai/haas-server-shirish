@@ -540,7 +540,7 @@ def clusterSize():
 
 		my_logger.debug(e)
 
-@api.route('/api/cluster/<request_id>', methods=['GET'])
+@api.route('/api/cluster_status/<request_id>', methods=['GET'])
 def clusterStatus(request_id):
 	try:
 		db_session = scoped_session(session_factory)
