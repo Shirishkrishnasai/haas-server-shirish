@@ -1,24 +1,18 @@
-import glob
 import logging
-import logging.handlers
-LOG_FILENAME = 'logging_rotatingfile_example.out'
-#logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-    # Set up a specific logger with our desired output level
-my_logger = logging.getLogger('MyLogger')
-my_logger.setLevel(logging.DEBUG)
+from application import app
+from logging.handlers import SMTPHandler
 
-# Add the log message handler to the logger
-handler = logging.handlers.RotatingFileHandler(
-              LOG_FILENAME, maxBytes=10000, backupCount=5)
+mail_handler = SMTPHandler(
+    mailhost='127.0.0.1',
+    fromaddr='server-error@example.com',
+    toaddrs=['murali@highgear.io'],
+    subject='Application Error'
+)
+mail_handler.setLevel(logging.ERROR)
+mail_handler.setFormatter(logging.Formatter(
+    '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
+))
+if not app.debug:
+    app.logger.addHandler(mail_handler)
 
-my_logger.addHandler(handler)
-#Log some messages
-#for i in range(20):
- #       my_logger.debug('i = %d' % i)
-
-# See what files are created
-logfiles = glob.glob('%s*' % LOG_FILENAME)
-
-#for filename in logfiles:
- #       my_logger.debug(filename)
-
+my_logger = app.logger
