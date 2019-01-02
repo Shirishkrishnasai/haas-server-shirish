@@ -130,20 +130,20 @@ def site_map():
 
 
 def runProcess():
-    #selecturl_process = Process(target=hgSelectQueryUrlScheduler)
-    #selecturl_process.start()
-    #hgsuperscheduler_process = Process(target=hgsuperscheduler)
-    #hgmanagerscheduler_process = Process(target=hgmanagerscheduler)
-    #kafkataskconsumer_process = Process(target=kafkataskconsumer)
-    #kafkaconsumer_process = Process(target=kafkaconsumer)
-    #hgmanager_process = Process(target=hgmanager)
-    #hgsuper_process = Process(target=hgsuper)
+    selecturl_process = Process(target=hgSelectQueryUrlScheduler)
+    selecturl_process.start()
+    hgsuperscheduler_process = Process(target=hgsuperscheduler)
+    hgmanagerscheduler_process = Process(target=hgmanagerscheduler)
+    kafkataskconsumer_process = Process(target=kafkataskconsumer)
+    kafkaconsumer_process = Process(target=kafkaconsumer)
+    hgmanager_process = Process(target=hgmanager)
+    hgsuper_process = Process(target=hgsuper)
 
-    #kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
-    #kafkaHiveStatusConsumer_process.start()
+    kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
+    kafkaHiveStatusConsumer_process.start()
 
-    # hgsuperscheduler_process.start()
-    #filebrowsestatus_process = Process(target=filebrowsestatus)
+    hgsuperscheduler_process.start()
+    filebrowsestatus_process = Process(target=filebrowsestatus)
     #jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
     #jobDiagnosticConsumer_process.start()
     #jobStatusConsumer_process = Process(target=statusconsumer)

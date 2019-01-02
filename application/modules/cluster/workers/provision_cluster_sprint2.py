@@ -123,7 +123,7 @@ def installcluster(request_id):
     customer_request_update_default.update({"uid_cluster_id": cluster_id})
     db_session.commit()
     db_session.close()
-installcluster('4a82d464-0aa0-11e9-ba4c-3ca9f49ab2cc')
+#installcluster('4a82d464-0aa0-11e9-ba4c-3ca9f49ab2cc')
 
 
 
