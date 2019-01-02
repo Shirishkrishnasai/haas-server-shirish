@@ -5,6 +5,23 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from application.config.config_file import  *
+from logging.config import dictConfig
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
+
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -113,38 +130,41 @@ def site_map():
 
 
 def runProcess():
-    selecturl_process = Process(target=hgSelectQueryUrlScheduler)
-    selecturl_process.start()
-    hgsuperscheduler_process = Process(target=hgsuperscheduler)
-    hgmanagerscheduler_process = Process(target=hgmanagerscheduler)
-    kafkataskconsumer_process = Process(target=kafkataskconsumer)
-    kafkaconsumer_process = Process(target=kafkaconsumer)
-    hgmanager_process = Process(target=hgmanager)
-    hgsuper_process = Process(target=hgsuper)
+    #selecturl_process = Process(target=hgSelectQueryUrlScheduler)
+    #selecturl_process.start()
+    #hgsuperscheduler_process = Process(target=hgsuperscheduler)
+    #hgmanagerscheduler_process = Process(target=hgmanagerscheduler)
+    #kafkataskconsumer_process = Process(target=kafkataskconsumer)
+    #kafkaconsumer_process = Process(target=kafkaconsumer)
+    #hgmanager_process = Process(target=hgmanager)
+    #hgsuper_process = Process(target=hgsuper)
 
-    kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
-    kafkaHiveStatusConsumer_process.start()
+    #kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
+    #kafkaHiveStatusConsumer_process.start()
 
     # hgsuperscheduler_process.start()
-    filebrowsestatus_process = Process(target=filebrowsestatus)
-    jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
-    jobDiagnosticConsumer_process.start()
-    jobStatusConsumer_process = Process(target=statusconsumer)
-    jobStatusConsumer_process.start()
-    hiveDatabaseResultConsumer = Process(target=hiveDatabaseResult)
-    hiveDatabaseResultConsumer.start()
-    hgsuperscheduler_process.start()
-    filebrowsestatus_process = Process(target=filebrowsestatus)
-    filebrowsestatus_process.start()
-    hgmanagerscheduler_process.start()
-    kafkataskconsumer_process.start()
-    mrjobproducer_process = Process(target=mrjobproducer)
-    customerjobreqestconsumer = Process(target=jobinsertion)
+    #filebrowsestatus_process = Process(target=filebrowsestatus)
+    #jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
+    #jobDiagnosticConsumer_process.start()
+    #jobStatusConsumer_process = Process(target=statusconsumer)
+    #jobStatusConsumer_process.start()
+    #hiveDatabaseResultConsumer = Process(target=hiveDatabaseResult)
+    #hiveDatabaseResultConsumer.start()
+    #hgsuperscheduler_process.start()
+    #filebrowsestatus_process = Process(target=filebrowsestatus)
+    #filebrowsestatus_process.start()
+    #hgmanagerscheduler_process.start()
+    #kafkataskconsumer_process.start()
+    #mrjobproducer_process = Process(target=mrjobproducer)
+    #customerjobreqestconsumer = Process(target=jobinsertion)
 
-    mrjobproducer_process.start()
-    customerjobreqestconsumer.start()
-    kafkaconsumer_process.start()
-    hgmanager_process.start()
+    #mrjobproducer_process.start()
+    #customerjobreqestconsumer.start()
+    #kafkaconsumer_process.start()
+    #hgmanager_process.start()
+    print "welcome to the club"
 
     # configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
     # configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
+#from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
+#installcluster('d6954e0a-0e65-11e9-bb3d-3ca9f49ab2cc')

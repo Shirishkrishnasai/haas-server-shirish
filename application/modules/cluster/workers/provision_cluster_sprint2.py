@@ -27,7 +27,7 @@ def installcluster(request_id):
     cloudtype = build_cluster_information["cloud_type"]
     clustername=build_cluster_information["cluster_name"]
     clusterlocation = build_cluster_information["cluster_location"]
-    size_id=build_cluster_information["size_type"]
+    size_id=build_cluster_information["size_id"]
 
     plan_info = db_session.query(TblCustomer.int_plan_id).filter(TblCustomer.uid_customer_id == customer_id).all()
     print plan_info
@@ -74,7 +74,7 @@ def installcluster(request_id):
     modified_by="system"
     cluster_insertion = TblCluster(uid_cluster_id=str(cluster_id),
                                    uid_customer_id=str(customer_id),
-                                   uid_cluster_type_id='f5826f72-d135-11e8-84db-3ca9f49ab2cc',
+                                   uid_cluster_type_id=str(cloudtype),
                                    txt_fqdn=fqdn,
                                     var_cluster_name =clustername,
                                    char_cluster_region =clusterlocation ,

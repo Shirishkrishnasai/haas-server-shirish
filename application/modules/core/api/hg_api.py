@@ -126,6 +126,7 @@ def hg_client():
 				print "in azure"
 
 				payload = customer_data['payload']
+				print payload
 
 				mongo_connection = pymongo.MongoClient(mongo_conn_string)
 				database_connection = mongo_connection["haas"]
