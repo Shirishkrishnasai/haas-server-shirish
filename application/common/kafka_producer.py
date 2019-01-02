@@ -7,6 +7,7 @@ from application.config.config_file import kafka_bootstrap_server, kafka_api_ver
 from application.common.loggerfile import my_logger
 from application import session_factory
 
+
 def kafkaproducer(message):
     # Connection to kafka
     try:
