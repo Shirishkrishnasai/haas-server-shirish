@@ -15,6 +15,7 @@ application/common/task_status_updation.py
 application/common/util.py
 application/config/__init__.py
 application/config/config_file.py
+application/models/DemoData.py
 application/models/__init__.py
 application/models/models.py
 application/modules/__init__.py

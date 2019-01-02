@@ -828,8 +828,8 @@ db_session.add(tbl_vm_creation_1)
 db_session.add(tbl_vm_creation_2)
 db_session.add(tbl_vm_creation_3)
 
-#db_session.flush();
-#db_session.commit();
+db_session.flush();
+db_session.commit();
 
 import requests
 import application
@@ -864,7 +864,7 @@ def addCluster(customerId):
     clusterAdd =requests.post(url+"/api/addcluster",data=json.dumps(data),headers=headers)
     response=clusterAdd.content
     return response;
-customer_response=json.loads(login("navya@gmail.com","password"))
-customer_id=customer_response['data']['customer_id']
+#customer_response=json.loads(login("navya@gmail.com","password"))
+#customer_id=customer_response['data']['customer_id']
 #.data['customer_id']
-print addCluster(customer_id)
+#print addCluster(customer_id)
