@@ -23,7 +23,7 @@ def customercreation():
     # Gathering information of customer and retriving configuration data of azure
     #    try:
     customer_content = request.json
-    # print customer_content
+    print customer_content
     display_name = customer_content['first_name']
     # print display_name
 
@@ -168,5 +168,4 @@ def customercreation():
 
     return jsonify(customer_first_name=display_name, customer_last_name=mail_nickname, customer_password=password,
                    customer_id=customer_id)
-    #    except Exception as e:
-    #        return e.message
+

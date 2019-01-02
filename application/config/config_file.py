@@ -22,8 +22,8 @@ path="/opt/mapred-site.xml"
 
 postgres_conn = 'postgres://postgres:password@192.168.100.81/haas_demo2'
 conn_string = "host='192.168.100.81' user='postgres' password='password' dbname='haas_demo2'"
-#postgres_conn = 'postgres://postgres:postgres@localhost/haas_demo'
+postgres_conn = 'postgres://postgres:password@192.168.100.81/haas_demo2'
 
 SQLALCHEMY_DATABASE_URI = 'postgres://postgres:password@192.168.100.81/haas_demo2'
-mongo_conn_string="mongodb://192.168.100.41:27017"
+mongo_conn_string="mongodb://192.168.100.81:27017"
 sqlite_string= "/opt/agent/haas"
