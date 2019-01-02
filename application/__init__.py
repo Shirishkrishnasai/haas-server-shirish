@@ -146,10 +146,8 @@ def runProcess():
     kafkaconsumer_process = Process(target=kafkaconsumer)
     hgmanager_process = Process(target=hgmanager)
     hgsuper_process = Process(target=hgsuper)
-
     kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
     kafkaHiveStatusConsumer_process.start()
-
     hgsuperscheduler_process.start()
     filebrowsestatus_process = Process(target=filebrowsestatus)
     jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
@@ -169,6 +167,6 @@ def runProcess():
     customerjobreqestconsumer.start()
     kafkaconsumer_process.start()
     hgmanager_process.start()
-    configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
-    configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
+    #configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
+    #configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
     print "method ended"

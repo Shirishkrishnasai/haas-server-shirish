@@ -217,6 +217,7 @@ class TblCluster(Base, OutputMixin):
     ts_modified_datetime = Column(DateTime)
     valid_cluster = Column(Boolean)
 
+
     tbl_cluster_type = relationship(u'TblClusterType')
     tbl_customer = relationship(u'TblCustomer')
     tbl_size = relationship(u'TblSize')
