@@ -1,18 +1,12 @@
+from application.config.config_file import postgres_conn
 from application.models.models import TblFeature, TblTaskType, \
     TblMetaRequestStatus, TblFeatureType, TblMetaNodeRoles, TblMetaTaskStatus, \
     TblMetaFeatureStatus, TblMetaMrRequestStatus, TblImage, TblMetaCloudType, \
     TblPlan, TblSize, TblPlanClusterSize, TblPlanClusterSizeConfig, TblMetaVmSize, \
     TblMetaFileUpload, TblHiveMetaStatus, TblMetaCloudLocation, TblEdgenode, TblClusterType, TblCluster, \
-    TblAzureAppGateway, TblVmCreation, TblCustomer
-from sqlalchemy.orm import scoped_session
-from application import session_factory
-
-from application.config.config_file import postgres_conn
+    TblAzureAppGateway, TblVmCreation, TblCustomer, TblVmInformation
 from sqlalchemy import create_engine
-
 from sqlalchemy.orm import scoped_session, sessionmaker
-
-from sqlalchemy.ext.declarative import declarative_base
 
 engine = create_engine(postgres_conn, convert_unicode=True)
 
@@ -653,8 +647,61 @@ tbl_customer = TblCustomer(srl_id=1000000,
                            var_name='Demo Customer',
                            int_gid_id='529'
                            )
+tbl_azure_resource_group=TblCustomerAzureResourceGroup(
+    uid_customer_id = Uid_customer_id,
+    txt_resource_group_id = 'resource1',
+    var_resource_group_name = 'resource1',
+    var_created_by = 'Demouser',
+    var_modified_by = 'Demouser'
+)
+
+
+tbl_vm_info_1 = TblVmInformation(uid_vm_id='777a536a-0cf4-11e9-8adb-3ca9f49ab2cc',
+                                 macad_mac_id='FF:AE:48:E1:D5:60',
+                                 uid_customer_id=Uid_customer_id,
+                                 var_resource_group_name='resource1',
+                                 var_virtual_network_name=None,
+                                 txt_subnet_id='subnetid',
+                                 txt_ip='192.168.100.45',
+                                 txt_nic_name='nic1',
+                                 var_user_name='sampleuser',
+                                 txt_password='password')
+
+tbl_vm_info_2 = TblVmInformation(uid_vm_id='b50d33b4-0cf4-11e9-8adb-3ca9f49ab2cc',
+                                 macad_mac_id='FF:AE:48:E1:D5:60',
+                                 uid_customer_id=Uid_customer_id,
+                                 var_resource_group_name='resource1',
+                                 var_virtual_network_name=None,
+                                 txt_subnet_id='subnetid',
+                                 txt_nic_name='nic1',
+                                 var_user_name='sampleuser',
+                                 txt_password='password',
+                                 txt_ip='192.168.100.46'
+
+                                 )
+tbl_vm_info_3 = TblVmInformation(uid_vm_id='cdf3a62e-0cf4-11e9-8adb-3ca9f49ab2cc',
+                                 macad_mac_id='FF:AE:48:E1:D5:60',
+                                 uid_customer_id=Uid_customer_id,
+                                 var_resource_group_name='resource1',
+                                 var_virtual_network_name=None,
+                                 txt_subnet_id='subnetid',
+
+                                 txt_nic_name='nic1',
+                                 var_user_name='sampleuser',
+                                 txt_password='password',
+                                 txt_ip='192.168.100.49'
+
+                                 )
+db_session.add(tbl_vm_info_1)
+db_session.add(tbl_vm_info_2)
+db_session.add(tbl_vm_info_2)
+db_session.add(tbl_azure_resource_group)
 
 db_session.add(tbl_customer)
+
+db_session.add(tbl_vm_info_1)
+db_session.add(tbl_vm_info_2)
+db_session.add(tbl_vm_info_2)
 
 db_session.add(cluster_feature_provision)
 db_session.add(cluster_feature_configuration)
@@ -828,22 +875,26 @@ db_session.add(tbl_vm_creation_1)
 db_session.add(tbl_vm_creation_2)
 db_session.add(tbl_vm_creation_3)
 
-#db_session.flush();
-#db_session.commit();
+# db_session.flush();
+# db_session.commit();
 
 import requests
-import application
 import json
-headers={'Content-Type':'application/json'}
-#application.app.logger("Creating cutomer...")
-url="http://localhost:5000"
-def login(username,password):
-    LoginCrednetials = requests.post(url+"/api/customer/user/auth",
-                                     data=json.dumps({"email": username, "password":password}),
+
+headers = {'Content-Type': 'application/json'}
+# application.app.logger("Creating cutomer...")
+url = "http://localhost:5000"
+
+
+def login(username, password):
+    LoginCrednetials = requests.post(url + "/api/customer/user/auth",
+                                     data=json.dumps({"email": username, "password": password}),
                                      headers=headers)
     return LoginCrednetials.content
+
+
 def createCustomer():
-    cutomerCreation = requests.post(url+"/api/customer/register",
+    cutomerCreation = requests.post(url + "/api/customer/register",
                                     data=json.dumps(
                                         {"first_name": "navya", "second_name": "v", "email": "navya@gmail.com",
                                          "password": "password",
@@ -853,18 +904,21 @@ def createCustomer():
 
 
 def addCluster(customerId):
-    data={
-        "customer_id":customerId,
-        "features":[
-            {"feature_id":"9","payload":{
-                "cloud_type":"1","cluster_location":"20","cluster_name":"Demo Cluster ForDevlopment","size_id":"2"
-            }},{"feature_id":"10"}
+    data = {
+        "customer_id": customerId,
+        "features": [
+            {"feature_id": "9", "payload": {
+                "cloud_type": "1", "cluster_location": "20", "cluster_name": "Demo Cluster ForDevlopment",
+                "size_id": "2"
+            }}, {"feature_id": "10"}
         ]
     }
-    clusterAdd =requests.post(url+"/api/addcluster",data=json.dumps(data),headers=headers)
-    response=clusterAdd.content
+    clusterAdd = requests.post(url + "/api/addcluster", data=json.dumps(data), headers=headers)
+    response = clusterAdd.content
     return response;
-customer_response=json.loads(login("navya@gmail.com","password"))
-customer_id=customer_response['data']['customer_id']
-#.data['customer_id']
+
+
+customer_response = json.loads(login("navya@gmail.com", "password"))
+customer_id = customer_response['data']['customer_id']
+# .data['customer_id']
 print addCluster(customer_id)
