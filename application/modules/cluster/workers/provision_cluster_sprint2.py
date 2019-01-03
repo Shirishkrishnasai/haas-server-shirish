@@ -5,12 +5,17 @@ from sqlalchemy import and_
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application import mongo_conn_string
-from application.models.models import TblCustomerRequest, TblCustomer,TblCluster,TblPlan,TblPlanClusterSizeConfig,TblFeature,TblMetaRequestStatus
+
+#from application.models.models import TblAgent, TblCustomerRequest, TblCluster,TblFeature,TblMetaFeatureStatus,TblClusterType,TblMetaRequestStatus
+
+from application.models.models import TblCustomerRequest, TblCustomer,TblCluster,TblPlan,TblPlanClusterSizeConfig,TblFeature,TblMetaRequestStatus,TblAgent,TblFeature,TblMetaFeatureStatus,TblClusterType
+
 
 from application.modules.azure.createvm import vmcreation
 from application.common.loggerfile import my_logger
 
 def installcluster(request_id):
+    print request_id,'reqqqqqqqqq'
     db_session = scoped_session(session_factory)
     customer_data = db_session.query(TblCustomerRequest.txt_payload_id, TblCustomerRequest.uid_customer_id,\
                     TblCustomerRequest.char_feature_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
@@ -34,9 +39,18 @@ def installcluster(request_id):
     plan_id = plan_info[0][0]
     print plan_id
     cluster_id = str(uuid.uuid1())
+
+    #customer_request_insert = TblCustomerRequest(uid_cluster_id=cluster_id)
+    #db_session.add(customer_request_insert)
+    #customer_request_update = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.txt_dependency_request_id == request_id)
+    #customer_request_update.update({"uid_cluster_id": cluster_id})
+    #db_session.commit()
+
+
     cluster_size_info = db_session.query(TblPlanClusterSizeConfig.var_role,
                                          TblPlanClusterSizeConfig.int_role_count).filter \
         (and_(TblPlanClusterSizeConfig.int_size_id == size_id, TblPlanClusterSizeConfig.int_plan_id == plan_id)).all()
+
     agent_id_list=[]
     vm_creation_info=[]
 
@@ -63,9 +77,16 @@ def installcluster(request_id):
     print vm_information
     metatablestatus = db_session.query(TblMetaRequestStatus.var_request_status, TblMetaRequestStatus.srl_id).all()
     table_status_values = dict(metatablestatus)
+
+    print metatablestatus,'metaaaaaaaaaa'
+    completed_task_status_value = table_status_values['COMPLETED']
+    update_assigned_statement = db_session.query(TblFeature).filter(TblFeature.char_feature_id == feature_id)
+    update_assigned_statement.update({"int_feature_status": completed_task_status_value})
+
     completed_request_status_value = table_status_values['COMPLETED']
     update_assigned_statement = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == request_id)
     update_assigned_statement.update({"int_request_status": completed_request_status_value})
+
 
     db_session.commit()
     date_time=datetime.datetime.now()
@@ -78,7 +99,11 @@ def installcluster(request_id):
                                    txt_fqdn=fqdn,
                                     var_cluster_name =clustername,
                                    char_cluster_region =clusterlocation ,
+
+                                   char_cluster_plan_type = 'Plan A',
+
                                    int_size_id = size_id,
+
                                    var_created_by = created_by,
                                     var_modified_by = modified_by,
                                     ts_created_datetime = str(date_time),
@@ -86,4 +111,19 @@ def installcluster(request_id):
 
     db_session.add(cluster_insertion)
     db_session.commit()
+
+    print 'into custommmmmmmmmmmmm  '
+    status_list = db_session.query(TblMetaRequestStatus.srl_id).filter(TblMetaRequestStatus.var_request_status=='COMPLETED').all()
+    print status_list,'sttaaaaaaattttt'
+    customer_request_update = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.txt_dependency_request_id == request_id)
+    customer_request_update.update({"uid_cluster_id": cluster_id,"int_request_status":status_list[0][0]})
+    db_session.commit()
+
+    customer_request_update_default = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == request_id)
+    customer_request_update_default.update({"uid_cluster_id": cluster_id})
+    db_session.commit()
     db_session.close()
+#installcluster('4a82d464-0aa0-11e9-ba4c-3ca9f49ab2cc')
+
+
+

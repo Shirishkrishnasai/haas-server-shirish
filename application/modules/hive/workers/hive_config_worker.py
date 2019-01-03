@@ -17,11 +17,16 @@ def configure_hive(request_id):
     try:
         session = scoped_session(session_factory)
 
-        customer_feature_ids = session.query(TblCustomerRequest.uid_customer_id,TblCustomerRequest.char_feature_id,TblCustomerRequest.txt_payload_id).filter(TblCustomerRequest.uid_request_id==request_id).first()
+        customer_feature_ids = session.query(TblCustomerRequest.uid_customer_id,TblCustomerRequest.char_feature_id,TblCustomerRequest.txt_dependency_request_id).filter(TblCustomerRequest.uid_request_id==request_id).first()
         customer_id = customer_feature_ids[0]
         feature_id = customer_feature_ids[1]
+        dependent_request_id = customer_feature_ids[2]
 
-        payload_id = customer_feature_ids[2]
+
+        payload = session.query(TblCustomerRequest.txt_payload_id).filter(TblCustomerRequest.uid_request_id == dependent_request_id).first()
+
+
+        payload_id = payload[0]
         mongo_connection = pymongo.MongoClient(mongo_conn_string)
         database_connection = mongo_connection['haas']
         collection_connection = database_connection['highgear']
