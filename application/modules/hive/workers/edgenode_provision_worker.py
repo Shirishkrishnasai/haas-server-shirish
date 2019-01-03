@@ -1,13 +1,16 @@
-import pymongo,time,datetime
-from bson.objectid import ObjectId
 import uuid
+
+import pymongo
+from bson.objectid import ObjectId
 from sqlalchemy import and_
 from sqlalchemy.orm import scoped_session
-from application import session_factory
+
 from application import mongo_conn_string
-from application.models.models import TblCustomerRequest, TblCluster,TblPlan,TblPlanClusterSizeConfig,TblFeature,TblCustomer,TblEdgenode,TblMetaRequestStatus
-from application.modules.azure.createvm import vmcreation
+from application import session_factory
+from application.models.models import  TblEdgenode
+from application.models.models import TblCustomerRequest, TblCluster, TblCustomer, TblMetaRequestStatus
 from application.common.loggerfile import my_logger
+from application.modules.azure.createvm import vmcreation
 
 
 def edgenodeProvision(request_id):
@@ -54,8 +57,9 @@ def edgenodeProvision(request_id):
             vm_creation_list.append(size_id)
             vm_creation_list.append(plan_id)
             vm_creation_info.append(vm_creation_list)
-    print vm_creation_list
+            print vm_creation_list
     my_logger.info("calling createvm method")
+    print "calling vm_creation"
     vm_information = vmcreation(vm_creation_info)#u should call another function probably
     my_logger.debug(vm_information)
     metatablestatus = db_session.query(TblMetaRequestStatus.var_request_status, TblMetaRequestStatus.srl_id).all()

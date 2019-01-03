@@ -14,17 +14,20 @@ from sqlalchemy import and_
 
 def configure_hive(request_id):
 
-    try:
+    #try:
         session = scoped_session(session_factory)
 
-        customer_feature_ids = session.query(TblCustomerRequest.uid_customer_id,TblCustomerRequest.char_feature_id,TblCustomerRequest.txt_payload_id).filter(TblCustomerRequest.uid_request_id==request_id).first()
+        customer_feature_ids = session.query(TblCustomerRequest.uid_customer_id,TblCustomerRequest.char_feature_id,TblCustomerRequest.txt_dependency_request_id).filter(TblCustomerRequest.uid_request_id==request_id).first()
         customer_id = customer_feature_ids[0]
         feature_id = customer_feature_ids[1]
 
-        payload_id = customer_feature_ids[2]
+        dependent_request_id = customer_feature_ids[2]
+        payloadid = session.query(TblCustomerRequest.txt_payload_id).filter(TblCustomerRequest.uid_request_id == dependent_request_id).first()
+        payload_id = str(payloadid[0])
         mongo_connection = pymongo.MongoClient(mongo_conn_string)
         database_connection = mongo_connection['haas']
         collection_connection = database_connection['highgear']
+
 
 
 
@@ -73,8 +76,8 @@ def configure_hive(request_id):
                                      ts_created_datetime = datetime.now(),
                                      ts_modified_datetime = datetime.now()
                                      )
-        session.add(agent_tbl_insert)
-        session.commit()
+        #session.add(agent_tbl_insert)
+        #session.commit()
 
 
         name_node_ip = session.query(TblVmCreation.var_ip).filter(and_(TblVmCreation.uid_cluster_id==cluster_id,TblVmCreation.var_role=='namenode')).first()
@@ -90,10 +93,16 @@ def configure_hive(request_id):
         table_status_values = dict(metatabletaskstatus)
         task_status_value = table_status_values['CREATED']
 
+
+        for tasktypeid, dependent_tasktypeid in task_dependencytask_workerpaths_dict.items():
+            task_id = str(uuid.uuid1())
+            task_dependencytask_workerpaths_dict[tasktypeid].append(task_id)
+
         for tasktypeid,dependent_tasktypeid in task_dependencytask_workerpaths_dict.items():
             if dependent_tasktypeid[0] == None:
-                my_logger.debug(tasktypeid,dependent_tasktypeid)
-                tasks_tbl_inserts = TblTask(uid_task_id = str(uuid.uuid1()),
+                my_logger.debug(tasktypeid)
+                my_logger.debug(dependent_tasktypeid)
+                tasks_tbl_inserts = TblTask(uid_task_id = dependent_tasktypeid[2],
                                             char_task_type_id = tasktypeid,
                                             uid_request_id = request_id,
                                             char_feature_id = feature_id,
@@ -111,13 +120,14 @@ def configure_hive(request_id):
                 session.commit()
 
             else:
-                tasks_tbl_inserts = TblTask(uid_task_id=str(uuid.uuid1()),
+                depe_task_id = task_dependencytask_workerpaths_dict[dependent_tasktypeid[0]][2]
+                tasks_tbl_inserts = TblTask(uid_task_id=dependent_tasktypeid[2],
                                             char_task_type_id=tasktypeid,
                                             uid_request_id=request_id,
                                             char_feature_id=feature_id,
                                             uid_customer_id=customer_id,
                                             uid_agent_id=agent_id,
-                                            txt_dependent_task_id = dependent_tasktypeid[0],
+                                            txt_dependent_task_id = depe_task_id,
                                             int_task_status=task_status_value,
                                             txt_agent_worker_version_path=dependent_tasktypeid[1],
                                             var_created_by="hive-config-worker",
@@ -130,6 +140,6 @@ def configure_hive(request_id):
 
         my_logger.info("done for hive config worker to generate tasks..............now check tasks table........................................")
 
-    except Exception as e :
-        print e
+    #except Exception as e :
+     #   print e
 

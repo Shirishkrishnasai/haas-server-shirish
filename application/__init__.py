@@ -136,8 +136,9 @@ def runProcess():
     #hgmanagerscheduler_process = Process(target=hgmanagerscheduler)
     #kafkataskconsumer_process = Process(target=kafkataskconsumer)
     #kafkaconsumer_process = Process(target=kafkaconsumer)
-    #hgmanager_process = Process(target=hgmanager)
+    hgmanager_process = Process(target=hgmanager)
     #hgsuper_process = Process(target=hgsuper)
+    #hgsuper_process.start()
 
     #kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
     #kafkaHiveStatusConsumer_process.start()
@@ -161,10 +162,13 @@ def runProcess():
     #mrjobproducer_process.start()
     #customerjobreqestconsumer.start()
     #kafkaconsumer_process.start()
-    #hgmanager_process.start()
+    hgmanager_process.start()
     print "welcome to the club"
 
     # configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
-    # configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
+#from application.modules.hive.workers.hive_config_worker import configure_hive
+#configure_hive("d416052b-0e8d-11e9-bb3d-3ca9f49ab2cc")
 #from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
 #installcluster('d6954e0a-0e65-11e9-bb3d-3ca9f49ab2cc')
+#from application.modules.hive.workers.edgenode_provision_worker import edgenodeProvision
+#edgenodeProvision('d416052a-0e8d-11e9-bb3d-3ca9f49ab2cc')

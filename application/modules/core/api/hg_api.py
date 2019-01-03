@@ -10,7 +10,7 @@ from msrestazure.azure_exceptions import CloudError
 import pymongo
 import uuid
 import datetime
-from datetime import datetime
+#from datetime import datetime
 import time
 from flask import Flask,jsonify,request,Request,Blueprint
 from application import app, db,conn_string,mongo_conn_string,session_factory
@@ -332,10 +332,10 @@ def hg_hive_client():
 													uid_customer_id=customerid,
 													uid_cluster_id=clusterid,
 													var_user_name=username,
-													ts_requested_time=datetime.now(),
+													ts_requested_time=datetime.datetime.now(),
 													txt_query_string=posted_query,
 													int_query_status = hive_meta_status_values_dict['INITIALIZED'],
-													ts_status_time = datetime.now(),
+													ts_status_time = datetime.datetime.now(),
 													bool_select_query = select_query_bool_value,
 													bool_url_created = 0)
 		db_session.add(hive_request_status_values)
