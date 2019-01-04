@@ -89,3 +89,31 @@ def create_azure_share(str_azure_account_name, str_azure_account_key,str_share_n
     bool_created = file_service.create_share(share_name=str_share_name, quota=int_share_quota)
 
     return bool_created
+
+def azure_upload_host_slave(cluster_id):
+    import io
+    from application import app, db, mongo_conn_string, conn_string, session_factory
+    from sqlalchemy.orm import scoped_session
+    from application.models.models import TblVmCreation
+
+    hostname_ip_details = db.session.query(TblVmCreation.var_ip,TblVmCreation.var_name,TblVmCreation.var_role).filter(TblVmCreation.uid_cluster_id == cluster_id).all()
+    print hostname_ip_details,'hhhhhhhhhhhhhhhh'
+    hostfile = open('hostfile','w')
+    slavefile = open('slavefile', 'w')
+    for tups in hostname_ip_details:
+        print tups,'tuppppppppppppppp'
+        hostfile.write(str(tups[0])+'   '+str(tups[1])+'\n')
+        if str(tups[2]).lower() == 'datanode':
+            slavefile.write(str(tups[0])+'   '+str(tups[1])+'\n')
+    hostfile.close()
+    slavefile.close()
+    # byte_stream = io.BytesIO(utf_posted_file)
+    # file_service = FileService(account_name=account_name, account_key=account_key)
+    # file_service.create_file_from_stream(share_name=share_values[0],
+    #                                      directory_name=share_values[1],
+    #                                      file_name=filename,
+    #                                      stream=byte_stream,
+    #                                      count=no_of_bytes,
+    #                                      progress_callback=fileProgress)
+
+azure_upload_host_slave('c02c6724-0e89-11e9-bb3d-3ca9f49ab2cc')

@@ -8,7 +8,7 @@ clusterlocation=Blueprint('clusterlocation',__name__)
 def clusterLocation():
     session = scoped_session(session_factory)
     #meta_cluster_location_query=session.query(TblMetaCloudLocation.var_cloud_type,TblMetaCloudLocation.var_location).filter(TblMetaCloudLocation.var_cloud_type==cloudtype).all()
-    meta_cluster_location_query = session.query(TblMetaCloudLocation.var_cloud_type,TblMetaCloudLocation.var_location,TblMetaCloudLocation.srl_id,TblClusterType.srl_id)\
+    meta_cluster_location_query = session.query(TblMetaCloudLocation.var_cloud_type,TblMetaCloudLocation.var_location,TblMetaCloudLocation.srl_id,TblClusterType.uid_cluster_type_id)\
         .filter(TblMetaCloudLocation.var_cloud_type==TblClusterType.char_name).all()
     dict_location={}
     list_location = []
