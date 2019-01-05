@@ -24,6 +24,7 @@ def hgmanager():
             for agent_registration in agent_verification_result:
                 agent_tasks_data = []
                 if agent_registration[0] == True:
+                    print "agent verification done"
                     #print "true"
                     # Listing tasks
                     #print task_status_value, "task_status"
@@ -36,7 +37,7 @@ def hgmanager():
                     agent_customer_cluster_details = db_session.query(TblAgent.uid_customer_id,
                                                                       TblAgent.uid_cluster_id).filter(
                         TblAgent.uid_agent_id == agent_registration[1])
-                    #  print created_tasks
+                    print "hg manager fetched tasks and agent information"
                     #print created_tasks, "tasks"
                     for each_tuple in created_tasks:
                         dependency_tasks = each_tuple[2]
@@ -100,6 +101,7 @@ def hgmanager():
                     else:
                         print agent_tasks_data, "agent data"
                         kafkaproducer(message=agent_tasks_data)
+                        print "hgmanager producedddddddddddddddddddd"
                 else:
                     print 'hgmanager else'
         #           return jsonify(message="agent is not registered")

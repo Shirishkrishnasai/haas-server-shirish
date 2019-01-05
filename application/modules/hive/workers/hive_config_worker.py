@@ -33,6 +33,7 @@ def configure_hive(request_id):
 
         hive_node_information = collection_connection.find_one({"_id": ObjectId(payload_id)})
         cluster_id = hive_node_information['cluster_id']
+        print cluster_id ,'clsssssssssssssssssssssssussssssssssssssssssssssss'
         #cluster_id = "9a1ada8b-c888-11e8-bace-000c29b9b7fd"
 
         task_types_list = session.query(TblFeatureType.char_task_type_id).filter(TblFeatureType.char_feature_id==feature_id).all()
@@ -76,16 +77,18 @@ def configure_hive(request_id):
                                      ts_created_datetime = datetime.now(),
                                      ts_modified_datetime = datetime.now()
                                      )
-        #session.add(agent_tbl_insert)
-        #session.commit()
+        session.add(agent_tbl_insert)
+        session.commit()
 
 
         name_node_ip = session.query(TblVmCreation.var_ip).filter(and_(TblVmCreation.uid_cluster_id==cluster_id,TblVmCreation.var_role=='namenode')).first()
         name_node_ip_value = str(name_node_ip[0])
-        my_logger.debug(name_node_ip_value)
+        my_logger.info(name_node_ip_value)
+        print "nameeeeeeeeeeeeeeee nodeeeeeeeeeeeeeeeeeeeee ippppppppppppppppppppppp"
         database_connection.hiveconfig.insert_one({"namenode_ip":name_node_ip_value})
         #querying the same for object id to insert into tasks table(payloadid)
         namenodeip_query = database_connection.hiveconfig.find_one({"namenode_ip":name_node_ip_value})
+        print namenodeip_query, 'checccccccccccckkkkkkkkkkkkkkkk'
         namenodeip_query_objectid = str(namenodeip_query["_id"])
 
 

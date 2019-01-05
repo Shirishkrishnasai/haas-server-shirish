@@ -11,15 +11,15 @@ from datetime import datetime
 Base = declarative_base()
 
 metadata = Base.metadata
-
-
-class ItemBase(Base):
-    __abstract__ = True
-
-    def _ensure_defaults(self):
-        for column in self.__table__.c:
-            if getattr(self, column.name) is None and column.default is not None and column.default.is_scalar:
-                setattr(self, column.name, column.default.arg)
+ItemBase=Base
+#
+# class ItemBase(Base):
+#     __abstract__ = True
+#
+#     def _ensure_defaults(self):
+#         for column in self.__table__.c:
+#             if getattr(self, column.name) is None and column.default is not None and column.default.is_scalar:
+#                 setattr(self, column.name, column.default.arg)
 
 
 class OutputMixin(object):
@@ -58,7 +58,8 @@ class OutputMixin(object):
         if rel is None:
             rel = self.RELATIONSHIPS_TO_DICT
         return json.dumps(self.to_dict(rel), server_default=extended_encoder)
-
+    def as_dict(self):
+       return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 class TblClusterType(ItemBase, OutputMixin):
     __tablename__ = 'tbl_cluster_type'
@@ -372,10 +373,10 @@ class TblKafkaTopic(ItemBase, OutputMixin):
     uid_consumer_group_id = Column(ForeignKey(u'highgear.tbl_kafka_consumer_group.uid_consumer_group_id'))
     var_topic_name = Column(String(100))
     var_topic_type = Column(String(25))
-    var_created_by = Column(String(20), server_default="system")
-    var_modified_by = Column(String(20), server_default="system")
-    ts_created_datetime = Column(DateTime(timezone=True), server_default=func.now())
-    ts_modified_datetime = Column(DateTime(timezone=True), server_default=func.now())
+    var_created_by = Column(String(20))
+    var_modified_by = Column(String(20))
+    ts_created_datetime = Column(DateTime(timezone=True))
+    ts_modified_datetime = Column(DateTime(timezone=True))
 
     tbl_kafka_consumer_group = relationship(u'TblKafkaConsumerGroup')
 
@@ -407,10 +408,10 @@ class TblKafkaPublisher(ItemBase, OutputMixin):
     uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
     uid_cluster_id = Column(ForeignKey(u'highgear.tbl_cluster.uid_cluster_id'))
     uid_topic_id = Column(ForeignKey(u'highgear.tbl_kafka_topic.uid_topic_id'))
-    var_created_by = Column(String(20), server_default="system")
-    var_modified_by = Column(String(20), server_default="system")
-    ts_created_datetime = Column(DateTime(timezone=True), server_default=func.now())
-    ts_modified_datetime = Column(DateTime(timezone=True), server_default=func.now())
+    var_created_by = Column(String(20) )
+    var_modified_by = Column(String(20))
+    ts_created_datetime = Column(DateTime(timezone=True))
+    ts_modified_datetime = Column(DateTime(timezone=True))
 
     tbl_kafka_topic = relationship(u'TblKafkaTopic')
     tbl_agent = relationship(u'TblAgent')
@@ -846,6 +847,7 @@ class TblHiveRequest(ItemBase, OutputMixin):
     bool_select_query = Column(Boolean)
     txt_url_value = Column(Text)
     bool_url_created = Column(Boolean)
+    hive_query_output=Column(Text)
 
     tbl_customer = relationship(u'TblCustomer')
     tbl_cluster = relationship(u'TblCluster')

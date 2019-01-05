@@ -75,6 +75,7 @@ from application.modules.mapr.daemons.customer_job_request_consumer import jobin
 from application.modules.hive.daemons.hive_status_consumer import kafkaHiveStatusConsumer
 from application.modules.core.daemons.kafka_job_producer import mrjobproducer
 from application.modules.hive.daemons.hive_selectquery_url import hgSelectQueryUrlScheduler
+from application.modules.hive.daemons.hive_query_output import hiveQueryOutput
 from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 from application.modules.core.daemons.task_status_consumer import kafkataskconsumer
 
@@ -136,7 +137,7 @@ def runProcess():
     #hgmanagerscheduler_process = Process(target=hgmanagerscheduler)
     #kafkataskconsumer_process = Process(target=kafkataskconsumer)
     #kafkaconsumer_process = Process(target=kafkaconsumer)
-    hgmanager_process = Process(target=hgmanager)
+    #hgmanager_process = Process(target=hgmanager)
     #hgsuper_process = Process(target=hgsuper)
     #hgsuper_process.start()
 
@@ -151,6 +152,9 @@ def runProcess():
     #jobStatusConsumer_process.start()
     #hiveDatabaseResultConsumer = Process(target=hiveDatabaseResult)
     #hiveDatabaseResultConsumer.start()
+    hiveQueryOutputConsumer = Process(target=hiveQueryOutput)
+    hiveQueryOutputConsumer.start()
+
     #hgsuperscheduler_process.start()
     #filebrowsestatus_process = Process(target=filebrowsestatus)
     #filebrowsestatus_process.start()
@@ -162,7 +166,7 @@ def runProcess():
     #mrjobproducer_process.start()
     #customerjobreqestconsumer.start()
     #kafkaconsumer_process.start()
-    hgmanager_process.start()
+    #hgmanager_process.start()
     print "welcome to the club"
 
     # configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
