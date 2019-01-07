@@ -11,7 +11,6 @@ from application.common.loggerfile import my_logger
 azfiledownload = Blueprint('azfiledownload',__name__)
 
 @azfiledownload.route("/filedownload/<uploadid>",methods=['GET'])
-
 def fileDownload(uploadid):
         try:
 
