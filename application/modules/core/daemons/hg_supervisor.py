@@ -1,7 +1,6 @@
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 import datetime,time
-import multiprocessing
 import subprocess
 import logging
 logging.basicConfig()
@@ -32,17 +31,11 @@ def hgsuper():
 				dependency_id=row[2]
 				select_worker_path = db_session.query(TblFeature.txt_worker_path).filter(
 					TblFeature.char_feature_id == feature_id).first()
-				print select_worker_path[0]
 				worker_path = select_worker_path[0]
 				print worker_path
 				if dependency_id == None:
 					print	"in dependency_id== None"
-					worker_call = multiprocessing.Process(target=worker_path, args=([request_id]))
-					worker_call.start()
-					my_logger.info("this is the following worker...............")
-					my_logger.debug(""+worker_path)
-					worker_call.join()
-					#subprocess.call(["python", worker_path, request_id], shell=False)
+					subprocess.call(["python", worker_path, request_id], shell=False)
 					my_logger.debug("Got Request")
 					update_object = db_session.query(TblCustomerRequest).filter(
 						TblCustomerRequest.uid_request_id == request_id)
@@ -72,13 +65,8 @@ def hgsuper():
 							completedrequests.append(dependency_request_status)
 							print 'done'
 					if len(completedrequests) == len(list_of_dependency_requests):
-						worker_call = multiprocessing.Process(target=worker_path, args=([request_id, ]))
-						worker_call.start()
-						my_logger.info("this is the following worker...............")
-						my_logger.debug(worker_path)
-						worker_call.join()
-						#subprocess.call(["python",worker_path,request_id],shell=False)
-						#my_logger.debug("Got Request")
+						subprocess.call(["python",worker_path,request_id],shell=False)
+						my_logger.debug("Got Request")
 						update_object = db_session.query(TblCustomerRequest).filter(
 							TblCustomerRequest.uid_request_id == request_id)
 						update_statement = update_object.update(
@@ -112,4 +100,3 @@ def hgsuperscheduler():
 	#scheduler.start()
 	#my_logger.debug("in supervisor")
 	pass
-

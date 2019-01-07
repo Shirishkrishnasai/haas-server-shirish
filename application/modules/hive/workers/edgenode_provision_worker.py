@@ -1,5 +1,5 @@
 import uuid
-
+import sys
 import pymongo
 from bson.objectid import ObjectId
 from sqlalchemy import and_
@@ -13,7 +13,8 @@ from application.common.loggerfile import my_logger
 from application.modules.azure.createvm import vmcreation
 
 
-def edgenodeProvision(request_id):
+def edgenodeProvision():
+    request_id = sys.argv[1]
     db_session = scoped_session(session_factory)
     customer_data = db_session.query(TblCustomerRequest.uid_customer_id,
                                      TblCustomerRequest.char_feature_id,
@@ -68,3 +69,5 @@ def edgenodeProvision(request_id):
     update_assigned_statement = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == request_id)
     update_assigned_statement.update({"int_request_status": completed_task_status_value})
     db_session.commit()
+
+edgenodeProvision()

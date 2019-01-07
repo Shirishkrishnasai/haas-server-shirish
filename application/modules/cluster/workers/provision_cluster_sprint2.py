@@ -1,6 +1,7 @@
 import pymongo,time,datetime
 from bson.objectid import ObjectId
 import uuid
+import sys
 from sqlalchemy import and_
 from sqlalchemy.orm import scoped_session
 from application import session_factory
@@ -10,7 +11,11 @@ from application.models.models import TblCustomerRequest, TblCustomer,TblCluster
 from application.modules.azure.createvm import vmcreation
 from application.common.loggerfile import my_logger
 
-def installcluster(request_id):
+def installcluster():
+    print "in cluster provision worker ............there you go .......... tik-tok"
+    print sys.argv
+    print sys.argv[1]
+    request_id = sys.argv[1]
     db_session = scoped_session(session_factory)
     customer_data = db_session.query(TblCustomerRequest.txt_payload_id, TblCustomerRequest.uid_customer_id,\
                     TblCustomerRequest.char_feature_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
@@ -87,3 +92,5 @@ def installcluster(request_id):
     db_session.add(cluster_insertion)
     db_session.commit()
     db_session.close()
+
+installcluster()

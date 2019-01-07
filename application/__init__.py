@@ -152,8 +152,8 @@ def runProcess():
     #jobStatusConsumer_process.start()
     #hiveDatabaseResultConsumer = Process(target=hiveDatabaseResult)
     #hiveDatabaseResultConsumer.start()
-    hiveQueryOutputConsumer = Process(target=hiveQueryOutput)
-    hiveQueryOutputConsumer.start()
+    #hiveQueryOutputConsumer = Process(target=hiveQueryOutput)
+    #hiveQueryOutputConsumer.start()
 
     #hgsuperscheduler_process.start()
     #filebrowsestatus_process = Process(target=filebrowsestatus)
@@ -176,3 +176,5 @@ def runProcess():
 #installcluster('d6954e0a-0e65-11e9-bb3d-3ca9f49ab2cc')
 #from application.modules.hive.workers.edgenode_provision_worker import edgenodeProvision
 #edgenodeProvision('d416052a-0e8d-11e9-bb3d-3ca9f49ab2cc')
+from application.modules.core.daemons.hg_supervisor import hgsuper
+hgsuper()

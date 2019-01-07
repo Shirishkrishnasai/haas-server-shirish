@@ -49,8 +49,7 @@ def hiveQueryOutput():
 
 
                     consumer.commit()
-                    consumer.close()
-                    consumer.unsubscribe()
+
                     isexecuted = False
                     my_logger.info("Exiting from Consumer..")
                 db_session = scoped_session(session_factory)
@@ -60,9 +59,6 @@ def hiveQueryOutput():
                 db_session.close()
 
                 # print message, type(message), 'message', message.keys(),'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
-
-                consumer.close()
-                consumer.unsubscribe()
 
                 isexecuted = False
                 my_logger.info("Exiting fom loop")
