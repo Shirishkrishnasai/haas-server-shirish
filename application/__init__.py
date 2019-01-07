@@ -52,7 +52,7 @@ init_db()
 
 from application.common.file_upload import azfile
 from application.common.file_download import azfiledownload
-
+from application.common.util import azure_upload_host_slave
 from application.modules.azure.create_customer_api import customers
 from multiprocessing import Process
 
@@ -85,7 +85,9 @@ from application.modules.core.daemons.kafka_job_producer import mrjobproducer
 from application.modules.hive.daemons.hive_selectquery_url import hgSelectQueryUrlScheduler
 from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 from application.modules.core.daemons.task_status_consumer import kafkataskconsumer
+from application.common.util import azure_upload_host_slave
 
+from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
 
 app.register_blueprint(azfiledownload, url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
@@ -136,7 +138,6 @@ def site_map():
 
 
 
-
 def runProcess():
     selecturl_process = Process(target=hgSelectQueryUrlScheduler)
     selecturl_process.start()
@@ -165,8 +166,13 @@ def runProcess():
     customerjobreqestconsumer = Process(target=jobinsertion)
     mrjobproducer_process.start()
     customerjobreqestconsumer.start()
+    #azure_upload_host_slave()
+    #azure_upload_host_slave('c02c6724-0e89-11e9-bb3d-3ca9f49ab2cc')
+    #installcluster('78cd80d8-10ce-11e9-be6a-843a4b5ce920')
     kafkaconsumer_process.start()
     hgmanager_process.start()
     #configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
     #configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
     print "method ended"
+
+
