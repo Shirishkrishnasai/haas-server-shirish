@@ -5,6 +5,8 @@ from sqlalchemy import and_
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application import mongo_conn_string
+from azure.storage.file import FileService, FilePermissions
+from configparser import ConfigParser
 
 #from application.models.models import TblAgent, TblCustomerRequest, TblCluster,TblFeature,TblMetaFeatureStatus,TblClusterType,TblMetaRequestStatus
 
@@ -32,7 +34,7 @@ def installcluster(request_id):
     cloudtype = build_cluster_information["cloud_type"]
     clustername=build_cluster_information["cluster_name"]
     clusterlocation = build_cluster_information["cluster_location"]
-    size_id=build_cluster_information["size_type"]
+    size_id=build_cluster_information["size_id"]
 
     plan_info = db_session.query(TblCustomer.int_plan_id).filter(TblCustomer.uid_customer_id == customer_id).all()
     print plan_info
@@ -99,11 +101,7 @@ def installcluster(request_id):
                                    txt_fqdn=fqdn,
                                     var_cluster_name =clustername,
                                    char_cluster_region =clusterlocation ,
-
-                                   char_cluster_plan_type = 'Plan A',
-
                                    int_size_id = size_id,
-
                                    var_created_by = created_by,
                                     var_modified_by = modified_by,
                                     ts_created_datetime = str(date_time),
@@ -123,6 +121,19 @@ def installcluster(request_id):
     customer_request_update_default.update({"uid_cluster_id": cluster_id})
     db_session.commit()
     db_session.close()
+
+    cfg = ConfigParser()
+    cfg.read('application/config/azure_config.ini')
+    account_name = cfg.get('file_storage', 'account_name')
+    account_key = cfg.get('file_storage', 'key')
+
+    file_service = FileService(account_name=account_name, account_key=account_key)
+
+    file_service.create_share(cluster_id)
+    file_service.create_directory(cluster_id, 'system')
+    file_service.create_directory(cluster_id, 'mapreduce')
+    print "doneeee"
+
 #installcluster('4a82d464-0aa0-11e9-ba4c-3ca9f49ab2cc')
 
 

@@ -1,5 +1,13 @@
 import uuid
 from application.common.loggerfile import my_logger
+import io
+import time
+from application import app, db, mongo_conn_string, conn_string, session_factory
+from azure.storage.file import FileService, FilePermissions
+from configparser import ConfigParser
+from sqlalchemy.orm import scoped_session
+from application.models.models import TblVmCreation
+#from application.common.file_upload import fileProgress
 
 def find_list_in_dictionary(dicttasks, lst_dep_task_types):
         # Generic Function used to search a list of values in a dictionary. it returns keys for the found values as a list
@@ -93,14 +101,7 @@ def create_azure_share(str_azure_account_name, str_azure_account_key,str_share_n
     return bool_created
 
 def azure_upload_host_slave(cluster_id):
-    import io
-    import time
-    from application import app, db, mongo_conn_string, conn_string, session_factory
-    from azure.storage.file import FileService, FilePermissions
-    from configparser import ConfigParser
-    from sqlalchemy.orm import scoped_session
-    from application.models.models import TblVmCreation
-    from application.common.file_upload import fileProgress
+
 
 
     hostname_ip_details = db.session.query(TblVmCreation.var_ip,TblVmCreation.var_name,TblVmCreation.var_role).filter(TblVmCreation.uid_cluster_id == cluster_id).all()
@@ -146,16 +147,20 @@ def azure_upload_host_slave(cluster_id):
                                          file_name='slavefile',
                                          stream=byte_stream_slave,
                                          count=no_of_bytes_slave,
-                                         progress_callback=fileProgress)
-    time.sleep(5)
+                                         progress_callback=fileprogress)
+    print 'heyyyyyyyyyyy'
+    my_logger.info("file process done")
+    #time.sleep(5)
     file_service.create_file_from_stream(share_name=cluster_id,
                                          directory_name='system',
                                          file_name='hostfile',
                                          stream=byte_stream_host,
                                          count=no_of_bytes_host,
-                                         progress_callback=fileProgress)
+                                         progress_callback=fileprogress)
 
 
 
-azure_upload_host_slave('c02c6724-0e89-11e9-bb3d-3ca9f49ab2cc')
+#azure_upload_host_slave('c02c6724-0e89-11e9-bb3d-3ca9f49ab2cc')
 
+def fileprogress(start, size):
+    my_logger.debug("%d%d", start, size)
