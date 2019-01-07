@@ -4,17 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5ea0f7d9-3a76-4667-9bf4-9a3706cc7c24" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/application/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/application/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/application/common/kafka_producer.py" beforeDir="false" afterPath="$PROJECT_DIR$/application/common/kafka_producer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/application/config/config_file.py" beforeDir="false" afterPath="$PROJECT_DIR$/application/config/config_file.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/application/models/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/application/models/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/application/modules/core/api/hg_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/application/modules/core/api/hg_api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/application/modules/core/daemons/hg_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/application/modules/core/daemons/hg_manager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/application/modules/hive/daemons/hive_selectquery_url.py" beforeDir="false" afterPath="$PROJECT_DIR$/application/modules/hive/daemons/hive_selectquery_url.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/application/modules/hive/workers/hive_config_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/application/modules/hive/workers/hive_config_worker.py" afterDir="false" />
-    </list>
+    <list default="true" id="5ea0f7d9-3a76-4667-9bf4-9a3706cc7c24" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
