@@ -10,7 +10,7 @@ from msrestazure.azure_exceptions import CloudError
 import pymongo
 import uuid
 import datetime
-from datetime import datetime
+#from datetime import datetime
 import time
 from flask import Flask,jsonify,request,Request,Blueprint
 from application import app, db,conn_string,mongo_conn_string,session_factory
@@ -126,6 +126,7 @@ def hg_client():
 				print "in azure"
 
 				payload = customer_data['payload']
+				print payload
 
 				mongo_connection = pymongo.MongoClient(mongo_conn_string)
 				database_connection = mongo_connection["haas"]
@@ -331,10 +332,10 @@ def hg_hive_client():
 													uid_customer_id=customerid,
 													uid_cluster_id=clusterid,
 													var_user_name=username,
-													ts_requested_time=datetime.now(),
+													ts_requested_time=datetime.datetime.now(),
 													txt_query_string=posted_query,
 													int_query_status = hive_meta_status_values_dict['INITIALIZED'],
-													ts_status_time = datetime.now(),
+													ts_status_time = datetime.datetime.now(),
 													bool_select_query = select_query_bool_value,
 													bool_url_created = 0)
 		db_session.add(hive_request_status_values)
@@ -346,57 +347,66 @@ def hg_hive_client():
 		#decoded_output = json.loads(messag.decode('base64', 'strict'))
 		#print "....",decoded_output['database_name'],type(decoded_output);
 
-		while True:
 
+		isexecuted	=True
+		#while isexecuted:
 			#try:
+		#my_logger.info("in hive query result consumer")
+		#consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server,group_id = 'server')
+		# consumer.poll(timeout_ms = 30000,max_records=None)
+		#consumer.subscribe(pattern='hivequeryresult*')
+		#my_logger.info("subscribed to topic"+'hivequeryresult*')
+		return jsonify(hive_request_id = hive_request_id_value,select_query = select_query_bool_value)
+		#consumer.poll(1000)
+		#for message in consumer:
+		#	hive_query_result = message.value
 
-				my_logger.debug("in hive query result consumer")
-				consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server,group_id = 'server')
-				# consumer.poll(timeout_ms = 30000,max_records=None)
-				consumer.subscribe(pattern='hivequeryresult*')
-				my_logger.debug("subscribed to topic")
+		#	data = hive_query_result.replace("'", '"')
+		#	my_logger.info( data)
+		#	message = json.loads(data)
+		#	my_logger.info(message)
+		#	if message['hive_request_id'] == hive_request_id_value:
+		#		if message.has_key('output'):
+		#			print message['output']
+					#decoded_output = message['output'].decode('base64','strict')
+		#			decoded_output = json.loads(message['output'].decode('base64', 'strict'))
 
-				for message in consumer:
-					hive_query_result = message.value
+		#			print decoded_output,type(decoded_output),"1111111111111111111111111111111111111111111111111111111111111111111"
+					#decoded_output = decoded_output.replace("\\","").replace('["','"').replace('"]','"').replace('"[',"'[").replace(']"',"]'")
+		#			decoded_output = yaml.load(decoded_output)
+					#decoded_output = ast.literal_eval(decoded_output)
+					#print decoded_output,type(decoded_output),"2222222222222222222222222222222222222222222222222"
+		#			message['output'] = decoded_output
+					#message['output'] = ast.literal_eval("'"+decoded_output+"'")
+					#print ast.literal_eval("'"+decoded_output+"'")
+					#print message,type(message['output']),"222222222.......................55555555555555555"
+					#decoded_output['database_name'] = ast.literal_eval(decoded_output['database_name'])
+		#			print message,type(message['output']),"333333333333333333333333333333333333"
+					#print list(decoded_output),"44444444444444444444444"
 
-					data = hive_query_result.replace("'", '"')
-					print data, 'dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-					message = json.loads(data)
-					print message,"0000000000000000000000000"
-					if message['hive_request_id'] == hive_request_id_value:
-						if message.has_key('output'):
-							print message['output']
-							#decoded_output = message['output'].decode('base64','strict')
-							decoded_output = json.loads(message['output'].decode('base64', 'strict'))
+					#print message['output'['database_name']],"3333333333333333333333333333333333"
 
-							print decoded_output,type(decoded_output),"1111111111111111111111111111111111111111111111111111111111111111111"
-							#decoded_output = decoded_output.replace("\\","").replace('["','"').replace('"]','"').replace('"[',"'[").replace(']"',"]'")
-							decoded_output = yaml.load(decoded_output)
-							#decoded_output = ast.literal_eval(decoded_output)
-							#print decoded_output,type(decoded_output),"2222222222222222222222222222222222222222222222222"
-							message['output'] = decoded_output
-							#message['output'] = ast.literal_eval("'"+decoded_output+"'")
-							#print ast.literal_eval("'"+decoded_output+"'")
-							#print message,type(message['output']),"222222222.......................55555555555555555"
-							#decoded_output['database_name'] = ast.literal_eval(decoded_output['database_name'])
-							print message,type(message['output']),"333333333333333333333333333333333333"
-							#print list(decoded_output),"44444444444444444444444"
+					#decoded_output = message['output'].decode('base64','strict').translate(None,'\\')
+					#message['output'] = dict(decoded_output)
 
-							#print message['output'['database_name']],"3333333333333333333333333333333333"
+		#			print message, type(message), 'message', message.keys(), 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
 
-							#decoded_output = message['output'].decode('base64','strict').translate(None,'\\')
-							#message['output'] = dict(decoded_output)
+		#			consumer.commit()
+		#			consumer.close()
+		#			consumer.unsubscribe()
+		#			isexecuted = False
+		#			my_logger.info("Exiting from Consumer..")
+		#			return jsonify(message)
+				#print message, type(message), 'message', message.keys(),'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
 
-							print message, type(message), 'message', message.keys(), 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
-							consumer.commit()
-							consumer.close()
+		#		consumer.close()
+		#		consumer.unsubscribe()
 
-							return jsonify(message)
-						#print message, type(message), 'message', message.keys(),'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
-						consumer.commit()
-						consumer.close()
-						return jsonify(message)
-						break
+
+		#		isexecuted = False
+		#		my_logger.info("Exiting fom loop")
+		#		return jsonify(message)
+
 
 			#except Exception as e:
 
@@ -433,7 +443,6 @@ def hiveDatabaseQuery(customer_id,cluster_id,agent_id):
 		while True:
 
 			try:
-				print "lopala"
 				my_logger.debug("in hive database result consumer")
 				consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server,request_timeout_ms=5000)
 				#consumer.poll(timeout_ms = 30000,max_records=None)

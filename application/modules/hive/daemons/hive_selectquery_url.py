@@ -15,6 +15,7 @@ import uuid
 from datetime import datetime, timedelta
 
 
+
 def selectQueryUrl():
     #while True:
         #try:

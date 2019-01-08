@@ -6,6 +6,7 @@ import pymongo
 from bson.objectid import ObjectId
 
 import uuid
+import sys,os
 from datetime import datetime
 from application import conn_string, mongo_conn_string, db, app
 from application.models.models import TblMetaTaskStatus, TblTask, TblAgent, TblCustomerRequest, TblCluster,TblFeatureType, TblTaskType, TblKafkaPublisher, TblKafkaTopic, TblMetaNodeRoles, TblClusterType,TblVmCreation,TblNodeInformation,TblAgent
@@ -15,26 +16,26 @@ from sqlalchemy import and_
 def configure_hive(request_id):
 
     try:
+        #request_id = sys.argv[1]
         session = scoped_session(session_factory)
 
         customer_feature_ids = session.query(TblCustomerRequest.uid_customer_id,TblCustomerRequest.char_feature_id,TblCustomerRequest.txt_dependency_request_id).filter(TblCustomerRequest.uid_request_id==request_id).first()
         customer_id = customer_feature_ids[0]
         feature_id = customer_feature_ids[1]
+
         dependent_request_id = customer_feature_ids[2]
-
-
-        payload = session.query(TblCustomerRequest.txt_payload_id).filter(TblCustomerRequest.uid_request_id == dependent_request_id).first()
-
-
-        payload_id = payload[0]
+        payloadid = session.query(TblCustomerRequest.txt_payload_id).filter(TblCustomerRequest.uid_request_id == dependent_request_id).first()
+        payload_id = str(payloadid[0])
         mongo_connection = pymongo.MongoClient(mongo_conn_string)
         database_connection = mongo_connection['haas']
         collection_connection = database_connection['highgear']
 
 
 
+
         hive_node_information = collection_connection.find_one({"_id": ObjectId(payload_id)})
         cluster_id = hive_node_information['cluster_id']
+        print cluster_id ,'clsssssssssssssssssssssssussssssssssssssssssssssss'
         #cluster_id = "9a1ada8b-c888-11e8-bace-000c29b9b7fd"
 
         task_types_list = session.query(TblFeatureType.char_task_type_id).filter(TblFeatureType.char_feature_id==feature_id).all()
@@ -84,10 +85,12 @@ def configure_hive(request_id):
 
         name_node_ip = session.query(TblVmCreation.var_ip).filter(and_(TblVmCreation.uid_cluster_id==cluster_id,TblVmCreation.var_role=='namenode')).first()
         name_node_ip_value = str(name_node_ip[0])
-        my_logger.debug(name_node_ip_value)
+        my_logger.info(name_node_ip_value)
+        print "nameeeeeeeeeeeeeeee nodeeeeeeeeeeeeeeeeeeeee ippppppppppppppppppppppp"
         database_connection.hiveconfig.insert_one({"namenode_ip":name_node_ip_value})
         #querying the same for object id to insert into tasks table(payloadid)
         namenodeip_query = database_connection.hiveconfig.find_one({"namenode_ip":name_node_ip_value})
+        print namenodeip_query, 'checccccccccccckkkkkkkkkkkkkkkk'
         namenodeip_query_objectid = str(namenodeip_query["_id"])
 
 
@@ -95,10 +98,16 @@ def configure_hive(request_id):
         table_status_values = dict(metatabletaskstatus)
         task_status_value = table_status_values['CREATED']
 
+
+        for tasktypeid, dependent_tasktypeid in task_dependencytask_workerpaths_dict.items():
+            task_id = str(uuid.uuid1())
+            task_dependencytask_workerpaths_dict[tasktypeid].append(task_id)
+
         for tasktypeid,dependent_tasktypeid in task_dependencytask_workerpaths_dict.items():
             if dependent_tasktypeid[0] == None:
-                my_logger.debug(tasktypeid,dependent_tasktypeid)
-                tasks_tbl_inserts = TblTask(uid_task_id = str(uuid.uuid1()),
+                my_logger.debug(tasktypeid)
+                my_logger.debug(dependent_tasktypeid)
+                tasks_tbl_inserts = TblTask(uid_task_id = dependent_tasktypeid[2],
                                             char_task_type_id = tasktypeid,
                                             uid_request_id = request_id,
                                             char_feature_id = feature_id,
@@ -116,13 +125,14 @@ def configure_hive(request_id):
                 session.commit()
 
             else:
-                tasks_tbl_inserts = TblTask(uid_task_id=str(uuid.uuid1()),
+                depe_task_id = task_dependencytask_workerpaths_dict[dependent_tasktypeid[0]][2]
+                tasks_tbl_inserts = TblTask(uid_task_id=dependent_tasktypeid[2],
                                             char_task_type_id=tasktypeid,
                                             uid_request_id=request_id,
                                             char_feature_id=feature_id,
                                             uid_customer_id=customer_id,
                                             uid_agent_id=agent_id,
-                                            txt_dependent_task_id = dependent_tasktypeid[0],
+                                            txt_dependent_task_id = depe_task_id,
                                             int_task_status=task_status_value,
                                             txt_agent_worker_version_path=dependent_tasktypeid[1],
                                             var_created_by="hive-config-worker",
@@ -136,5 +146,18 @@ def configure_hive(request_id):
         my_logger.info("done for hive config worker to generate tasks..............now check tasks table........................................")
 
     except Exception as e :
-        print e
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.info(" ".join([exc_type, fname, exc_tb.tb_lineno]))
 
+if __name__ == '__main__':
+    try:
+        if len(sys.argv)>=1:
+            request_id = sys.argv[1]
+            configure_hive(request_id)
+        else:
+            print "args not passed"
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.info(" ".join([exc_type, fname, exc_tb.tb_lineno]))

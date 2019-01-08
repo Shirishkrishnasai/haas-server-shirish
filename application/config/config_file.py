@@ -7,7 +7,7 @@ tenant='07272dbe-1df8-41bd-b29c-ae16bb7b9b83'
 resource="https://graph.windows.net"
 ldap_connection ="ldap://104.211.208.129:389"
 ldap_connection_dn="cn=admin,dc=kwartile,dc=local"
-ldap_connection_password="password"  
+ldap_connection_password="password"
 application_id='5ad67325-9d85-4664-be5d-34d117f52436'
 customer_client_id='5ad67325-9d85-4664-be5d-34d117f52436'
 secret_code ='iQGyjnaRDvfzGQi7z+1bZXvhRwFTDLwmNq+zX9rW3JY='
@@ -20,11 +20,11 @@ file_upload_url="http://104.211.222.41:5000/fileupload"
 path="/opt/mapred-site.xml"
 
 
-postgres_conn = 'postgres://postgres:password@104.211.222.41/haas_demo2'
-conn_string = "host='104.211.222.41' user='postgres' password='password' dbname='haas_demo2'"
-postgres_conn = 'postgres://postgres:password@104.211.222.41/haas_demo2'
+postgres_conn = 'postgres://postgres:password@192.168.100.81/haas_demo2'
+conn_string = "host='192.168.100.81' user='postgres' password='password' dbname='haas_demo2'"
+postgres_conn = 'postgres://postgres:password@192.168.100.81/haas_demo2'
 
-SQLALCHEMY_DATABASE_URI = 'postgres://postgres:password@104.211.222.41/haas_demo2'
-mongo_conn_string="mongodb://104.211.222.41:27017"
+SQLALCHEMY_DATABASE_URI = 'postgres://postgres:password@192.168.100.81/haas_demo2'
+mongo_conn_string="mongodb://192.168.100.81:27017"
 sqlite_string= "/opt/agent/haas"
 

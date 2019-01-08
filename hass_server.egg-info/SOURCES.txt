@@ -2,7 +2,6 @@ setup.py
 application/__init__.py
 application/db_setup.py
 application/common/__init__.py
-application/common/big_size_file_download.py
 application/common/configurations.py
 application/common/create_ldap_customer.py
 application/common/email_generation.py
@@ -51,6 +50,7 @@ application/modules/hive/api/__init__.py
 application/modules/hive/daemons/__init__.py
 application/modules/hive/daemons/hive_database_consumer.py
 application/modules/hive/daemons/hive_database_result_consumer.py
+application/modules/hive/daemons/hive_query_output.py
 application/modules/hive/daemons/hive_selectquery_url.py
 application/modules/hive/daemons/hive_status_consumer.py
 application/modules/hive/workers/__init__.py
