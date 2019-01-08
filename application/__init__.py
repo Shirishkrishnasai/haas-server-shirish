@@ -1,4 +1,4 @@
-from flask import Flask, url_for
+from flask import Flask, url_for,request,jsonify,g,make_response
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
@@ -38,13 +38,21 @@ sqlite_string = sqlite_string
 engine = create_engine(SQLALCHEMY_DATABASE_URI, pool_size=50)
 session_factory = sessionmaker(bind=engine)
 
+@app.errorhandler(404)
+def page_not_found(e):
+        return make_response(jsonify(error="yes",message="page not found"),404)
+
+@app.errorhandler(500)
+def internal_error(e):
+        output = [str(x) for x in e.args]
+        return make_response(jsonify(error="yes",message=output[0]),500)
 from db_setup import init_db
 
-init_db()
+#init_db()
 
 from application.common.file_upload import azfile
 from application.common.file_download import azfiledownload
-
+from application.common.util import azure_upload_host_slave
 from application.modules.azure.create_customer_api import customers
 from multiprocessing import Process
 
@@ -75,10 +83,11 @@ from application.modules.mapr.daemons.customer_job_request_consumer import jobin
 from application.modules.hive.daemons.hive_status_consumer import kafkaHiveStatusConsumer
 from application.modules.core.daemons.kafka_job_producer import mrjobproducer
 from application.modules.hive.daemons.hive_selectquery_url import hgSelectQueryUrlScheduler
-from application.modules.hive.daemons.hive_query_output import hiveQueryOutput
 from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 from application.modules.core.daemons.task_status_consumer import kafkataskconsumer
+from application.common.util import azure_upload_host_slave
 
+from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
 
 app.register_blueprint(azfiledownload, url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
@@ -129,7 +138,6 @@ def site_map():
 
 
 
-
 def runProcess():
     selecturl_process = Process(target=hgSelectQueryUrlScheduler)
     selecturl_process.start()
@@ -140,10 +148,8 @@ def runProcess():
     hgmanager_process = Process(target=hgmanager)
     hgsuper_process = Process(target=hgsuper)
     hgsuper_process.start()
-
     kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
     kafkaHiveStatusConsumer_process.start()
-
     #hgsuperscheduler_process.start()
     filebrowsestatus_process = Process(target=filebrowsestatus)
     jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
@@ -152,9 +158,6 @@ def runProcess():
     jobStatusConsumer_process.start()
     hiveDatabaseResultConsumer = Process(target=hiveDatabaseResult)
     hiveDatabaseResultConsumer.start()
-    hiveQueryOutputConsumer = Process(target=hiveQueryOutput)
-    hiveQueryOutputConsumer.start()
-
     hgsuperscheduler_process.start()
     filebrowsestatus_process = Process(target=filebrowsestatus)
     filebrowsestatus_process.start()
@@ -162,19 +165,15 @@ def runProcess():
     kafkataskconsumer_process.start()
     mrjobproducer_process = Process(target=mrjobproducer)
     customerjobreqestconsumer = Process(target=jobinsertion)
-
     mrjobproducer_process.start()
     customerjobreqestconsumer.start()
+    #azure_upload_host_slave()
+    #azure_upload_host_slave('c02c6724-0e89-11e9-bb3d-3ca9f49ab2cc')
+    #installcluster('78cd80d8-10ce-11e9-be6a-843a4b5ce920')
     kafkaconsumer_process.start()
     hgmanager_process.start()
-    print "welcome to the club"
+    #configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
+    #configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
+    print "method ended"
 
-    # configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
-#from application.modules.hive.workers.hive_config_worker import configure_hive
-#configure_hive("d416052b-0e8d-11e9-bb3d-3ca9f49ab2cc")
-#from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
-#installcluster('d6954e0a-0e65-11e9-bb3d-3ca9f49ab2cc')
-#from application.modules.hive.workers.edgenode_provision_worker import edgenodeProvision
-#edgenodeProvision('d416052a-0e8d-11e9-bb3d-3ca9f49ab2cc')
-#from application.modules.core.daemons.hg_supervisor import hgsuper
-#hgsuper()
+

@@ -10,6 +10,7 @@ from kafka import KafkaProducer
 from sqlalchemy.orm import scoped_session
 
 
+
 def kafkaproducer(message):
     try:
         producer = KafkaProducer(bootstrap_servers=kafka_bootstrap_server, api_version=kafka_api_version)

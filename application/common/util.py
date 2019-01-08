@@ -1,4 +1,14 @@
 import uuid
+from application.common.loggerfile import my_logger
+import io
+import time
+from application import app, db, mongo_conn_string, conn_string, session_factory
+from azure.storage.file import FileService, FilePermissions
+from configparser import ConfigParser
+from sqlalchemy.orm import scoped_session
+from application.models.models import TblVmCreation
+#from application.common.file_upload import fileProgress
+
 def find_list_in_dictionary(dicttasks, lst_dep_task_types):
         # Generic Function used to search a list of values in a dictionary. it returns keys for the found values as a list
         # Author:  Sreeram Nyshadham
@@ -89,3 +99,68 @@ def create_azure_share(str_azure_account_name, str_azure_account_key,str_share_n
     bool_created = file_service.create_share(share_name=str_share_name, quota=int_share_quota)
 
     return bool_created
+
+def azure_upload_host_slave(cluster_id):
+
+
+
+    hostname_ip_details = db.session.query(TblVmCreation.var_ip,TblVmCreation.var_name,TblVmCreation.var_role).filter(TblVmCreation.uid_cluster_id == cluster_id).all()
+    print hostname_ip_details,'hhhhhhhhhhhhhhhh'
+    # hostfile = open('hostfile','w')
+    # slavefile = open('slavefile', 'w')
+    hostlist = []
+    slavelist = []
+    for tups in hostname_ip_details:
+        print tups,'tuppppppppppppppp'
+    #     hostfile.write(str(tups[0])+'   '+str(tups[1])+'\n')
+    #     if str(tups[2]).lower() == 'datanode':
+    #         slavefile.write(str(tups[0])+'   '+str(tups[1])+'\n')
+    # hostfile.close()
+    # slavefile.close()
+        host_file =  str(tups[0]) + '   ' + str(tups[1])
+        hostlist.append(host_file)
+        if str(tups[2]).lower() == 'datanode':
+            slave_file = str(tups[0]) + '   ' + str(tups[1])
+            slavelist.append(slave_file)
+            
+    #print host_file,type(host_file),'helllllllllllllllllllllll'
+    host_file_result = '\n'.join(hostlist)
+    print host_file_result,type(host_file_result),'hoooooooooossssssssss'
+    slave_file_result = '\n'.join(slavelist)
+    print slave_file_result,type(slave_file_result),'sllllllllllllllllaaaaaaaaaaa'
+
+    byte_stream_host = io.BytesIO(host_file_result)
+    no_of_bytes_host = len(host_file_result)
+    byte_stream_slave = io.BytesIO(slave_file_result)
+    no_of_bytes_slave = len(slave_file_result)
+
+    cfg = ConfigParser()
+    cfg.read('application/config/azure_config.ini')
+    account_name = cfg.get('file_storage', 'account_name')
+    account_key = cfg.get('file_storage', 'key')
+
+    file_service = FileService(account_name=account_name, account_key=account_key)
+    print file_service,'fileeeeeeeeee'
+
+    file_service.create_file_from_stream(share_name=cluster_id,
+                                         directory_name='system',
+                                         file_name='slavefile',
+                                         stream=byte_stream_slave,
+                                         count=no_of_bytes_slave,
+                                         progress_callback=fileprogress)
+    print 'heyyyyyyyyyyy'
+    my_logger.info("file process done")
+    #time.sleep(5)
+    file_service.create_file_from_stream(share_name=cluster_id,
+                                         directory_name='system',
+                                         file_name='hostfile',
+                                         stream=byte_stream_host,
+                                         count=no_of_bytes_host,
+                                         progress_callback=fileprogress)
+
+
+
+#azure_upload_host_slave('c02c6724-0e89-11e9-bb3d-3ca9f49ab2cc')
+
+def fileprogress(start, size):
+    my_logger.debug("%d%d", start, size)

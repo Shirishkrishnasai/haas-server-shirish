@@ -282,4 +282,3 @@ def configure_cluster():
 
 # except Exception as e:
 #   my_logger.error(e)
-configure_cluster()

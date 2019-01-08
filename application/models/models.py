@@ -1,29 +1,26 @@
 import json
 from sqlalchemy.sql import func
-from sqlalchemy import BigInteger, Boolean, CHAR, Column, DateTime, ForeignKey, Integer, String, Table, Text, text, \
-    create_engine, inspect, Sequence, Float
+from sqlalchemy import BigInteger, Boolean, CHAR, Column, DateTime, ForeignKey, Integer, String, Table, Text, text, create_engine, inspect, Sequence,Float
 from sqlalchemy.dialects.postgresql import INET, MACADDR, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from datetime import datetime
 
+
 Base = declarative_base()
 
 metadata = Base.metadata
-ItemBase=Base
-#
-# class ItemBase(Base):
-#     __abstract__ = True
-#
-#     def _ensure_defaults(self):
-#         for column in self.__table__.c:
-#             if getattr(self, column.name) is None and column.default is not None and column.default.is_scalar:
-#                 setattr(self, column.name, column.default.arg)
-
-
+class ItemBase(Base):
+    __abstract__ = True
+    def _ensure_defaults(self):
+        for column in self.__table__.c:
+            if getattr(self, column.name) is None and column.default is not None and column.default.is_scalar:
+                setattr(self, column.name, column.default.arg)
+                
 class OutputMixin(object):
     RELATIONSHIPS_TO_DICT = False
+
 
     def __iter__(self):
         return self.to_dict().iteritems()
@@ -58,8 +55,7 @@ class OutputMixin(object):
         if rel is None:
             rel = self.RELATIONSHIPS_TO_DICT
         return json.dumps(self.to_dict(rel), server_default=extended_encoder)
-    def as_dict(self):
-       return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 class TblClusterType(ItemBase, OutputMixin):
     __tablename__ = 'tbl_cluster_type'
@@ -71,7 +67,7 @@ class TblClusterType(ItemBase, OutputMixin):
     var_created_by = Column(String(20), server_default="system")
     var_modified_by = Column(String(20), server_default="system")
     ts_created_datetime = Column(DateTime(timezone=True), server_default=func.now())
-    ts_modified_datetime = Column(DateTime(timezone=True), onupdate=func.now())
+    ts_modified_datetime = Column(DateTime(timezone=True),onupdate=func.now())
 
 
 class TblCustomer(ItemBase, OutputMixin):
@@ -92,7 +88,7 @@ class TblCustomer(ItemBase, OutputMixin):
 
     tbl_azure_app_gateway = relationship(u'TblAzureAppGateway')
 
-    tbl_plan = relationship(u'TblPlan')
+    tbl_plan=relationship(u'TblPlan')
 
 
 class TblAddress(ItemBase, OutputMixin):
@@ -129,7 +125,7 @@ class TblFeature(ItemBase, OutputMixin):
     txt_dependency_feature_id = Column(Text)
 
     int_feature_status = Column(Integer)
-    var_provisioning_type = Column(String(5))
+    var_provisioning_type=Column(String(5))
     var_created_by = Column(String(20), server_default="system")
     var_modified_by = Column(String(20), server_default="system")
     ts_created_datetime = Column(DateTime(timezone=True), server_default=func.now())
@@ -225,10 +221,10 @@ class TblCluster(ItemBase, OutputMixin):
 
     valid_cluster = Column(Boolean)
 
+
     tbl_cluster_type = relationship(u'TblClusterType')
     tbl_customer = relationship(u'TblCustomer')
     tbl_size = relationship(u'TblSize')
-
 
 class TblCustomerAzureResourceGroup(ItemBase, OutputMixin):
     __tablename__ = 'tbl_customer_azure_resource_group'
@@ -264,8 +260,7 @@ class TblFeatureType(ItemBase, OutputMixin):
     tbl_task_types = relationship('TblTaskType')
     tbl_feature = relationship('TblFeature')
 
-
-class TblMetaFileUpload(ItemBase, OutputMixin):
+class TblMetaFileUpload(ItemBase,OutputMixin):
     __tablename__ = 'tbl_meta_file_upload'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
@@ -274,7 +269,6 @@ class TblMetaFileUpload(ItemBase, OutputMixin):
     var_directory_name = Column(String(60))
 
     tbl_customer = relationship(u'TblCustomer')
-
 
 class TblKafkaConsumerGroup(ItemBase, OutputMixin):
     __tablename__ = 'tbl_kafka_consumer_group'
@@ -292,14 +286,14 @@ class TblKafkaConsumerGroup(ItemBase, OutputMixin):
     tbl_customer = relationship(u'TblCustomer')
 
 
-class TblVmCreation(ItemBase, OutputMixin):
+class TblVmCreation(ItemBase,OutputMixin):
     __tablename__ = 'tbl_vm_creation'
     __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
+    srl_id=Column(Integer,primary_key=True)
     uid_customer_id = Column(UUID)
     uid_cluster_id = Column(UUID)
     uid_vm_id = Column(UUID)
-    uid_agent_id = Column(UUID)
+    uid_agent_id=Column(UUID)
     var_role = Column(String(60))
     var_ip = Column(String(100))
     var_name = Column(String(100))
@@ -310,7 +304,7 @@ class TblVmCreation(ItemBase, OutputMixin):
     ts_modified_datetime = Column(DateTime(timezone=True), server_default=func.now())
 
 
-class TblMetaHdfsUpload(ItemBase, OutputMixin):
+class TblMetaHdfsUpload(ItemBase,OutputMixin):
     __tablename__ = 'tbl_meta_hdfs_upload'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
@@ -318,8 +312,7 @@ class TblMetaHdfsUpload(ItemBase, OutputMixin):
     txt_hdfs_file_path = Column(Text)
     uid_request_id = Column(ForeignKey(u'highgear.tbl_customer_request.uid_request_id'))
 
-
-class TblFileDownload(ItemBase, OutputMixin):
+class TblFileDownload(ItemBase,OutputMixin):
     __tablename__ = 'tbl_file_download'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
@@ -336,7 +329,8 @@ class TblFileDownload(ItemBase, OutputMixin):
     tbl_file_upload = relationship(u'TblFileUpload')
 
 
-class TblCustomerRequest(ItemBase, OutputMixin):
+
+class TblCustomerRequest(ItemBase,OutputMixin):
     __tablename__ = 'tbl_customer_request'
     __table_args__ = {u'schema': 'highgear'}
 
@@ -363,7 +357,6 @@ class TblCustomerRequest(ItemBase, OutputMixin):
     tbl_cluster = relationship(u'TblCluster')
     tbl_meta_request_status = relationship(U'TblMetaRequestStatus')
 
-
 class TblKafkaTopic(ItemBase, OutputMixin):
     __tablename__ = 'tbl_kafka_topic'
     __table_args__ = {u'schema': 'highgear'}
@@ -373,10 +366,10 @@ class TblKafkaTopic(ItemBase, OutputMixin):
     uid_consumer_group_id = Column(ForeignKey(u'highgear.tbl_kafka_consumer_group.uid_consumer_group_id'))
     var_topic_name = Column(String(100))
     var_topic_type = Column(String(25))
-    var_created_by = Column(String(20))
-    var_modified_by = Column(String(20))
-    ts_created_datetime = Column(DateTime(timezone=True))
-    ts_modified_datetime = Column(DateTime(timezone=True))
+    var_created_by = Column(String(20), server_default="system")
+    var_modified_by = Column(String(20), server_default="system")
+    ts_created_datetime = Column(DateTime(timezone=True), server_default=func.now())
+    ts_modified_datetime = Column(DateTime(timezone=True), server_default=func.now())
 
     tbl_kafka_consumer_group = relationship(u'TblKafkaConsumerGroup')
 
@@ -408,10 +401,10 @@ class TblKafkaPublisher(ItemBase, OutputMixin):
     uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
     uid_cluster_id = Column(ForeignKey(u'highgear.tbl_cluster.uid_cluster_id'))
     uid_topic_id = Column(ForeignKey(u'highgear.tbl_kafka_topic.uid_topic_id'))
-    var_created_by = Column(String(20) )
-    var_modified_by = Column(String(20))
-    ts_created_datetime = Column(DateTime(timezone=True))
-    ts_modified_datetime = Column(DateTime(timezone=True))
+    var_created_by = Column(String(20), server_default="system")
+    var_modified_by = Column(String(20), server_default="system")
+    ts_created_datetime = Column(DateTime(timezone=True), server_default=func.now())
+    ts_modified_datetime = Column(DateTime(timezone=True), server_default=func.now())
 
     tbl_kafka_topic = relationship(u'TblKafkaTopic')
     tbl_agent = relationship(u'TblAgent')
@@ -488,18 +481,16 @@ class TblNodeInformation(ItemBase, OutputMixin):
     tbl_cluster = relationship(u'TblCluster')
     tbl_vm_information = relationship(u'TblVmInformation')
 
-
-class TblPlanClusterSize(ItemBase, OutputMixin):
+class TblPlanClusterSize(ItemBase,OutputMixin):
     __tablename__ = 'tbl_plan_cluster_size'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
-    int_size_id = Column(ForeignKey(u'highgear.tbl_size.int_size_id'))
+    int_size_id=Column(ForeignKey(u'highgear.tbl_size.int_size_id'))
     int_plan_id = Column(ForeignKey(u'highgear.tbl_plan.int_plan_id'))
-    int_nodes = Column(Integer)
+    int_nodes =Column(Integer)
 
     tbl_plan = relationship(u'TblPlan')
     tbl_size = relationship(u'TblSize')
-
 
 class TblService(ItemBase, OutputMixin):
     __tablename__ = 'tbl_services'
@@ -613,8 +604,7 @@ class TblTask(ItemBase, OutputMixin):
     tbl_task_types = relationship('TblTaskType')
     tbl_agent = relationship(u'TblAgent')
 
-
-class TblFileUploadTasks(ItemBase, OutputMixin):
+class TblFileUploadTasks(ItemBase,OutputMixin):
     __tablename__ = 'tbl_file_upload_tasks'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
@@ -622,7 +612,6 @@ class TblFileUploadTasks(ItemBase, OutputMixin):
     uid_agent_id = Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
     uid_task_id = Column(UUID)
     uid_upload_id = Column
-
 
 class TblImage(ItemBase, OutputMixin):
     __tablename__ = 'tbl_image'
@@ -633,7 +622,6 @@ class TblImage(ItemBase, OutputMixin):
     var_application_version = Column(String(60)),
     txt_image_id = Column(Text)
     var_linux_flavour = Column(String(60))
-
 
 class TblAzureAppGateway(ItemBase, OutputMixin):
     __tablename__ = 'tbl_azure_app_gateway'
@@ -651,11 +639,13 @@ class TblAzureAppGateway(ItemBase, OutputMixin):
     ts_updated_time = Column(DateTime)
 
 
+
+
 class TblMetaNodeRoles(ItemBase, OutputMixin):
     __tablename__ = 'tbl_meta_node_roles'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
-    vm_roles = Column(String(30), unique=True)
+    vm_roles = Column(String(30),unique=True)
     txt_description = Column(Text)
 
 
@@ -665,7 +655,7 @@ class TblUsers(ItemBase, OutputMixin):
     srl_id = Column(Integer, primary_key=True)
 
     uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
-    var_user_name = Column(String(60), unique=True)
+    var_user_name = Column(String(60),unique=True)
     txt_dn = Column(Text)
     bool_active = Column(Boolean)
     var_created_by = Column(String(20), server_default="system")
@@ -674,7 +664,6 @@ class TblUsers(ItemBase, OutputMixin):
     ts_modified_datetime = Column(DateTime(timezone=True), server_default=func.now())
 
     tbl_customer = relationship(u'TblCustomer')
-
 
 class TblTaskStatusLog(ItemBase, OutputMixin):
     __tablename__ = 'tbl_task_status_log'
@@ -687,19 +676,18 @@ class TblTaskStatusLog(ItemBase, OutputMixin):
     tbl_tasks = relationship(u'TblTask')
     tbl_meta_task_status = relationship(u'TblMetaTaskStatus')
 
+class TblAgentStatus(ItemBase,OutputMixin):
+     __tablename__ = 'tbl_agent_status'
+     __table_args__ = {u'schema': 'highgear'}
+     srl_id = Column(Integer, primary_key=True)
+     uid_agent_id =  Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
+     ts_heart_beat_time = Column(DateTime)
+     var_created_by = Column(String(20), server_default="system")
+     var_modified_by = Column(String(20), server_default="system")
+     ts_created_datetime = Column(DateTime(timezone=True), server_default=func.now())
+     ts_modified_datetime = Column(DateTime(timezone=True), server_default=func.now())
 
-class TblAgentStatus(ItemBase, OutputMixin):
-    __tablename__ = 'tbl_agent_status'
-    __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    uid_agent_id = Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
-    ts_heart_beat_time = Column(DateTime)
-    var_created_by = Column(String(20), server_default="system")
-    var_modified_by = Column(String(20), server_default="system")
-    ts_created_datetime = Column(DateTime(timezone=True), server_default=func.now())
-    ts_modified_datetime = Column(DateTime(timezone=True), server_default=func.now())
-
-    tbl_agent = relationship(u'TblAgent')
+     tbl_agent = relationship(u'TblAgent')
 
 
 class TblMetaTaskStatus(ItemBase, OutputMixin):
@@ -707,6 +695,7 @@ class TblMetaTaskStatus(ItemBase, OutputMixin):
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
     var_task_status = Column(String(15))
+
 
 
 class TblMetaRequestStatus(ItemBase, OutputMixin):
@@ -726,7 +715,6 @@ class TblTaskRequestLog(ItemBase, OutputMixin):
 
     tbl_meta_request_status = relationship(u'TblMetaRequestStatus')
     tbl_customer_request = relationship(u'TblCustomerRequest')
-
 
 class TblMetaFeatureStatus(Base):
     __tablename__ = 'tbl_meta_feature_status'
@@ -750,31 +738,30 @@ class TblAgentConfig(Base):
 class TblPlan(Base):
     __tablename__ = 'tbl_plan'
     __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    int_plan_id = Column(Integer, nullable=False, unique=True)
-    var_plan_type = Column(String(50), unique=True)
+    srl_id=Column(Integer, primary_key=True)
+    int_plan_id=Column(Integer ,nullable=False,unique=True)
+    var_plan_type=Column(String(50),unique=True)
 
-
-class TblSize(ItemBase, OutputMixin):
+class TblSize(ItemBase,OutputMixin):
     __tablename__ = 'tbl_size'
     __table_args__ = {u'schema': 'highgear'}
-    srl_id = Column(Integer, primary_key=True)
-    int_size_id = Column(Integer, unique=True)
-    var_size_type = Column(String(50), unique=True)
+    srl_id=Column(Integer, primary_key=True)
+    int_size_id=Column(Integer,unique=True)
+    var_size_type=Column(String(50),unique=True)
 
-
-class TblMetaCloudType(ItemBase, OutputMixin):
+class TblMetaCloudType(ItemBase,OutputMixin):
     __tablename__ = 'tbl_meta_cloud_type'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
     float_ram = Column(Float)
     float_disk_size = Column(Float)
     float_cpu = Column(Float)
-    var_vm_type = Column(String(100), unique=True)
+    var_vm_type = Column(String(100),unique=True)
     var_cloud_type = Column(String(100))
 
 
-class TblMetaVmSize(ItemBase, OutputMixin):
+
+class TblMetaVmSize(ItemBase,OutputMixin):
     __tablename__ = 'tbl_meta_vm_size'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
@@ -786,10 +773,9 @@ class TblMetaVmSize(ItemBase, OutputMixin):
     tbl_size = relationship(u'TblSize')
     tbl_plan = relationship(u'TblPlan')
     tbl_meta_node_roles = relationship(u'TblMetaNodeRoles')
-    tbl_meta_cloud_type = relationship(u'TblMetaCloudType')
+    tbl_meta_cloud_type= relationship(u'TblMetaCloudType')
 
-
-class TblCustomerJobRequest(ItemBase, OutputMixin):
+class TblCustomerJobRequest(ItemBase,OutputMixin):
     __tablename__ = 'tbl_customer_job_request'
     __table_args__ = {u'schema': 'highgear'}
 
@@ -806,13 +792,13 @@ class TblCustomerJobRequest(ItemBase, OutputMixin):
     var_input_file_path = Column(String(200))
     var_output_file_path = Column(String(200))
     ts_requested_time = Column(DateTime)
-    int_request_status = Column(Integer, default=7)
-    var_application_id = Column(String(100))
-    var_job_diagnostics = Column(Text)
-    conf_mapred_job_tracker = Column(String(50))
+    int_request_status = Column(Integer,default=7)
+    var_application_id=Column(String(100))
+    var_job_diagnostics=Column(Text)
+    conf_mapred_job_tracker=Column(String(50))
     conf_mapreduce_framework_name = Column(String(50))
     conf_mapreduce_task_io_sort_mb = Column(Integer)
-    conf_mapreduce_task_io_sort_factor = Column(Integer)
+    conf_mapreduce_task_io_sort_factor= Column(Integer)
     conf_mapreduce_map_sort_spill_percent = Column(Float)
     conf_mapreduce_job_maps = Column(Integer)
     conf_mapreduce_job_reduces = Column(Integer)
@@ -830,7 +816,7 @@ class TblCustomerJobRequest(ItemBase, OutputMixin):
     tbl_users = relationship(u'TblUsers')
 
 
-class TblHiveRequest(ItemBase, OutputMixin):
+class TblHiveRequest(ItemBase,OutputMixin):
     __tablename__ = 'tbl_hive_request'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
@@ -847,7 +833,6 @@ class TblHiveRequest(ItemBase, OutputMixin):
     bool_select_query = Column(Boolean)
     txt_url_value = Column(Text)
     bool_url_created = Column(Boolean)
-    hive_query_output=Column(Text)
 
     tbl_customer = relationship(u'TblCustomer')
     tbl_cluster = relationship(u'TblCluster')
@@ -855,15 +840,13 @@ class TblHiveRequest(ItemBase, OutputMixin):
     tbl_agent = relationship(u'TblAgent')
     tbl_hive_meta_status = relationship(u'TblHiveMetaStatus')
 
-
-class TblHiveMetaStatus(ItemBase, OutputMixin):
+class TblHiveMetaStatus(ItemBase,OutputMixin):
     __tablename__ = 'tbl_hive_meta_status'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
     var_status = Column(String(60))
 
-
-class TblAzureFileStorageCredentials(ItemBase, OutputMixin):
+class TblAzureFileStorageCredentials(ItemBase,OutputMixin):
     __tablename__ = 'tbl_azure_file_storage_credentials'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
@@ -871,8 +854,7 @@ class TblAzureFileStorageCredentials(ItemBase, OutputMixin):
     account_primary_key = Column(Text)
     account_secondary_key = Column(Text)
 
-
-class TblEdgenode(ItemBase, OutputMixin):
+class TblEdgenode(ItemBase,OutputMixin):
     __tablename__ = 'tbl_edgenode'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
@@ -881,21 +863,17 @@ class TblEdgenode(ItemBase, OutputMixin):
     char_feature_id = Column(ForeignKey(u'highgear.tbl_feature.char_feature_id'))
     var_role = Column(String(60))
     int_role_count = Column(Integer)
-    var_created_by = Column(String(20), server_default="system")
-    var_modified_by = Column(String(20), server_default="system")
-    ts_created_datetime = Column(DateTime(timezone=True), server_default=func.now())
-    ts_modified_datetime = Column(DateTime(timezone=True), server_onupdate=func.now())
 
     tbl_size = relationship(u'TblSize')
     tbl_plan = relationship(u'TblPlan')
     tbl_feature = relationship(u'TblFeature')
 
 
-class TblFileUpload(ItemBase, OutputMixin):
+class TblFileUpload(ItemBase,OutputMixin):
     __tablename__ = 'tbl_file_upload'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
-    uid_upload_id = Column(UUID, unique=True)
+    uid_upload_id = Column(UUID,unique=True)
     uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
     uid_agent_id = Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
     var_share_name = Column(String(60))
@@ -908,7 +886,6 @@ class TblFileUpload(ItemBase, OutputMixin):
     tbl_users = relationship(u'TblUsers')
     tbl_agent = relationship(u'TblAgent')
 
-
 class TblPlanClusterSizeConfig(Base):
     __tablename__ = 'tbl_plan_cluster_size_config'
     __table_args__ = {u'schema': 'highgear'}
@@ -916,24 +893,24 @@ class TblPlanClusterSizeConfig(Base):
     int_size_id = Column(ForeignKey(u'highgear.tbl_size.int_size_id'))
     int_plan_id = Column(ForeignKey(u'highgear.tbl_plan.int_plan_id'))
     var_role = Column(String(100))
-    int_role_count = Column(Integer)
+    int_role_count= Column(Integer)
 
     tbl_size = relationship(u'TblSize')
     tbl_plan = relationship(u'TblPlan')
 
 
-class TblMetaMrRequestStatus(ItemBase, OutputMixin):
+class TblMetaMrRequestStatus(ItemBase,OutputMixin):
     __tablename__ = 'tbl_meta_mr_request_status'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
     var_mr_request_status = Column(String(15))
 
-
-class TblMetaCloudLocation(ItemBase, OutputMixin):
+class TblMetaCloudLocation(ItemBase,OutputMixin):
     __tablename__ = 'tbl_meta_cloud_location'
     __table_args__ = {u'schema': 'highgear'}
     srl_id = Column(Integer, primary_key=True)
     var_cloud_type = Column(String(40))
     var_location = Column(Text)
 
-# Drop table tbl_feature_status meta table
+
+#Drop table tbl_feature_status meta table

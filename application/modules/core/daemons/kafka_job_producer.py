@@ -4,7 +4,7 @@ from application import session_factory
 from application.config.config_file import kafka_bootstrap_server
 from application.models.models import TblCustomerJobRequest, TblAgent, TblNodeInformation, TblMetaMrRequestStatus
 from sqlalchemy.orm import scoped_session
-
+from kafka import KafkaProducer
 
 def mrjobproducer():
     while True:
@@ -43,12 +43,14 @@ def mrjobproducer():
                 mrjob_data["uid_jar_upload_id"]=uid_jar_upload_id
                 mrjob_data["resourcemanager_ip"]=str(private_ip)
                 producer.send(kafkatopic, str(mrjob_data))
+                time.sleep(1)
                 producer.flush()
                 update_customer_request_query=db_session.query(TblCustomerJobRequest).filter(TblCustomerJobRequest.uid_request_id==request_id)
                 update_customer_request_query.update({"bool_assigned":1})
                 db_session.commit()
         except Exception as e:
-          return e.message
+            print e.message
+          #return e.message
         finally:
             print "job_producer in Finally"
             db_session.close()
