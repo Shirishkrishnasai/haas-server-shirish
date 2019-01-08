@@ -3,6 +3,7 @@ from application import session_factory
 from application.common.util import generate_tasks, find_dep_tasks
 import pymongo
 import uuid
+import sys
 import datetime
 from application import conn_string, mongo_conn_string, db, app
 from application.models.models import TblMetaTaskStatus, TblTask, TblAgent, TblCustomerRequest, TblCluster, \
@@ -11,8 +12,11 @@ from application.models.models import TblMetaTaskStatus, TblTask, TblAgent, TblC
 from application.common.loggerfile import my_logger
 
 
-def configure_cluster(request_id):
+
+def configure_cluster():
     # try:
+    my_logger.info("in cluster configure worker")
+    request_id = sys.argv[1]
     session = scoped_session(session_factory)
 
     # querying data from customer request table
@@ -278,3 +282,4 @@ def configure_cluster(request_id):
 
 # except Exception as e:
 #   my_logger.error(e)
+configure_cluster()

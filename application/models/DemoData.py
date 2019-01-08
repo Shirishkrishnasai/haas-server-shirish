@@ -1,5 +1,5 @@
 from application.config.config_file import postgres_conn
-from application.models.models import TblFeature, TblTaskType, \
+from application.models.models import TblFeature, TblTaskType,TblCustomerAzureResourceGroup, \
     TblMetaRequestStatus, TblFeatureType, TblMetaNodeRoles, TblMetaTaskStatus, \
     TblMetaFeatureStatus, TblMetaMrRequestStatus, TblImage, TblMetaCloudType, \
     TblPlan, TblSize, TblPlanClusterSize, TblPlanClusterSizeConfig, TblMetaVmSize, \
@@ -692,16 +692,16 @@ tbl_vm_info_3 = TblVmInformation(uid_vm_id='cdf3a62e-0cf4-11e9-8adb-3ca9f49ab2cc
                                  txt_ip='192.168.100.49'
 
                                  )
-db_session.add(tbl_vm_info_1)
-db_session.add(tbl_vm_info_2)
-db_session.add(tbl_vm_info_2)
+#db_session.add(tbl_vm_info_1)
+#db_session.add(tbl_vm_info_2)
+#db_session.add(tbl_vm_info_2)
 db_session.add(tbl_azure_resource_group)
 
 db_session.add(tbl_customer)
 
-db_session.add(tbl_vm_info_1)
-db_session.add(tbl_vm_info_2)
-db_session.add(tbl_vm_info_2)
+#db_session.add(tbl_vm_info_1)
+#db_session.add(tbl_vm_info_2)
+#db_session.add(tbl_vm_info_2)
 
 db_session.add(cluster_feature_provision)
 db_session.add(cluster_feature_configuration)
@@ -875,8 +875,8 @@ db_session.add(tbl_vm_creation_1)
 db_session.add(tbl_vm_creation_2)
 db_session.add(tbl_vm_creation_3)
 
-# db_session.flush();
-# db_session.commit();
+db_session.flush();
+db_session.commit();
 
 import requests
 import json
@@ -918,7 +918,7 @@ def addCluster(customerId):
     return response;
 
 
-customer_response = json.loads(login("navya@gmail.com", "password"))
-customer_id = customer_response['data']['customer_id']
+#customer_response = json.loads(login("navya@gmail.com", "password"))
+#customer_id = customer_response['data']['customer_id']
 # .data['customer_id']
-print addCluster(customer_id)
+#print addCluster(customer_id)

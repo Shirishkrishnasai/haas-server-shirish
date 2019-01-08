@@ -33,12 +33,12 @@ def customercreation():
     customer_content = request.json
     LOCATION = customer_content['location']
     GROUP_NAME = str(uuid.uuid1())
-    customer_id = str(uuid.uuid1())
+    customer_id = GROUP_NAME
     customer_email = customer_content['email']
     # Connection to postgres and inserting customer details to database
 
     gateway_id = str(uuid.uuid1())
-    resourcegroup_id = uuid.uuid1()
+    resourcegroup_id = GROUP_NAME
 
     insert_customer_details_first = TblCustomer(uid_customer_id=customer_id)
     db.session.add(insert_customer_details_first)

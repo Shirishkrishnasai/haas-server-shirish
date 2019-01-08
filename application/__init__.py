@@ -48,7 +48,7 @@ def internal_error(e):
         return make_response(jsonify(error="yes",message=output[0]),500)
 from db_setup import init_db
 
-init_db()
+#init_db()
 
 from application.common.file_upload import azfile
 from application.common.file_download import azfiledownload
@@ -147,9 +147,10 @@ def runProcess():
     kafkaconsumer_process = Process(target=kafkaconsumer)
     hgmanager_process = Process(target=hgmanager)
     hgsuper_process = Process(target=hgsuper)
+    hgsuper_process.start()
     kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
     kafkaHiveStatusConsumer_process.start()
-    hgsuperscheduler_process.start()
+    #hgsuperscheduler_process.start()
     filebrowsestatus_process = Process(target=filebrowsestatus)
     jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
     jobDiagnosticConsumer_process.start()
@@ -160,7 +161,7 @@ def runProcess():
     hgsuperscheduler_process.start()
     filebrowsestatus_process = Process(target=filebrowsestatus)
     filebrowsestatus_process.start()
-    hgmanagerscheduler_process.start()
+    #hgmanagerscheduler_process.start()
     kafkataskconsumer_process.start()
     mrjobproducer_process = Process(target=mrjobproducer)
     customerjobreqestconsumer = Process(target=jobinsertion)
