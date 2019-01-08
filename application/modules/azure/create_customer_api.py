@@ -23,7 +23,7 @@ def customercreation():
     # Gathering information of customer and retriving configuration data of azure
     #    try:
     customer_content = request.json
-    print customer_content
+    my_logger.info(customer_content)
     display_name = customer_content['first_name']
     # print display_name
 
@@ -103,16 +103,18 @@ def customercreation():
     virtual_network_id_query = db.session.query(func.max(TblVirtualNetwork.srl_id)).all()
     virtual_network_ip_info = db.session.query(TblVirtualNetwork.inet_ip_range).filter(
         TblVirtualNetwork.srl_id == virtual_network_id_query[0][0]).all()
-    print virtual_network_ip_info, "info", type(virtual_network_ip_info)
-    print "handling it"
+    my_logger.info(virtual_network_ip_info)
+    my_logger.info("info")
+    my_logger.info(type(virtual_network_ip_info))
+    my_logger.info("handling it")
     if len(virtual_network_ip_info) == 0:
         # if virtual_network_ip_info[0][0] == None:
-        print "into if"
+        my_logger.info("into if")
         vn_ip = "10.0.0.0/24"
     else:
-        print "it has got into else, cant help"
+        my_logger.info("it has got into else, cant help")
         ip_of_previous_cluster = virtual_network_ip_info[0][0]
-        print ip_of_previous_cluster
+        my_logger.info(ip_of_previous_cluster)
         splitting_vn_ip = ip_of_previous_cluster.split('.')
         splitting_vn_ip_range = splitting_vn_ip[2]
         ip_value = int(splitting_vn_ip_range) + 1
@@ -151,7 +153,8 @@ def customercreation():
                                                                                                        security_rule1]))
     NSG.wait()
     nsg_result = NSG.result()
-    print "NSG", nsg_result
+    my_logger.info("NSG")
+    my_logger.info(nsg_result)
     subnet_ip = vn_ip
     SUBNET_NAME = 'snet' + str(int(round(time.time() * 1000)))
     my_logger.debug('\nCreate Subnet')
@@ -160,7 +163,7 @@ def customercreation():
                                                                'network_security_group': nsg_result})
     subnet_info = subnet_creation.result()
     subnet_id = subnet_info.id
-    print subnet_id
+    my_logger.info(subnet_id)
     insert_subnet = TblSubnet(uid_customer_id=customer_id, txt_subnet_id=subnet_id, inet_subnet_ip_range=subnet_ip,
                               var_resource_group_name=GROUP_NAME, var_virtual_network_name=VNET_NAME)
     db.session.add(insert_subnet)

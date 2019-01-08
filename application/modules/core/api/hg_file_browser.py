@@ -17,7 +17,7 @@ def filebrowsing(customerid,clusterid,filename):
         try:
 
                 timestamp=str(int(round(time.time() * 1000)))
-                print timestamp,'111111111111111111111'
+                my_logger.info(timestamp)
                 my_logger.debug(filename)
                 db_session = scoped_session(session_factory)
                 namenode_data = db_session.query(TblAgent.uid_agent_id, TblAgent.private_ips).filter(
@@ -38,25 +38,25 @@ def filebrowsing(customerid,clusterid,filename):
                 filebrowser_data["namenode_ip"] = str(private_ip)
                 filebrowser_data["timestamp"] = str(timestamp)
                 my_logger.debug(filebrowser_data)
-                #print filebrowser_data,'dataaa'
+                #my_logger.info(filebrowser_data)
 
                 producer.send(kafkatopic, str(filebrowser_data))
                 producer.flush()
                 my_logger.debug('flussshhhh')
-                print 'flush'
+                my_logger.info('flush')
                 mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
-                print "mango"
+                my_logger.info("mango")
                 database_conn = mongo_db_conn['haas']
                 db_collection = database_conn['filebrowsingstatus']
                 time.sleep(1)
                 obj=list(db_collection.find({"timestamp":timestamp,"clusterid":clusterid,"filename":filename}))
-                print obj,"obgj"
+                my_logger.info(obj)
                 for data in obj:
-                        print data,"data"
+                        my_logger.info(data)
                         data=data["filesinpath"].replace("'",'"')
                         json_data=json.loads(data)
                         my_logger.info(json_data)
-                        print json_data,"json"
+                        my_logger.info(json_data)
                 #return jsonify(json_data)
         except exc.SQLAlchemyError as e:
                 return jsonify(e.message)

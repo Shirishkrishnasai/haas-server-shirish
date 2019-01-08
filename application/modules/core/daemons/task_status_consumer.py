@@ -28,9 +28,9 @@ def kafkataskconsumer():
                 my_logger.error(exc_type)
                 my_logger.error(fname)
                 my_logger.error(exc_tb.tb_lineno)
-                print "Something wrong in kafka"
+                my_logger.info( "Something wrong in kafka")
 
             time.sleep(0.1)
 
-        print "Task Stats consumer ended..."
+        my_logger.info( "Task Stats consumer ended...")
     time.sleep(10)

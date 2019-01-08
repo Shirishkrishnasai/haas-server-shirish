@@ -13,32 +13,33 @@ from application.common.loggerfile import my_logger
 
 def installcluster(request_id):
     try:
-        print "in cluster provision worker ............there you go .......... tik-tok"
-        #print sys.argv
-        #print sys.argv[1]
+        my_logger.info("in cluster provision worker ............there you go .......... tik-tok")
+        #my_logger.info(sys.argv)
+        #my_logger.info(sys.argv[1])
         #request_id = sys.argv[1]
         db_session = scoped_session(session_factory)
         customer_data = db_session.query(TblCustomerRequest.txt_payload_id, TblCustomerRequest.uid_customer_id,\
                         TblCustomerRequest.char_feature_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
-        print customer_data
+        my_logger.info(customer_data)
         payloadid = customer_data[0][0]
         customer_id = customer_data[0][1]
         feature_id = customer_data[0][2]
-        print  "connected to database and got customer data"
+        my_logger.info( "connected to database and got customer data")
         mongo_connection = pymongo.MongoClient(mongo_conn_string)
         database_connection = mongo_connection['haas']
         collection_connection = database_connection['highgear']
         build_cluster_information = collection_connection.find_one({"_id": ObjectId(payloadid)})
-        print  build_cluster_information, "this is mongo collection information"
+        my_logger.info( build_cluster_information)
+        my_logger.info("this is mongo collection information")
         cloudtype = build_cluster_information["cloud_type"]
         clustername=build_cluster_information["cluster_name"]
         clusterlocation = build_cluster_information["cluster_location"]
         size_id=build_cluster_information["size_id"]
 
         plan_info = db_session.query(TblCustomer.int_plan_id).filter(TblCustomer.uid_customer_id == customer_id).all()
-        print plan_info
+        my_logger.info(plan_info)
         plan_id = plan_info[0][0]
-        print plan_id
+        my_logger.info(plan_id)
         cluster_id = str(uuid.uuid1())
         cluster_size_info = db_session.query(TblPlanClusterSizeConfig.var_role,
                                              TblPlanClusterSizeConfig.int_role_count).filter \
@@ -64,9 +65,9 @@ def installcluster(request_id):
                 vm_creation_list.append(plan_id)
 
                 vm_creation_info.append(vm_creation_list)
-        print vm_creation_info
+        my_logger.info(vm_creation_info)
         vm_information = vmcreation(vm_creation_info)
-        print vm_information
+        my_logger.info(vm_information)
         metatablestatus = db_session.query(TblMetaRequestStatus.var_request_status, TblMetaRequestStatus.srl_id).all()
         table_status_values = dict(metatablestatus)
         completed_request_status_value = table_status_values['COMPLETED']
@@ -109,4 +110,4 @@ if __name__ == '__main__':
 
             installcluster(request_id)
         else:
-            print "args not passed"
+            my_logger.info("args not passed")

@@ -100,33 +100,35 @@ def monitor():
 @api.route("/api/addcluster",methods=['POST'])
 def hg_client():
 
-        print 'hello client'
-    #try:
-        customer_request=request.json
-        print customer_request
-        feature_request=customer_request['features']
-        db_session = scoped_session(session_factory)
-        requests = []
-        for customer_data in feature_request:
+		my_logger.info('hello client')
+	#try:
+		customer_request=request.json
+		my_logger.info(customer_request)
+		feature_request=customer_request['features']
+		db_session = scoped_session(session_factory)
+		requests = []
+		for customer_data in feature_request:
 
-            feature_request_id = {}
-            request_id = str(uuid.uuid1())
-            feature_id = customer_data['feature_id']
-            print feature_id,'featureiddd'
-            #creating request id against feature id
-            feature_request_id[feature_id]=request_id
-            print feature_request_id,'featt_req_id'
-            requests.append(feature_request_id)
+			feature_request_id = {}
+			request_id = str(uuid.uuid1())
+			feature_id = customer_data['feature_id']
+			my_logger.info(feature_id)
+			my_logger.info('featureiddd')
+			#creating request id against feature id
+			feature_request_id[feature_id]=request_id
+			my_logger.info(feature_request_id)
+			my_logger.info('featt_req_id')
+			requests.append(feature_request_id)
 
-        print requests
-        for customer_data in feature_request:
-            feature_id = customer_data['feature_id']
-            print feature_id
-            if customer_data.has_key('payload'):
-				print "in azure"
+		my_logger.info(requests)
+		for customer_data in feature_request:
+			feature_id = customer_data['feature_id']
+			my_logger.info(feature_id)
+			if customer_data.has_key('payload'):
+				my_logger.info("in azure")
 
 				payload = customer_data['payload']
-				print payload
+				my_logger.info(payload)
 
 				mongo_connection = pymongo.MongoClient(mongo_conn_string)
 				database_connection = mongo_connection["haas"]
@@ -136,69 +138,72 @@ def hg_client():
 				cluster_info_payloadid=str(cluster_info_querystatment["_id"])
 				feature_dependency=db_session.query(TblFeature.txt_dependency_feature_id).filter(TblFeature.char_feature_id==feature_id).first()
 				dependents=feature_dependency[0]
-				print dependents,'dependents'
+				my_logger.info(dependents)
+				my_logger.info('dependents')
 				request_id_list = [d.get(str(feature_id)) for d in requests]
-				print request_id_list,'listi'
+				my_logger.info(request_id_list)
+				my_logger.info('listi')
 				dependency_request_id_list = [d.get(str(dependents)) for d in requests]
 				request_id = [x for x in request_id_list if x != None]
-				print 'rrrrrrrrrrrrrrrrrr',request_id
+				my_logger.info(request_id)
 				dependency_request_id = [x for x in dependency_request_id_list if x != None]
-				print dependency_request_id,'dddddddddd'
+				my_logger.info(dependency_request_id)
 
 				if dependents==None:
-					print 'in dependents payload'
+					my_logger.info('in dependents payload')
 					insert_customer=TblCustomerRequest(txt_payload_id=cluster_info_payloadid,
-                                                       uid_request_id=request_id[0],
-                                                       uid_customer_id=customer_request['customer_id'],
+													   uid_request_id=request_id[0],
+													   uid_customer_id=customer_request['customer_id'],
 														char_feature_id=feature_id)
 					db_session.add(insert_customer)
 					db_session.commit()
-					print 'finish'
+					my_logger.info('finish')
 
 				else:
-					print 'hi i am in dependents else'
+					my_logger.info('hi i am in dependents else')
 					insert_customer = TblCustomerRequest(txt_payload_id=cluster_info_payloadid,
-                                                         uid_request_id=request_id[0],
-                                                         uid_customer_id=customer_request['customer_id'],
-                                                         txt_dependency_request_id=dependency_request_id[0],
+														 uid_request_id=request_id[0],
+														 uid_customer_id=customer_request['customer_id'],
+														 txt_dependency_request_id=dependency_request_id[0],
 														char_feature_id=feature_id)
 					db_session.add(insert_customer)
 					db_session.commit()
 
-            else:
-                feature_dependency = db_session.query(TblFeature.txt_dependency_feature_id).filter(
-                    TblFeature.char_feature_id == feature_id).first()
-                dependents = feature_dependency[0]
-                print dependents,'without payload dependents'
-                request_id_list=[d.get(str(feature_id)) for d in requests]
-                dependency_request_id_list=[d.get(str(dependents)) for d in requests]
-                request_id=[x for x in request_id_list if x != None]
-                print 'rrrrrrr',request_id
-                dependency_request_id=[x for x in dependency_request_id_list if x != None]
-                if dependents == None:
-                    print "in else"
-                    insert_customer = TblCustomerRequest( uid_request_id=request_id[0],
-                                                         uid_customer_id=customer_request['customer_id'],
-                                                         char_feature_id=feature_id)
-                    db_session.add(insert_customer)
-                    db_session.commit()
-                else:
-                    print "in non payload else"
-                    print feature_id,'fffffffffff'
-                    print requests
-                    print [d.get(str(feature_id)) for d in requests]
-                    insert_customer = TblCustomerRequest(uid_request_id=request_id[0],
-                                                         uid_customer_id=customer_request['customer_id'],
-                                                         txt_dependency_request_id=dependency_request_id[0],
-                                                         char_feature_id=feature_id)
-                    db_session.add(insert_customer)
-                    db_session.commit()
+			else:
+				feature_dependency = db_session.query(TblFeature.txt_dependency_feature_id).filter(
+					TblFeature.char_feature_id == feature_id).first()
+				dependents = feature_dependency[0]
+				my_logger.info(dependents)
+				my_logger.info('without payload dependents')
+				request_id_list=[d.get(str(feature_id)) for d in requests]
+				dependency_request_id_list=[d.get(str(dependents)) for d in requests]
+				request_id=[x for x in request_id_list if x != None]
+				my_logger.info(request_id)
+				dependency_request_id=[x for x in dependency_request_id_list if x != None]
+				if dependents == None:
+					my_logger.info("in else")
+					insert_customer = TblCustomerRequest( uid_request_id=request_id[0],
+														 uid_customer_id=customer_request['customer_id'],
+														 char_feature_id=feature_id)
+					db_session.add(insert_customer)
+					db_session.commit()
+				else:
+					my_logger.info("in non payload else")
+					my_logger.info(feature_id)
+					my_logger.info(requests)
+					my_logger.info([d.get(str(feature_id)) for d in requests])
+					insert_customer = TblCustomerRequest(uid_request_id=request_id[0],
+														 uid_customer_id=customer_request['customer_id'],
+														 txt_dependency_request_id=dependency_request_id[0],
+														 char_feature_id=feature_id)
+					db_session.add(insert_customer)
+					db_session.commit()
 
 
-    #except Exception as e:
+	#except Exception as e:
 	#	return e.message
-    #finally:
-     #   db_session.close()
+	#finally:
+	 #   db_session.close()
 		return jsonify(request_id=request_id[0],message='success')
 
 @api.route('/api/agent/register', methods=['POST'])
@@ -266,7 +271,7 @@ def hg_hive_client():
 			posted_query = posted_query[:-1]
 		#splitting query for checking select statement
 		splitted_string = posted_query.split()
-		print splitted_string
+		my_logger.info(splitted_string)
 		producer = KafkaProducer(bootstrap_servers=kafka_bootstrap_server)
 		kafka_topic = "hivequery_" + customerid + "_" + clusterid
 		my_logger.debug(kafka_topic)
@@ -318,7 +323,8 @@ def hg_hive_client():
 
 		hive_query_data['hive_request_id'] = hive_request_id_value
 		hive_query_data['database']=str(database)
-		print '...................................................................................................',hive_query_data
+		my_logger.info('...................................................................................................')
+		my_logger.info(hive_query_data)
 
 		db_session = scoped_session(session_factory)
 
@@ -345,7 +351,8 @@ def hg_hive_client():
 
 		#messag='eyJkYXRhYmFzZV9uYW1lIjogIltbXCJkZWZhdWx0XCJdLCBbXCJoZWhlXCJdLCBbXCJob29cIl0s\nIFtcIm9uZVwiXSwgW1widGhyZWVcIl0sIFtcInR3b1wiXSwgW1wieXl5XCJdXSJ9\n'
 		#decoded_output = json.loads(messag.decode('base64', 'strict'))
-		#print "....",decoded_output['database_name'],type(decoded_output);
+		#my_logger.info(decoded_output['database_name'])
+		#my_logger.info(type(decoded_output))
 
 
 		isexecuted	=True
@@ -362,34 +369,36 @@ def hg_hive_client():
 		#	hive_query_result = message.value
 
 		#	data = hive_query_result.replace("'", '"')
-		#	my_logger.info( data)
+		#	my_logger.info(data)
 		#	message = json.loads(data)
 		#	my_logger.info(message)
 		#	if message['hive_request_id'] == hive_request_id_value:
 		#		if message.has_key('output'):
-		#			print message['output']
+		#			my_logger.info(message['output'])
 					#decoded_output = message['output'].decode('base64','strict')
 		#			decoded_output = json.loads(message['output'].decode('base64', 'strict'))
 
-		#			print decoded_output,type(decoded_output),"1111111111111111111111111111111111111111111111111111111111111111111"
+		#			my_logger.info(decoded_output,type(decoded_output),"1111111111111111111111111111111111111111111111111111111111111111111"
 					#decoded_output = decoded_output.replace("\\","").replace('["','"').replace('"]','"').replace('"[',"'[").replace(']"',"]'")
 		#			decoded_output = yaml.load(decoded_output)
 					#decoded_output = ast.literal_eval(decoded_output)
-					#print decoded_output,type(decoded_output),"2222222222222222222222222222222222222222222222222"
+					#my_logger.info(decoded_output)
+					#my_logger.info(type(decoded_output))
 		#			message['output'] = decoded_output
 					#message['output'] = ast.literal_eval("'"+decoded_output+"'")
-					#print ast.literal_eval("'"+decoded_output+"'")
-					#print message,type(message['output']),"222222222.......................55555555555555555"
+					#my_logger.info(ast.literal_eval("'"+decoded_output+"'"))
+					#my_logger.info(message)
+					#my_logger.info(type(message['output']))
 					#decoded_output['database_name'] = ast.literal_eval(decoded_output['database_name'])
-		#			print message,type(message['output']),"333333333333333333333333333333333333"
-					#print list(decoded_output),"44444444444444444444444"
+		#			my_logger.info(message)
+					#my_logger.info(type(message['output']))
+					#my_logger.info(list(decoded_output))
 
-					#print message['output'['database_name']],"3333333333333333333333333333333333"
+					#my_logger.info(message['output'['database_name']])
 
 					#decoded_output = message['output'].decode('base64','strict').translate(None,'\\')
 					#message['output'] = dict(decoded_output)
 
-		#			print message, type(message), 'message', message.keys(), 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
 
 		#			consumer.commit()
 		#			consumer.close()
@@ -397,7 +406,6 @@ def hg_hive_client():
 		#			isexecuted = False
 		#			my_logger.info("Exiting from Consumer..")
 		#			return jsonify(message)
-				#print message, type(message), 'message', message.keys(),'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
 
 		#		consumer.close()
 		#		consumer.unsubscribe()
@@ -427,7 +435,7 @@ def hg_hive_client():
 @api.route('/api/hivedatabase/<customer_id>/<cluster_id>/<agent_id>', methods=['GET'])
 def hiveDatabaseQuery(customer_id,cluster_id,agent_id):
 	try:
-		print "hellooooooooooo"
+		my_logger.info("hellooooooooooo")
 		producer = KafkaProducer(bootstrap_servers=kafka_bootstrap_server, api_version=(0, 10, 1))
 		kafka_topic = "hivedatabasequery_" + customer_id +"_"+ cluster_id
 		kafkatopic = kafka_topic.decode('utf-8')
@@ -438,7 +446,7 @@ def hiveDatabaseQuery(customer_id,cluster_id,agent_id):
 
 		producer.send(kafkatopic, str(query_status_data))
 		producer.flush()
-		print 'flushedddddd'
+		my_logger.info('flushedddddd')
 
 		while True:
 
@@ -454,14 +462,16 @@ def hiveDatabaseQuery(customer_id,cluster_id,agent_id):
 				#if time.time()<close_time:
 				
 				for message in consumer:
-						print "first message"
+						my_logger.info("first message")
 
 						hivedatabaseresult = message.value
 
 						data = hivedatabaseresult.replace("'", '"')
-						print data, 'dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+						my_logger.info(data,)
 						message = json.loads(data)
-						print message, type(message), 'message', message.keys()
+						my_logger.info(message)
+						my_logger.info(type(message))
+						my_logger.info(message.keys())
 						return jsonify(message)
 						break
 
@@ -492,14 +502,14 @@ def hiveSelectQueryResult(request_id):
 		db_session = scoped_session(session_factory)
 
 		hive_select_query_statement = db.session.query(TblHiveRequest.txt_url_value).filter(TblHiveRequest.uid_hive_request_id == request_id,TblHiveRequest.bool_url_created==True).all()
-		print hive_select_query_statement
+		my_logger.info(hive_select_query_statement)
 		#hive_select_query_info = [i.to_json() for i in hive_select_query_statement]
 		hive_select_query_list = []
 		for dicts in hive_select_query_statement:
 			decoded_dict =  str(dicts[0])
-			print decoded_dict,'disctsdtsttststts'
+			my_logger.info(decoded_dict)
 			hive_select_query_list.append(decoded_dict)
-		print hive_select_query_list,'listttttttttttttttttttttttt'
+		my_logger.info(hive_select_query_list)
 		return jsonify(output_file_url=hive_select_query_list)
 	except Exception as e:
 
@@ -512,16 +522,16 @@ def customerPlan():
 		db_session = scoped_session(session_factory)
 
 		plan_select_query_statement = db.session.query(TblPlan.int_plan_id,TblPlan.var_plan_type).all()
-		print plan_select_query_statement
+		my_logger.info(plan_select_query_statement)
 		result_list = []
 
 		for tups in plan_select_query_statement:
 			plan_dicts = {}
 			plan_dicts['id'] = tups[0]
 			plan_dicts['plan_name'] = str(tups[1])
-			#print plan_dicts,'dulllllllllllll'
+			#my_logger.info(plan_dicts)
 			result_list.append(plan_dicts)
-		print	 result_list
+		my_logger.info(	 result_list)
 		return jsonify(cluster_plans=result_list)
 	except Exception as e:
 
@@ -533,17 +543,17 @@ def clusterSize():
 		db_session = scoped_session(session_factory)
 
 		size_select_query_statement = db.session.query(TblSize.int_size_id,TblSize.var_size_type).all()
-		print size_select_query_statement
+		my_logger.info(size_select_query_statement)
 		result_list = []
 
 		for tups in size_select_query_statement:
-			#print tups,'tuppppppppppppppp'
+			#my_logger.info(tups)
 			size_dicts = {}
 			size_dicts['id'] = tups[0]
 			size_dicts['size'] = str(tups[1])
-			#print plan_dicts,'dulllllllllllll'
+			#my_logger.info(plan_dicts)
 			result_list.append(size_dicts)
-		print result_list
+		my_logger.info(result_list)
 		return jsonify(cluster_size=result_list)
 	except Exception as e:
 
@@ -555,17 +565,18 @@ def clusterStatus(request_id):
 		db_session = scoped_session(session_factory)
 
 		status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_cluster_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
-		print status_select_query_statement,'selectttttttttttttttttttttt'
+		my_logger.info(status_select_query_statement)
 		if len(status_select_query_statement) == 0:
 			return jsonify(message="request id not available")
 		else:
 			#result_list = []
 			request_status = status_select_query_statement[0][0]
-			print request_status
+			my_logger.info(request_status)
 			request_status_select_query_statement = db.session.query(TblMetaRequestStatus.var_request_status).filter(TblMetaRequestStatus.srl_id == request_status).all()
-			print request_status_select_query_statement,len(request_status_select_query_statement),'reqqqqqqqqqqqq'
+			my_logger.info(request_status_select_query_statement)
+			my_logger.info(len(request_status_select_query_statement))
 			#for request_status in status_select_query_statement[0]:
-			#	print request_status,'reqqqqqqqqqqqqq'
+			#	my_logger.info(request_status)
 			if len(request_status_select_query_statement) == 0:
 				return jsonify(request_id=request_id,cluster_status="None")
 			else:

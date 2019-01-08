@@ -5,7 +5,7 @@ import subprocess
 import logging
 logging.basicConfig()
 #from apscheduler.schedulers.background import BackgroundScheduler
-#from application.modules.workers.build_cluster_worker_sprint2 import installcluster
+#from application.modules.workers.build_cluster_worker_smy_logger.info(2 import installcluster
 from application.models.models import TblCustomerRequest,TblMetaRequestStatus,TblFeature,TblTaskRequestLog
 from application.common.loggerfile import my_logger
 def hgsuper():
@@ -18,13 +18,13 @@ def hgsuper():
 			completed_request_status_value = request_status_values['COMPLETED']
 			update_request_status_value = request_status_values['ASSIGNED']
 			time_updated=datetime.datetime.now()
-			print "hg supervisor connected to database"
+			my_logger.info("hg supervisor connected to database")
 			customer_req_data=db_session.query(TblCustomerRequest.uid_request_id,TblCustomerRequest.char_feature_id,TblCustomerRequest.txt_dependency_request_id)\
 				.filter(TblCustomerRequest.bool_assigned=='f').all()
-			print customer_req_data
+			my_logger.info(customer_req_data)
 
 			for row in customer_req_data:
-				print 'in customer_req_data'
+				my_logger.info('in customer_req_data')
 
 				request_id=row[0]
 				feature_id=row[1]
@@ -32,9 +32,9 @@ def hgsuper():
 				select_worker_path = db_session.query(TblFeature.txt_worker_path).filter(
 					TblFeature.char_feature_id == feature_id).first()
 				worker_path = select_worker_path[0]
-				print worker_path
+				my_logger.info(worker_path)
 				if dependency_id == None:
-					print	"in dependency_id== None"
+					my_logger.info(	"in dependency_id== None")
 					subprocess.call(["python", worker_path, request_id], shell=False)
 
 					my_logger.debug("Got Request")
@@ -50,7 +50,7 @@ def hgsuper():
 					my_logger.debug("Closing Request")
 
 				else:
-					print "in dependency"
+					my_logger.info("in dependency")
 					list_of_dependency_requests = dependency_id.split(',')
 
 					completedrequests = []
@@ -60,11 +60,11 @@ def hgsuper():
 						dependency_request_id = each_id.replace('"', '')
 						dependency_request_status = db_session.query(TblCustomerRequest.int_request_status).filter(
 							TblCustomerRequest.uid_request_id == dependency_request_id)
-						print dependency_request_status,'sssssssssttttattttuss'
+						my_logger.info(dependency_request_status)
 						dependency_request_status_value = dependency_request_status[0]
 						if dependency_request_status_value[0] == completed_request_status_value:
 							completedrequests.append(dependency_request_status)
-							print 'done'
+							my_logger.info('done')
 					if len(completedrequests) == len(list_of_dependency_requests):
 						subprocess.call(["python",worker_path,request_id],shell=False)
 						my_logger.debug("Got Request")

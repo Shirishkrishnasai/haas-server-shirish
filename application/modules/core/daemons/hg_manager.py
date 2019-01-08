@@ -22,15 +22,15 @@ def hgmanager():
             agent_verification_result = db_session.query(TblAgent.bool_registered, TblAgent.uid_agent_id)
 
             # Geting agents from database
-            print agent_verification_result
+            my_logger.info(agent_verification_result)
             for agent_registration in agent_verification_result:
                 agent_tasks_data = []
                 if agent_registration[0] == True:
-                    print "agent verification done"
-                    #print "true"
+                    my_logger.info("agent verification done")
+                    #my_logger.info("true")
                     # Listing tasks
-                    #print task_status_value, "task_status"
-                    #print agent_registration
+                    #my_logger.info(task_status_value)
+                    #my_logger.info(agent_registration)
                     created_tasks = db_session.query(TblTask.uid_task_id, TblTask.char_task_type_id,
                                                      TblTask.txt_dependent_task_id, TblTask.txt_agent_worker_version,
                                                      TblTask.txt_agent_worker_version_path, TblTask.txt_payload_id,
@@ -39,11 +39,11 @@ def hgmanager():
                     agent_customer_cluster_details = db_session.query(TblAgent.uid_customer_id,
                                                                       TblAgent.uid_cluster_id).filter(
                         TblAgent.uid_agent_id == agent_registration[1])
-                    print "hg manager fetched tasks and agent information"
-                    #print created_tasks, "tasks"
+                    my_logger.info("hg manager fetched tasks and agent information")
+                    #my_logger.info(created_tasks)
                     for each_tuple in created_tasks:
                         dependency_tasks = each_tuple[2]
-                        #      print dependency_tasks
+                        #      my_logger.info(dependency_tasks)
                         if dependency_tasks == None:
                             taskdata = {}
                             task_id = each_tuple[0]
@@ -60,8 +60,8 @@ def hgmanager():
                             taskdata['payload_id'] = payload_str
                             taskdata['task_status'] = each_tuple[6]
                             agent_tasks_data.append(taskdata)
-                            print payload_str
-                            # print agent_tasks_data,'no dependencies'
+                            my_logger.info(payload_str)
+                            # my_logger.info(agent_tasks_data,'no dependencies')
                             update_taskstatus_statement = db_session.query(TblTask).filter(TblTask.uid_task_id == task_id)
                             update_taskstatus_statement.update({"int_task_status": update_task_status_value})
                             db_session.commit()
@@ -82,7 +82,7 @@ def hgmanager():
                             taskdata['payload_id'] = payload_str
                             taskdata['task_status'] = each_tuple[6]
                             completedtasks = []
-                            print payload_str
+                            my_logger.info(payload_str)
                             for each_id in list_of_dependency_tasks:
                                 dependency_task_id = each_id.replace('"', '')
                                 dependency_task_status = db_session.query(TblTask.int_task_status).filter(
@@ -93,19 +93,20 @@ def hgmanager():
                             if len(completedtasks) == len(list_of_dependency_tasks):
                                 agent_tasks_data.append(taskdata)
 
-                                print agent_tasks_data, 'dependency', 'last if'
+                                my_logger.info(agent_tasks_data)
                                 update_assigned_statement = db_session.query(TblTask).filter(TblTask.uid_task_id == task_id)
                                 update_assigned_statement.update({"int_task_status": update_task_status_value})
                                 db_session.commit()
-                    #	    print agent_tasks_data
+                    #	    my_logger.info(agent_tasks_data)
                     if agent_tasks_data == []:
-                        print("nodata")
+                        my_logger.info("nodata")
                     else:
-                        print agent_tasks_data, "agent data"
+                        my_logger.info(agent_tasks_data)
+                        my_logger.info("agent data")
                         kafkaproducer(message=agent_tasks_data)
-                        print "hgmanager producedddddddddddddddddddd"
+                        my_logger.info("hgmanager producedddddddddddddddddddd")
                 else:
-                    print 'hgmanager else'
+                    my_logger.info('hgmanager else')
         #           return jsonify(message="agent is not registered")
 
         except Exception as e:
@@ -116,7 +117,7 @@ def hgmanager():
             my_logger.error(fname)
             my_logger.error(exc_tb.tb_lineno)
         finally:
-            print "HG_MANAGER in Finally"
+            my_logger.info("HG_MANAGER in Finally")
             db_session.close()
         time.sleep(15)
 

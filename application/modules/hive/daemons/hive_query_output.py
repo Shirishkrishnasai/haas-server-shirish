@@ -33,19 +33,21 @@ def hiveQueryOutput():
                 message = json.loads(data)
                 my_logger.info(message)
                 if message.has_key('output'):
-                    print message['output']
+                    my_logger.info(message['output'])
                     decoded_output = json.loads(message['output'].decode('base64', 'strict'))
 
-                    print decoded_output, type(
-                        decoded_output), "1111111111111111111111111111111111111111111111111111111111111111111"
+                    my_logger.info(decoded_output)
+                    my_logger.info(type(decoded_output))
                     decoded_output = yaml.load(decoded_output)
 
                     message['output'] = decoded_output
 
-                    print message, type(message['output']), "333333333333333333333333333333333333"
+                    my_logger.info(message)
+                    my_logger.info(type(message['output']))
 
-                    print message, type(
-                        message), 'message', message.keys(), 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
+                    my_logger.info(message)
+                    my_logger.info(type(message))
+                    my_logger.info(message.keys())
 
 
                     consumer.commit()
@@ -58,7 +60,6 @@ def hiveQueryOutput():
                 db_session.commit()
                 db_session.close()
 
-                # print message, type(message), 'message', message.keys(),'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
 
                 isexecuted = False
                 my_logger.info("Exiting fom loop")

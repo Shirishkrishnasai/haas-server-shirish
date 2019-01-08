@@ -2,6 +2,8 @@ from flask import Blueprint,jsonify
 from application.models.models import TblMetaCloudLocation, TblMetaCloudType,TblClusterType
 from sqlalchemy.orm import scoped_session
 from application import session_factory
+from application.common.loggerfile import my_logger
+
 
 clusterlocation=Blueprint('clusterlocation',__name__)
 @clusterlocation.route("/clusterlocation/cloudtype",methods=['GET'])
@@ -14,9 +16,9 @@ def clusterLocation():
     list_location = []
     location_id_list = []
     cloud_type_id_list = []
-    #print meta_cluster_location_query,'meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+    #my_logger.info(meta_cluster_location_query)
     for cluster_location in meta_cluster_location_query:
-        #print cluster_location
+        #my_logger.info(cluster_location)
         location_id_dict = {}
         cloud_type_id_dict = {}
         cloud_type = cluster_location[0]
@@ -28,42 +30,42 @@ def clusterLocation():
 
         #cloud_type_id_dict[str(cloud_type)] = cluster_location[3]
         #cloud_type_id_list.append(cloud_type_id_dict)
-        #print location_id,'lplplplp'
+        #my_logger.info(location_id)
         #location_id_dict[str(cloud_location)].append(location_id)
         if cloud_type in dict_location:
-            #print cluster_location,"inside"
+            #my_logger.info(cluster_location)
 
             dict_location[cloud_type].append(cluster_location[1])
         else:
             dict_location[cloud_type] = [cluster_location[1]]
-            #print dict_location,"else"
-    #print location_id_list,'loooooooooooooooooooooollllllllllllllll'
-    #print cloud_type_id_list, 'ccccccccccccloooooooooooooooooooooollllllllllllllll'
-    #print dict_location, "dciciciic"
+            #my_logger.info(dict_location)
+    #my_logger.info(location_id_list)
+    #my_logger.info(cloud_type_id_list)
+    #my_logger.info(dict_location)
     result_dict = {}
     end_list = []
     locations_dict = {}
 
-    #print result_dict,"starting"
+    #my_logger.info(result_dict)
     for keys,values in dict_location.items():
-        #print keys,"keyssssssss"
-        #print values,"valuessssssssss"
+        #my_logger.info(keys)
+        #my_logger.info(values)
         result_dict["cloud_type"] = keys
 
-        #print keys,'keeeeeeeeyyyyyyyy'
+        #my_logger.info(keys)
         locations_list = []
         for vals in values:
 
-            #print values,"lueeeeeeeeeeeeeeeeeeeeee"
-            #print vals,"vallllllllllllllllllllllllllll"
+            #my_logger.info(values)
+            #my_logger.info(vals)
             for dicts in location_id_list:
-                #print dicts,'sssssssssssddddddddddddddddddddddiiiii'
+                #my_logger.info(dicts)
                 for key,value in dicts.items():
                     #if dicts.has_key(keys):
                     if dicts.has_key(keys):
-                        #print value,'valolollol'
+                        #my_logger.info(value)
                         result_dict['id'] = dicts[keys]
-                        #print result_dict['id'],'ressssssssssssssssss'
+                        #my_logger.info(result_dict['id'])
                     if vals == key and dicts.has_key(keys):
 
                         locations_dict["key"] = value
@@ -74,10 +76,10 @@ def clusterLocation():
 
         end_list.append(result_dict.copy())
 
-    #print end_list, "after apendddd"
+    #my_logger.info(end_list)
     return jsonify(end_list)
 
-#cloudtype=Blueprint('cloudtype',__name__)
+#cloudtype=Bluemy_logger.info(('cloudtype',__name__)
 #@cloudtype.route("/cloudtype/<cloudtype>",methods=['GET'])
 #def cloudType(cloudtype):
 #    session = scoped_session(session_factory)
@@ -86,7 +88,7 @@ def clusterLocation():
 #    dict_type={}
 #    list_type = []
 #    for cloud_type in meta_cloud_type_query:
-#        print cloud_type
+#        my_logger.info(cloud_type)
 #        list_type.append(cloud_type)
 #    dict_type[cloudtype]=list_type
 #    return jsonify(dict_type)

@@ -23,12 +23,12 @@ def kafkaHiveStatusConsumer():
         consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server, api_version=kafka_api_version)
         consumer.subscribe(pattern='hivequerystatus*')
         my_logger.debug(consumer)
-        print "its hive query status subsciber ...subscribed"
+        my_logger.info("its hive query status subsciber ...subscribed")
         consumer.poll(1000)
-        print 'polling over'
+        my_logger.info('polling over')
         for message in consumer:
             try:
-                print "in hive query consumer try block"
+                my_logger.info("in hive query consumer try block")
                 query_status_data = message.value
                 my_logger.debug(query_status_data)
                 data = query_status_data.replace("'", '"')

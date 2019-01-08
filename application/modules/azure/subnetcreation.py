@@ -7,12 +7,13 @@ from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.resource import ResourceManagementClient
 from flask import Flask
 from flask import request
+from application.common.loggerfile import my_logger
 
 app = Flask(__name__)
 @app.route('/res',methods=['POST'])
 def resource():
    content = request.json
-   print content
+   my_logger.info(content)
    # LOCATION = 'centralindia'
    LOCATION = content['LOCATION']
    # Resource Group
@@ -46,7 +47,7 @@ def resource():
    resource_client = ResourceManagementClient(credentials, subscription_id)
 
 
-   print('\nCreate Resource Group')
+   my_logger.info('Create Resource Group')
    resource_client.resource_groups.create_or_update(GROUP_NAME, {'location': LOCATION})
 
    #create nic(GROUP_NAME,VNET_NAME,LOCATION)
@@ -65,7 +66,7 @@ def create_nic():
         tenant = '07272dbe-1df8-41bd-b29c-ae16bb7b9b83')
    network_client = NetworkManagementClient(credentials, subscription_id)
     # Create VNet
-   print('\nCreate Vnet')
+   my_logger.info('Create Vnet')
    ip='10.0.0.0/16'
    async_vnet_creation = network_client.virtual_networks.create_or_update(
       GROUP_NAME,
@@ -90,7 +91,7 @@ def create_subnet(customer_id):
    cluster_id='56dcb242-ac28-11e8-b56b-3ca9f49ab2cc'
 
    #content = request.json
-   #print content
+   #my_logger.info(content)
 
      #   GROUP_NAME = content['GROUP_NAME']
 
@@ -114,7 +115,7 @@ def create_subnet(customer_id):
    value=int(splitting[2])
    value=value+1
    ip="10.3."+str(value)+".0/24"
-   print ip
+   my_logger.info(ip)
 
 
    SUBNET_NAME = 'snet'+str(int(round(time.time() * 1000)))
@@ -130,7 +131,7 @@ def create_subnet(customer_id):
 
 
    # Create Subnet
-   print('\nCreate Subnet')
+   my_logger.info('Create Subnet')
    async_subnet_creation = network_client.subnets.create_or_update(
       GROUP_NAME,
               VNET_NAME,
@@ -139,14 +140,15 @@ def create_subnet(customer_id):
        )
    subnet_info = async_subnet_creation.result()
    subnet_id=subnet_info.id
-   print subnet_id
+   my_logger.info(subnet_id)
 #   srl_id=int(srl_id)+1
-   print type(SUBNET_NAME),type(ip)
+   my_logger.info(type(SUBNET_NAME))
+   my_logger.info(type(ip))
    cur.execute("set search_path to highgear;")
    statement2 = "insert into tbl_subnet (lng_customer_id,uid_cluster_id,inet_subnet_ip_range,txt_subnet_name,txt_subnet_id) values('%d','%s','%s','%s','%s')"
-   print "statement"
+   my_logger.info("statement")
    cur.execute(statement2 % (customer_id,cluster_id,ip,SUBNET_NAME,subnet_id))
-   print "execution"
+   my_logger.info("execution")
    conn.commit()
    return subnet_id
 

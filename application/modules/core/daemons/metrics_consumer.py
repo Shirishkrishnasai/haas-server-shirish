@@ -15,18 +15,18 @@ def kafkaconsumer():
         # Reading data from consumer and passing to the function
 
         for message in consumer:
-            # print message
+            # my_logger.info( message)
             customer_data = message.value
-            # print customer_data
+            # my_logger.info( customer_data)
             data = customer_data.replace("'", '"')
             json_loads_customer_data = json.loads(data)
-            # print json_loads_customer_data
+            # my_logger.info( json_loads_customer_data)
             if json_loads_customer_data['event_type'] == "metrics":
                 metricSubscriber(data=json_loads_customer_data)
             time.sleep(0.1)
 
         time.sleep(1)
-        print "Cling loop"
+        my_logger.info( "Cling loop")
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]

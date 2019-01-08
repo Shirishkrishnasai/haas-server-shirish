@@ -12,12 +12,12 @@ def mrjobproducer():
         try:
             db_session = scoped_session(session_factory)
             meta_request_status_query=db_session.query(TblMetaMrRequestStatus.srl_id).filter(TblMetaMrRequestStatus.var_mr_request_status == 'CREATED').all()
-            print meta_request_status_query[0][0],"in"
+            my_logger.info(meta_request_status_query[0][0])
             customer_job_request_query = db_session.query(TblCustomerJobRequest.uid_request_id,TblCustomerJobRequest.uid_customer_id,TblCustomerJobRequest.uid_cluster_id,
                                             TblCustomerJobRequest.uid_conf_upload_id,TblCustomerJobRequest.uid_jar_upload_id).filter(TblCustomerJobRequest.int_request_status == meta_request_status_query[0][0],TblCustomerJobRequest.bool_assigned == 'f').all()
 
             for req_data in customer_job_request_query:
-                print req_data
+                my_logger.info(req_data)
                 request_id=req_data[0]
                 customerid=req_data[1]
                 clusterid=req_data[2]
@@ -57,6 +57,6 @@ def mrjobproducer():
             my_logger.error(fname)
             my_logger.error(exc_tb.tb_lineno)
         finally:
-            print "mapr job_producer in Finally"
+            my_logger.info("mapr job_producer in Finally")
             db_session.close()
         time.sleep(15)

@@ -35,47 +35,51 @@ def configure_cluster(request_id):
 
         task_types_id_list = session.query(TblFeatureType.char_task_type_id).filter(
             TblFeatureType.char_feature_id == feature_id).all()
-        print "222222222222222222222222222", task_types_id_list
+        my_logger.info(task_types_id_list)
         task_type_list = []
         for task_type_ids in task_types_id_list:
             task_type_list.append(task_type_ids[0])
 
         task_type_role_info = session.query(TblTaskType.char_task_type_id, TblTaskType.int_vm_roles).filter(
             TblTaskType.char_task_type_id.in_(task_type_list)).all()
-        print "3333333333333333333333333333333", task_type_role_info
+        my_logger.info(task_type_role_info)
 
         task_types_info_dict = {}
         for task_types in task_type_role_info:
             task_types_info_list = session.query(TblMetaNodeRoles.vm_roles).filter(
                 TblMetaNodeRoles.srl_id == task_types[1]).all()
             task_types_info_dict[task_types[0]] = task_types_info_list[0][0]
-        print "444444444444444444444444444444444444", task_types_info_dict
+        my_logger.info(task_types_info_dict)
 
-        print "data querying from vm creation table"
+        my_logger.info("data querying from vm creation table")
 
         vm_roles_query = session.query(TblVmCreation.uid_cluster_id, TblVmCreation.uid_agent_id, TblVmCreation.var_role,
                                        TblVmCreation.var_ip, TblVmCreation.uid_vm_id).filter(
             TblVmCreation.uid_customer_id == customer_id, TblVmCreation.uid_cluster_id == cluster_id,
             TblVmCreation.bool_edge == 'f').all()
-        print "5555555555555555555555555555555555555555555555555", vm_roles_query
+        my_logger.info(vm_roles_query)
 
-        print "generating cluster_information_dictionary for task generation method"
+        my_logger.info("generating cluster_information_dictionary for task generation method")
 
         cluster_information_dict = {}
         for cluster_nodes_information in vm_roles_query:
             cluster_information_dict[cluster_nodes_information[1]] = cluster_nodes_information[2]
-            print "passing parameters to task generation"
-        print "task type", task_types_info_dict, cluster_information_dict
+            my_logger.info("passing parameters to task generation")
+        my_logger.info("task type")
+        my_logger.info(task_types_info_dict)
+        my_logger.info(cluster_information_dict)
         task_generator = generate_tasks(dict_nodes=cluster_information_dict, dict_tasktypes=task_types_info_dict)
-        print "Got Task_genrator", task_generator
+        my_logger.info("Got Task_genrator")
+        my_logger.info(task_generator)
 
-        print "inserting into node_information table"
+        my_logger.info("inserting into node_information table")
 
         time_now = datetime.datetime.now()
         for vm_information in vm_roles_query:
             node_id = str(uuid.uuid1())
             #            fqdn_string=str(vm_information[5]) + ".kwartile"
-            print node_id, "Got Not Id"
+            my_logger.info(node_id)
+            my_logger.info("Got Not Id")
             node_information_insertion = TblNodeInformation(uid_node_id=node_id, uid_vm_id=vm_information[4],
                                                             uid_cluster_id=cluster_id, uid_customer_id=customer_id,
                                                             char_role=vm_information[2], var_created_by='system',
@@ -84,19 +88,23 @@ def configure_cluster(request_id):
             session.add(node_information_insertion)
             session.commit()
 
-        print "inserting into agent table"
+        my_logger.info("inserting into agent table")
 
         node_information_query = session.query(TblNodeInformation.uid_node_id, TblNodeInformation.uid_vm_id).filter(
             TblNodeInformation.uid_customer_id == customer_id, TblNodeInformation.uid_cluster_id == cluster_id).all()
-        print node_information_query, "node information has nodeid,vmid filtered by customerid and clusterid.........it gets all the records"
+        my_logger.info(node_information_query)
+        my_logger.info("node information has nodeid,vmid filtered by customerid and clusterid.........it gets all the records")
 
         for vm_creation_information in vm_roles_query:
-            print "111111111111111111111111111111111"
-            #	    print vm_creation_information
+            my_logger.info("111111111111111111111111111111111")
+            #	    my_logger.info(vm_creation_information)
             for node_information_individual in node_information_query:
-                #		print vm_creation_information[4] ,node_information_individual[1],vm_creation_information
+                #		my_logger.info(vm_creation_information[4])
+                #       my_logger.info(node_information_individual[1])
+                #       my_logger.info(vm_creation_information)
                 if vm_creation_information[4] == node_information_individual[1]:
-                    print vm_creation_information[1], "theeeeeeeeeeeeeerrrrrrrrrrrrrrrrrrrrrreeeeeeeeeeeeeeeeeeeeeeeee"
+                    my_logger.info(vm_creation_information[1])
+                    my_logger.info("theeeeeeeeeeeeeerrrrrrrrrrrrrrrrrrrrrreeeeeeeeeeeeeeeeeeeeeeeee")
                     agent_insertion = TblAgent(uid_agent_id=vm_creation_information[1],
                                                uid_node_id=node_information_individual[0], uid_cluster_id=cluster_id,
                                                uid_customer_id=customer_id, private_ips=vm_creation_information[3],
@@ -104,7 +112,7 @@ def configure_cluster(request_id):
                                                ts_created_datetime=time_now, ts_modified_datetime=time_now)
                     session.add(agent_insertion)
         session.commit()
-        print "heeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        my_logger.info("heeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
 
         # inserting into kafka tables
 
@@ -125,7 +133,7 @@ def configure_cluster(request_id):
             session.add(kafka_topic_id_insertion)
             session.commit()
 
-        print "declairing  strings for slaves,host,configuration to append ips"
+        my_logger.info("declairing  strings for slaves,host,configuration to append ips")
 
         host_dns_string = ''
         slaves_string = ''
@@ -156,7 +164,7 @@ def configure_cluster(request_id):
         slaves_content_query = database_connection.slaves.find_one(slaves_content)
         slaves_content_objectid = str(slaves_content_query["_id"])
 
-        print "Appending slaves string object id into list"
+        my_logger.info("Appending slaves string object id into list")
 
         for task_information in task_generator:
             if task_information[2] == 'F1_T3':
@@ -223,7 +231,8 @@ def configure_cluster(request_id):
 
         task_path = session.query(TblTaskType.char_task_type_id, TblTaskType.txt_agent_worker_version_path).filter(
             TblTaskType.char_task_type_id.in_(task_type_list)).all()
-        print "Task_Path", task_path
+        my_logger.info("Task_Path")
+        my_logger.info(task_path)
         for task_information in task_generator:
             for task_type_information in task_path:
                 if task_information[2] == task_type_information[0]:
@@ -235,7 +244,8 @@ def configure_cluster(request_id):
         table_status_values = dict(metatablestatus)
         task_status_value = table_status_values['CREATED']
 
-        print "insertion into task table", task_generator
+        my_logger.info("insertion into task table")
+        my_logger.info(task_generator)
 
         for task_information in task_generator:
             time_now = datetime.datetime.now()
@@ -278,7 +288,7 @@ def configure_cluster(request_id):
                                              txt_agent_worker_version_path=task_information[5], var_created_by='system',
                                              var_modified_by='system', ts_created_datetime=time_now,
                                              ts_modified_datetime=time_now)
-            print task_insertion, "\n"
+            my_logger.info(task_insertion)
             session.add(task_insertion)
             session.commit()
 
@@ -295,7 +305,7 @@ if __name__ == '__main__':
             request_id = sys.argv[1]
             configure_cluster(request_id)
         else:
-            print "args not passed"
+            my_logger.info("args not passed")
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]

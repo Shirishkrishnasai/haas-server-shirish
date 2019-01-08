@@ -34,17 +34,17 @@ def selectQueryUrl():
             hive_request_ids = db_session.query(TblHiveRequest.uid_cluster_id,
                                                 TblHiveRequest.uid_hive_request_id).filter\
                 (and_(TblHiveRequest.bool_select_query=='t',TblHiveRequest.bool_url_created=='f')).all()
-            print hive_request_ids
+            my_logger.info(hive_request_ids)
 
         #conditions select query and bool url created
             for each_tuple in hive_request_ids:
                 direcs = list(file_service.list_directories_and_files(share_name=each_tuple[0],
                                                                  directory_name='hive'))
-                print direcs
+                my_logger.info(direcs)
                 my_logger.info("dirctoriesssssssssssssssss liiiiiiiiiiiiiisssssssssssssstttttttttttttttttttt")
 
                 for dire in direcs:
-                    print "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj",dire.name,"heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+                    my_logger.info(dire.name)
 
                 # creating expiry date for access signature and converting to str as expiry sparam shouldnt contain tzinfo
                 expiry_date = str(datetime.now().date() + timedelta(days=3))
