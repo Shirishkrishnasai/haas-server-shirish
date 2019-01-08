@@ -36,6 +36,7 @@ def hgsuper():
 				if dependency_id == None:
 					print	"in dependency_id== None"
 					subprocess.call(["python", worker_path, request_id], shell=False)
+
 					my_logger.debug("Got Request")
 					update_object = db_session.query(TblCustomerRequest).filter(
 						TblCustomerRequest.uid_request_id == request_id)
