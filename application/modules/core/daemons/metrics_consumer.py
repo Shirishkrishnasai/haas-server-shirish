@@ -1,9 +1,10 @@
-import time
+import time,sys,os
 
 from application.common.metrics_updation import metricSubscriber
 from application.config.config_file import kafka_bootstrap_server, kafka_api_version
 from flask import json
 from kafka import KafkaConsumer
+from application.common.loggerfile import my_logger
 
 
 def kafkaconsumer():
@@ -27,4 +28,9 @@ def kafkaconsumer():
         time.sleep(1)
         print "Cling loop"
     except Exception as e:
-        return e.message
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)

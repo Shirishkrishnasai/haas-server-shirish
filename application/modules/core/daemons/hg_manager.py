@@ -4,7 +4,9 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from application import app, conn_string, db
 from application.models.models import TblMetaTaskStatus, TblAgent, TblTask
 from application.common.kafka_producer import kafkaproducer
-import time
+from application.common.loggerfile import my_logger
+
+import time,os,sys
 
 def hgmanager():
     while True:
@@ -107,8 +109,12 @@ def hgmanager():
         #           return jsonify(message="agent is not registered")
 
         except Exception as e:
-            print e.message, 'i am in error'
-            #return e.message
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+            my_logger.error(exc_type)
+            my_logger.error(fname)
+            my_logger.error(exc_tb.tb_lineno)
         finally:
             print "HG_MANAGER in Finally"
             db_session.close()

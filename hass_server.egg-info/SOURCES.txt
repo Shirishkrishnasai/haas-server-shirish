@@ -2,7 +2,6 @@ setup.py
 application/__init__.py
 application/db_setup.py
 application/common/__init__.py
-application/common/big_size_file_download.py
 application/common/configurations.py
 application/common/create_ldap_customer.py
 application/common/email_generation.py

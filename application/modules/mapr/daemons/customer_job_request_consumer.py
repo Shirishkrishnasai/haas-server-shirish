@@ -3,10 +3,12 @@ from application.config.config_file import kafka_bootstrap_server, kafka_api_ver
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application.models.models import TblCustomerJobRequest
-import json
+import json,os,sys
+from application.common.loggerfile import my_logger
+
 
 def jobinsertion():
-   # try:
+    try:
         print 'insert application id'
         consumer=KafkaConsumer(bootstrap_servers=kafka_bootstrap_server)
         print 'in consumer'
@@ -29,5 +31,10 @@ def jobinsertion():
             session.commit()
             session.close()
             print 'completed'
-   # except Exception as e:
-	#	return e.message
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)

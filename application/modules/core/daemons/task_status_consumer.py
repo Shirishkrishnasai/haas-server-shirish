@@ -1,4 +1,4 @@
-import time
+import time,sys,os
 
 from application.common.loggerfile import my_logger
 from application.common.task_status_updation import taskstatusconsumer
@@ -22,7 +22,12 @@ def kafkataskconsumer():
                     taskstatusconsumer(task_status_information=json_loads_customer_data)
 
             except Exception as e:
-                my_logger.erro(str(e))
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+                my_logger.error(exc_type)
+                my_logger.error(fname)
+                my_logger.error(exc_tb.tb_lineno)
                 print "Something wrong in kafka"
 
             time.sleep(0.1)

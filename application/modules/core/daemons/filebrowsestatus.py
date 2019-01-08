@@ -1,4 +1,4 @@
-import json
+import json,os,sys
 
 import pymongo
 from application import mongo_conn_string
@@ -37,7 +37,17 @@ def filebrowsestatus():
             result = db_collection.insert_one(filestatus)
             print 'done with mongo'
     except pymongo.errors.ConnectionFailure, e:
-        my_logger.debug(e)
-        return 'unable to connect mongo'
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+
     except Exception as e:
-        return e.message
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)

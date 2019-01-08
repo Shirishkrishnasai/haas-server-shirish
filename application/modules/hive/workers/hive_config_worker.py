@@ -6,17 +6,17 @@ import pymongo
 from bson.objectid import ObjectId
 
 import uuid
-import sys
+import sys,os
 from datetime import datetime
 from application import conn_string, mongo_conn_string, db, app
 from application.models.models import TblMetaTaskStatus, TblTask, TblAgent, TblCustomerRequest, TblCluster,TblFeatureType, TblTaskType, TblKafkaPublisher, TblKafkaTopic, TblMetaNodeRoles, TblClusterType,TblVmCreation,TblNodeInformation,TblAgent
 from application.common.loggerfile import my_logger
 from sqlalchemy import and_
 
-def configure_hive():
+def configure_hive(request_id):
 
-    #try:
-        request_id = sys.argv[1]
+    try:
+        #request_id = sys.argv[1]
         session = scoped_session(session_factory)
 
         customer_feature_ids = session.query(TblCustomerRequest.uid_customer_id,TblCustomerRequest.char_feature_id,TblCustomerRequest.txt_dependency_request_id).filter(TblCustomerRequest.uid_request_id==request_id).first()
@@ -145,7 +145,19 @@ def configure_hive():
 
         my_logger.info("done for hive config worker to generate tasks..............now check tasks table........................................")
 
-    #except Exception as e :
-     #   print e
+    except Exception as e :
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.info(" ".join([exc_type, fname, exc_tb.tb_lineno]))
 
-configure_hive()
+if __name__ == '__main__':
+    try:
+        if len(sys.argv)>=1:
+            request_id = sys.argv[1]
+            configure_hive(request_id)
+        else:
+            print "args not passed"
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.info(" ".join([exc_type, fname, exc_tb.tb_lineno]))

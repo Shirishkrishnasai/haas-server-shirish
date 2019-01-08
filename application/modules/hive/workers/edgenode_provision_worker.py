@@ -1,5 +1,5 @@
 import uuid
-import sys
+import sys,os
 import pymongo
 from bson.objectid import ObjectId
 from sqlalchemy import and_
@@ -13,61 +13,84 @@ from application.common.loggerfile import my_logger
 from application.modules.azure.createvm import vmcreation
 
 
-def edgenodeProvision():
-    request_id = sys.argv[1]
-    db_session = scoped_session(session_factory)
-    customer_data = db_session.query(TblCustomerRequest.uid_customer_id,
-                                     TblCustomerRequest.char_feature_id,
-                                     TblCustomerRequest.txt_payload_id).filter(TblCustomerRequest.uid_request_id == request_id).first()
-    customer_id = customer_data[0]
-    feature_id = customer_data[1]
-    payload_id = customer_data[2]
-    mongo_connection = pymongo.MongoClient(mongo_conn_string)
-    database_connection = mongo_connection['haas']
-    collection_name = database_connection['highgear']
-    edgenode_mongo_info = collection_name.find_one({"_id": ObjectId(payload_id)})
-    my_logger.debug(edgenode_mongo_info)
+def edgenodeProvision(request_id):
+    try:
 
-    cluster_id = edgenode_mongo_info['cluster_id']
-    location = edgenode_mongo_info['cluster_location']
-    plan_info = db_session.query(TblCustomer.int_plan_id).filter(TblCustomer.uid_customer_id == customer_id).first()
-    size_info = db_session.query(TblCluster.int_size_id).filter(TblCluster.uid_cluster_id==cluster_id).first()
-    plan_id = plan_info[0]
-    size_id = size_info[0]
+        #request_id = sys.argv[1]
+        db_session = scoped_session(session_factory)
+        customer_data = db_session.query(TblCustomerRequest.uid_customer_id,
+                                         TblCustomerRequest.char_feature_id,
+                                         TblCustomerRequest.txt_payload_id).filter(TblCustomerRequest.uid_request_id == request_id).first()
+        customer_id = customer_data[0]
+        feature_id = customer_data[1]
+        payload_id = customer_data[2]
+        mongo_connection = pymongo.MongoClient(mongo_conn_string)
+        database_connection = mongo_connection['haas']
+        collection_name = database_connection['highgear']
+        edgenode_mongo_info = collection_name.find_one({"_id": ObjectId(payload_id)})
+        my_logger.debug(edgenode_mongo_info)
 
-    edgenode_info = db_session.query(TblEdgenode.var_role,
-                                     TblEdgenode.int_role_count).filter(and_(TblEdgenode.int_size_id==size_id,
-                                                                             TblEdgenode.int_plan_id == plan_id,
-                                                                             TblEdgenode.char_feature_id == feature_id)).all()
+        cluster_id = edgenode_mongo_info['cluster_id']
+        location = edgenode_mongo_info['cluster_location']
+        plan_info = db_session.query(TblCustomer.int_plan_id).filter(TblCustomer.uid_customer_id == customer_id).first()
+        size_info = db_session.query(TblCluster.int_size_id).filter(TblCluster.uid_cluster_id==cluster_id).first()
+        plan_id = plan_info[0]
+        size_id = size_info[0]
 
-    vm_creation_info=[]
+        edgenode_info = db_session.query(TblEdgenode.var_role,
+                                         TblEdgenode.int_role_count).filter(and_(TblEdgenode.int_size_id==size_id,
+                                                                                 TblEdgenode.int_plan_id == plan_id,
+                                                                                 TblEdgenode.char_feature_id == feature_id)).all()
 
-    for data in edgenode_info:
-        role=data[0]
-        count_of_role=data[1]
-        for i in range(0,count_of_role):
-            vm_creation_list = []
-            agentid = str(uuid.uuid1())
-            #vm_creation_list.extend([cluster_id,customer_id,agentid,role,location,size_id,plan_id])
+        vm_creation_info=[]
 
-            vm_creation_list.append(cluster_id)
-            vm_creation_list.append(customer_id)
-            vm_creation_list.append(agentid)
-            vm_creation_list.append(role)
-            vm_creation_list.append(location)
-            vm_creation_list.append(size_id)
-            vm_creation_list.append(plan_id)
-            vm_creation_info.append(vm_creation_list)
-            print vm_creation_list
-    my_logger.info("calling createvm method")
-    print "calling vm_creation"
-    vm_information = vmcreation(vm_creation_info)#u should call another function probably
-    my_logger.debug(vm_information)
-    metatablestatus = db_session.query(TblMetaRequestStatus.var_request_status, TblMetaRequestStatus.srl_id).all()
-    table_status_values = dict(metatablestatus)
-    completed_task_status_value = table_status_values['COMPLETED']
-    update_assigned_statement = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == request_id)
-    update_assigned_statement.update({"int_request_status": completed_task_status_value})
-    db_session.commit()
+        for data in edgenode_info:
+            role=data[0]
+            count_of_role=data[1]
+            for i in range(0,count_of_role):
+                vm_creation_list = []
+                agentid = str(uuid.uuid1())
+                #vm_creation_list.extend([cluster_id,customer_id,agentid,role,location,size_id,plan_id])
 
-edgenodeProvision()
+                vm_creation_list.append(cluster_id)
+                vm_creation_list.append(customer_id)
+                vm_creation_list.append(agentid)
+                vm_creation_list.append(role)
+                vm_creation_list.append(location)
+                vm_creation_list.append(size_id)
+                vm_creation_list.append(plan_id)
+                vm_creation_info.append(vm_creation_list)
+                print vm_creation_list
+        my_logger.info("calling createvm method")
+        print "calling vm_creation"
+        vm_information = vmcreation(vm_creation_info)#u should call another function probably
+        my_logger.debug(vm_information)
+        metatablestatus = db_session.query(TblMetaRequestStatus.var_request_status, TblMetaRequestStatus.srl_id).all()
+        table_status_values = dict(metatablestatus)
+        completed_task_status_value = table_status_values['COMPLETED']
+        update_assigned_statement = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == request_id)
+        update_assigned_statement.update({"int_request_status": completed_task_status_value})
+        db_session.commit()
+
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.info(" ".join([exc_type, fname, exc_tb.tb_lineno]))
+
+
+if __name__ == '__main__':
+    try:
+        if len(sys.argv)>=1:
+            my_logger.info(sys.argv)
+            request_id = sys.argv[1]
+            edgenodeProvision(request_id)
+        else:
+            print "args not passed"
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.info(" ".join([exc_type, fname, exc_tb.tb_lineno]))
+
+
+
+
