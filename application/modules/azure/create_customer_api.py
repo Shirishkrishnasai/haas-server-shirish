@@ -25,7 +25,6 @@ def customercreation():
     customer_content = request.json
     my_logger.info(customer_content)
     display_name = customer_content['first_name']
-    # print display_name
 
     user_principal_name = customer_content['first_name'] + '@bhaskarhighgear.onmicrosoft.com'
     password = customer_content['password']

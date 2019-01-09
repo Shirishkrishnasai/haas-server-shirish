@@ -8,18 +8,20 @@ def hiveDatabaseResult():
     # while True:
     #
     #     try:
-    #         print "in hive database result consumer"
+    #         my_logger.info("in hive database result consumer")
     #         consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server)
     #         consumer.subscribe(pattern='hivedatabaseresult*')
-    #         print "subscribed to topic"
+    #         my_logger.info("subscribed to topic")
     #         for message in consumer:
-    #             print "in for loop-------------database result consumer"
+    #             my_logger.info("in for loop-------------database result consumer")
     #             hivedatabaseresult = message.value
-    #             print type(hivedatabaseresult)
+    #             my_logger.info(type(hivedatabaseresult))
     #             data = hivedatabaseresult.replace("'", '"')
     #
     #             message = json.loads(data)
-    #             print message ,type(message) ,'message',message.keys()
+    #             my_logger.info(message )
+    #             my_logger.info(type(message)) 
+    #             my_logger.info(message.keys())
     #
     #
     #

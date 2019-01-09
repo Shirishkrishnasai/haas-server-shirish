@@ -123,7 +123,6 @@ def azure_upload_host_slave(cluster_id):
             slave_file = str(tups[0]) + '   ' + str(tups[1])
             slavelist.append(slave_file)
             
-    #print host_file,type(host_file),'helllllllllllllllllllllll'
     host_file_result = '\n'.join(hostlist)
     my_logger.info(host_file_result)
     my_logger.info(type(host_file_result))

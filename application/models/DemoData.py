@@ -921,4 +921,3 @@ def addCluster(customerId):
 #customer_response = json.loads(login("navya@gmail.com", "password"))
 #customer_id = customer_response['data']['customer_id']
 # .data['customer_id']
-#print addCluster(customer_id)
