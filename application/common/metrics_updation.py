@@ -5,7 +5,7 @@ from application.common.loggerfile import  my_logger
 def metricSubscriber(data):
     try:
         customerid = data['customer_id']
-        print customerid
+        my_logger.info(customerid)
         mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
         database_conn = mongo_db_conn['local']
         db_collection = database_conn[customerid]

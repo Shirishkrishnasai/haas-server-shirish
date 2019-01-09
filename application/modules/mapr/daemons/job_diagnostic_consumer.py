@@ -9,14 +9,15 @@ from application.common.loggerfile import my_logger
 def diagnosticsconsumer():
     try:
         session = scoped_session(session_factory)
-        print "in job diagnostics consumerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+        my_logger.info("in job diagnostics consumerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
 
         consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server)
         consumer.subscribe(pattern='job_diagnostics*')
-        print "after subscribesssssssssssssssssssssssssssss , diganoooooooooooo"
+        my_logger.info("after subscribesssssssssssssssssssssssssssss , diganoooooooooooo")
         for message in consumer:
             job_data = message.value
-            print job_data,"innnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
+            my_logger.info(job_data)
+            my_logger.info("innnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn")
             data = job_data.replace("'", '"')
             json_loads_job_data = json.loads(data)
             update_customer_job_request=session.query(TblCustomerJobRequest).filter(TblCustomerJobRequest.uid_customer_id==json_loads_job_data['customer_id'],TblCustomerJobRequest.uid_request_id==json_loads_job_data['request_id'])

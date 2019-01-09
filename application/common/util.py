@@ -105,13 +105,13 @@ def azure_upload_host_slave(cluster_id):
 
 
     hostname_ip_details = db.session.query(TblVmCreation.var_ip,TblVmCreation.var_name,TblVmCreation.var_role).filter(TblVmCreation.uid_cluster_id == cluster_id).all()
-    print hostname_ip_details,'hhhhhhhhhhhhhhhh'
+    my_logger.info(hostname_ip_details)
     # hostfile = open('hostfile','w')
     # slavefile = open('slavefile', 'w')
     hostlist = []
     slavelist = []
     for tups in hostname_ip_details:
-        print tups,'tuppppppppppppppp'
+        my_logger.info(tups)
     #     hostfile.write(str(tups[0])+'   '+str(tups[1])+'\n')
     #     if str(tups[2]).lower() == 'datanode':
     #         slavefile.write(str(tups[0])+'   '+str(tups[1])+'\n')
@@ -125,9 +125,11 @@ def azure_upload_host_slave(cluster_id):
             
     #print host_file,type(host_file),'helllllllllllllllllllllll'
     host_file_result = '\n'.join(hostlist)
-    print host_file_result,type(host_file_result),'hoooooooooossssssssss'
+    my_logger.info(host_file_result)
+    my_logger.info(type(host_file_result))
     slave_file_result = '\n'.join(slavelist)
-    print slave_file_result,type(slave_file_result),'sllllllllllllllllaaaaaaaaaaa'
+    my_logger.info(slave_file_result)
+    my_logger.info(type(slave_file_result))
 
     byte_stream_host = io.BytesIO(host_file_result)
     no_of_bytes_host = len(host_file_result)
@@ -140,7 +142,7 @@ def azure_upload_host_slave(cluster_id):
     account_key = cfg.get('file_storage', 'key')
 
     file_service = FileService(account_name=account_name, account_key=account_key)
-    print file_service,'fileeeeeeeeee'
+    my_logger.info(file_service)
 
     file_service.create_file_from_stream(share_name=cluster_id,
                                          directory_name='system',
@@ -148,7 +150,7 @@ def azure_upload_host_slave(cluster_id):
                                          stream=byte_stream_slave,
                                          count=no_of_bytes_slave,
                                          progress_callback=fileprogress)
-    print 'heyyyyyyyyyyy'
+    my_logger.info('heyyyyyyyyyyy')
     my_logger.info("file process done")
     #time.sleep(5)
     file_service.create_file_from_stream(share_name=cluster_id,

@@ -29,26 +29,27 @@ def configuration():
         filesize = data["filesize"]
         plan_id = data["plan_id"]
         size_id = data["size_id"]
-        print size_id
+        my_logger.info(size_id)
         blocksize = 128
         map_tasks = int(filesize) / int(blocksize)
         db_session = scoped_session(session_factory)
         vm_size_info = db_session.query(TblMetaVmSize.var_vm_type).filter(
             and_(TblMetaVmSize.int_plan_id == plan_id, TblMetaVmSize.int_size_id == size_id,
                  TblMetaVmSize.var_role == "datanode"))
-        print vm_size_info
+        my_logger.info(vm_size_info)
         vm_type = vm_size_info[0][0]
-        print vm_type
+        my_logger.info(vm_type)
         vcores_data = db_session.query(TblMetaCloudType.float_cpu).filter(TblMetaCloudType.var_vm_type == vm_type).first()
         vcores=int(vcores_data[0])
-        print vcores
+        my_logger.info(vcores)
         no_of_datanodes=db_session.query(TblPlanClusterSizeConfig.int_role_count).filter(
             and_(TblPlanClusterSizeConfig.int_plan_id == plan_id,TblPlanClusterSizeConfig.int_size_id == size_id,
                  TblPlanClusterSizeConfig.var_role == "datanode")).first()
         count=no_of_datanodes[0]
-        print count
+        my_logger.info(count)
         vcores=vcores*count
-        print vcores,'finalllllllllllllll'
+        my_logger.info(vcores)
+        my_logger.info('finalllllllllllllll')
 
 
         configurations_dict = {}
@@ -67,7 +68,7 @@ def configuration():
         configurations_dict["sortfactor"] = int(configurations_dict["sortmb"] / 10)
         configurations_dict["map_output_compress"] = 'true'
         configurations_dict["javaopts"] = "-Xmx" + str(javaopts) + "m"
-        print configurations_dict
+        my_logger.info(configurations_dict)
         return jsonify(configurations_dict)
 
     except exc.SQLAlchemyError as e:
@@ -84,40 +85,41 @@ def hg_mrjob_client():
     try:
         #data = dict(request.form)
         #data = request.values
-        #print dir(request)
-        #print data['cluster_id']
+        #my_logger.info(dir(request))
+        #my_logger.info(data['cluster_id'])
 
-        #print data,'dddddddddddddddaaaaaaaaaaaaa'
+        #my_logger.info(data)
 
         request_id = str(uuid.uuid1())
         date_time = datetime.datetime.now()
         posted_args = request.args
         input_path = posted_args['input_file_path']
         output_path = posted_args['output_file_path']
-        print input_path,'inpuuuuuuuuuut'
+        my_logger.info(input_path)
         customer_request = request.values
-        print customer_request
+        my_logger.info(customer_request)
         customer_id = customer_request['customer_id']
-        print customer_id,'cusssssssssst'
+        my_logger.info(customer_id)
         cluster_id = customer_request['cluster_id']
-        print cluster_id,'classssssss'
+        my_logger.info(cluster_id)
         user_name = customer_request['user_name']
-        print user_name ,'useeeeeeeeeeee'
+        my_logger.info(user_name )
         job_name = customer_request['job_name']
-        print job_name,'joooooob'
+        my_logger.info(job_name)
         job_description = customer_request['job_description']
-        print job_description,'descc'
-        #print "hey"
+        my_logger.info(job_description)
+        #my_logger.info("hey"
         filename = request.files['files'].filename
-        print 'nameeeeeeeeeeeeeeeeeeee',filename
+        my_logger.info('nameeeeeeeeeeeeeeeeeeee')
         posted_file = request.files
-        print filename, posted_file,'possssst'
+        my_logger.info(filename) 
+        my_logger.info(posted_file)
         str_posted_file = posted_file['files'].read()
-        print str_posted_file
+        my_logger.info(str_posted_file)
         utf_posted_file = str_posted_file.encode('base64')
         # getting no of bytes to give value for count
         no_of_bytes = len(utf_posted_file)
-        print no_of_bytes,'nmmmmmmmmmmmmmrrr'
+        my_logger.info(no_of_bytes)
 
         # converting unicoded file to bytestream
         byte_stream = io.BytesIO(utf_posted_file)
@@ -136,9 +138,9 @@ def hg_mrjob_client():
         db_session = scoped_session(session_factory)
         share_values = db_session.query(TblMetaFileUpload.var_share_name, TblMetaFileUpload.var_directory_name).\
             filter(TblMetaFileUpload.uid_customer_id == customer_id).first()
-        print share_values, 'shhhhhhhhhhhhhh'
+        my_logger.info(share_values)
 
-        print byte_stream, 'hiiiiiiiiiiiiiiiii'
+        my_logger.info(byte_stream)
         file_service.create_file_from_stream(share_name=share_values[0],
                                              directory_name=share_values[1],
                                              file_name=filename,
@@ -150,7 +152,7 @@ def hg_mrjob_client():
         my_logger.info('now inserting values in database')
 
         file_upload_id = str(uuid.uuid1())
-        print file_upload_id, 'iddddddddddd'
+        my_logger.info(file_upload_id)
 
         my_logger.info("passed argument is user_name")
         file_insert_values = TblFileUpload(uid_upload_id=file_upload_id,
@@ -163,10 +165,10 @@ def hg_mrjob_client():
         db_session.add(file_insert_values)
         db_session.commit()
         my_logger.info('values inserted and now returning file file_upload_url')
-        print file_upload_id, 'uuuuuuuuuuu'
+        my_logger.info(file_upload_id)
         jar_uid = file_upload_id
         with open('/opt/mapred-site.xml')as f:
-            print "in file opennnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
+            my_logger.info("in file opennnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn")
 
             tree = ET.parse(f)
             root = tree.getroot()
@@ -179,7 +181,7 @@ def hg_mrjob_client():
                     elem.text = elem.text.replace('sortfactor', str(customer_request["sortfactor"]))
                     elem.text = elem.text.replace('javaopts', str(customer_request["javaopts"]))
                     elem.text = elem.text.replace('outputcompress', str(customer_request["map_output_compress"]))
-                    print "tryyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy endedddddddddddddddddd"
+                    my_logger.info("tryyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy endedddddddddddddddddd")
                 except AttributeError:
                     pass
 
@@ -189,7 +191,7 @@ def hg_mrjob_client():
         params = {"user_name": user_name, "customer_id": customer_id}
         r = requests.post(file_upload_url, files=up, params=params)
         conf_uid = r.text
-        print 'hiiiiiiiiiiiiiiiiiiiii uuuuuuuuuuuuuuuiiiiiiiiiiiiidddddddddddd'
+        my_logger.info('hiiiiiiiiiiiiiiiiiiiii uuuuuuuuuuuuuuuiiiiiiiiiiiiidddddddddddd')
         data = TblCustomerJobRequest(uid_customer_id=customer_id,
                                      var_user_name=user_name,
                                      uid_request_id=request_id,
@@ -214,7 +216,7 @@ def hg_mrjob_client():
                                      )
         db_session.add(data)
         db_session.commit()
-        print "commmmmmmmmmmmmmmmmmmmmmmmmmmmmiiiiiiiiiiiiiiiitttttttttttttttttttttttttttttteeeeeeeeeeeeeeeeeeeedddddddddddddddd"
+        my_logger.info("commmmmmmmmmmmmmmmmmmmmmmmmmmmmiiiiiiiiiiiiiiiitttttttttttttttttttttttttttttteeeeeeeeeeeeeeeeeeeedddddddddddddddd")
 
         with open('/opt/mapred-site.xml')as f:
             tree = ET.parse(f)
@@ -222,7 +224,7 @@ def hg_mrjob_client():
 
             for elem in root.getiterator():
                 try:
-                    #print 'i am almost done'
+                    #my_logger.info('i am almost done')
                     elem.text = elem.text.replace(str(customer_request["total_map_tasks"]), 'mapsvalue')
                     elem.text = elem.text.replace(str(customer_request["reducer_tasks"]), 'reducesvalue')
                     elem.text = elem.text.replace(str(customer_request["sortmb"]), 'sortmb')
@@ -236,14 +238,14 @@ def hg_mrjob_client():
         tree.write('/opt/mapred-site.xml', xml_declaration=True, method='xml', encoding="utf8")
         f.close()
         db_session.close()
-        print "hello"
+        my_logger.info("hello")
         return jsonify(message=request_id)
     except exc.SQLAlchemyError as e:
-        print e
+        my_logger.info(e)
         my_logger.error(e)
         return jsonify(e)
     except Exception as e:
-        print e
+        my_logger.info(e)
         my_logger.error(e)
     finally:
         my_logger.info("done")
@@ -256,24 +258,24 @@ def fileProgress(start, size):
 mrjobstatus=Blueprint('mrjobstatus',__name__)
 @mrjobstatus.route("/api/mrjobstatus/<mr_job_id>",methods=['GET'])
 def mrJobStatus(mr_job_id):
-    print "inside"
+    my_logger.info("inside")
     #data = request.headers
     #data= request.args
-    #print data,type(data)
-    #print data,type(data)
+    #my_logger.info(data,type(data)
+    #my_logger.info(data,type(data)
     #id_list = data["mr_job_id"]
-    #print id_list,type(id_list),"lllllllll"
+    #my_logger.info(id_list,type(id_list),"lllllllll"
     #id_data = eval(mr_job_id)
-    #print id_data,type(id_data)
+    #my_logger.info(id_data,type(id_data)
     session = scoped_session(session_factory)
     result_dict = {}
     #for ids in id_data :
-    #    print ids,type(ids),'idsssssssssssssssssssssssssss'
+    #    my_logger.info(ids,type(ids))
     customer_job_request_id_list = session.query(TblCustomerJobRequest.int_request_status).filter(TblCustomerJobRequest.uid_request_id == mr_job_id).all()
-    print customer_job_request_id_list
+    my_logger.info(customer_job_request_id_list)
     for mr_request_id in customer_job_request_id_list:
         mr_request_id_list = session.query(TblMetaMrRequestStatus.var_mr_request_status).filter(TblMetaMrRequestStatus.srl_id == mr_request_id).all()
-        print mr_request_id_list
+        my_logger.info(mr_request_id_list)
         result_dict[mr_job_id] = mr_request_id_list[0][0]
-    print result_dict
+    my_logger.info(result_dict)
     return jsonify(result_dict)
