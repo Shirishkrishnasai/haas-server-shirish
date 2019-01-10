@@ -89,7 +89,6 @@ from application.common.util import azure_upload_host_slave
 
 from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
 from application.modules.cluster.workers.configure_cluster import configure_cluster
-
 app.register_blueprint(azfiledownload, url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
 app.register_blueprint(jobdiagnostics, url_prefix='')
@@ -104,7 +103,7 @@ app.register_blueprint(filebrowser, url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
 app.register_blueprint(jobdiagnostics, url_prefix='')
 app.register_blueprint(clusterlocation, url_prefix='')
-# app.register_blueprint(cloudtype, url_prefix='')
+#app.register_blueprint(cloudtype, url_prefix='')
 app.register_blueprint(clustersize, url_prefix='')
 app.register_blueprint(customerusers, url_prefix='')
 app.register_blueprint(jobdetails, url_prefix='')
@@ -128,12 +127,12 @@ def has_no_empty_params(rule):
 def site_map():
     links = []
     for rule in app.url_map.iter_rules():
-        # Filter out rules we can't navigate to in a browser
-        # and rules that require parameters
+        #Filter out rules we can't navigate to in a browser
+        #and rules that require parameters
         if "GET" in rule.methods and has_no_empty_params(rule):
             url = url_for(rule.endpoint, **(rule.defaults or {}))
             links.append((url, rule.endpoint))
-    # links is now a list of url, endpoint tuples
+    #links is now a list of url, endpoint tuples
     print (links)
 
 
@@ -174,7 +173,7 @@ def runProcess():
     # kafkaconsumer_process.start()
     # hgmanager_process.start()
     configure_cluster('6ee4297c-14a8-11e9-a7f3-24be0513cbc7')
-    # configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
+    # configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")>>>>>>> application/__init__.py
     print "method ended"
 
 
