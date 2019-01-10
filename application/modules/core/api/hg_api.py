@@ -177,7 +177,7 @@ def hg_client():
                 dependency_request_id=[x for x in dependency_request_id_list if x != None]
                 if dependents == None:
                     print "in else"
-                    insert_customer = TblCustomerRequest( uid_request_id=request_id[0],
+                    insert_customer = TblCustomerRequest(uid_request_id=request_id[0],
                                                          uid_customer_id=customer_request['customer_id'],
                                                          char_feature_id=feature_id)
                     db_session.add(insert_customer)
