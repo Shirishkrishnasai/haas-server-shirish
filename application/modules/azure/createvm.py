@@ -165,9 +165,9 @@ def vmcreation(required_data_list):
             db_session.commit()
 
             if role == 'namenode' or role == 'datanode' or role == 'resourcemanager':
-                edge = 'f'
+                edge = 0
             else:
-                edge = 't'
+                edge = 1
 
             vm_creation_insert=TblVmCreation(uid_customer_id =customerid,
                                 uid_cluster_id = clusterid,

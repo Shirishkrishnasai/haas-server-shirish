@@ -6,8 +6,9 @@ from sqlalchemy import and_
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application import mongo_conn_string
-from application.models.models import TblCustomerRequest, TblCustomer,TblCluster,TblPlan,TblPlanClusterSizeConfig,TblFeature,TblMetaRequestStatus
-
+from azure.storage.file import FileService, FilePermissions
+from configparser import ConfigParser
+from application.models.models import TblCustomerRequest, TblCustomer,TblCluster,TblPlan,TblPlanClusterSizeConfig,TblFeature,TblMetaRequestStatus,TblAgent,TblFeature,TblMetaFeatureStatus,TblClusterType
 from application.modules.azure.createvm import vmcreation
 from application.common.loggerfile import my_logger
 
@@ -84,7 +85,7 @@ def installcluster(request_id):
                                        txt_fqdn=fqdn,
                                         var_cluster_name =clustername,
                                        char_cluster_region =clusterlocation ,
-                                       int_size_id = size_id,
+                                       int_size_id = int(size_id),
                                        var_created_by = created_by,
                                         var_modified_by = modified_by,
                                         ts_created_datetime = str(date_time),
@@ -92,11 +93,38 @@ def installcluster(request_id):
 
         db_session.add(cluster_insertion)
         db_session.commit()
+
+        status_list = db_session.query(TblMetaRequestStatus.srl_id).filter(
+            TblMetaRequestStatus.var_request_status == 'COMPLETED').all()
+        print status_list, 'sttaaaaaaattttt'
+        customer_request_update = db_session.query(TblCustomerRequest).filter(
+            TblCustomerRequest.txt_dependency_request_id == request_id)
+        customer_request_update.update({"uid_cluster_id": cluster_id, "int_request_status": status_list[0][0]})
+        db_session.commit()
+
+        customer_request_update_default = db_session.query(TblCustomerRequest).filter(
+            TblCustomerRequest.uid_request_id == request_id)
+        customer_request_update_default.update({"uid_cluster_id": cluster_id})
+        db_session.commit()
         db_session.close()
+
+        cfg = ConfigParser()
+        cfg.read('application/config/azure_config.ini')
+        account_name = cfg.get('file_storage', 'account_name')
+        account_key = cfg.get('file_storage', 'key')
+
+        file_service = FileService(account_name=account_name, account_key=account_key)
+
+        file_service.create_share(cluster_id)
+        file_service.create_directory(cluster_id, 'system')
+        file_service.create_directory(cluster_id, 'mapreduce')
+        print "doneeee"
+
+    # installcluster('4a82d464-0aa0-11e9-ba4c-3ca9f49ab2cc')
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-
+        my_logger.error(str(e))
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
@@ -110,3 +138,4 @@ if __name__ == '__main__':
             installcluster(request_id)
         else:
             print "args not passed"
+

@@ -29,8 +29,8 @@ def configure_cluster(request_id):
         payloadid = customer_data[0][0]
         customer_id = customer_data[0][1]
         feature_id = customer_data[0][2]
-        # cluster_id = customer_data[0][3]
-        cluster_id = 'ae945516-09bc-11e9-b4fe-000c29da5704'
+        cluster_id = customer_data[0][3]
+        #cluster_id = 'ae945516-09bc-11e9-b4fe-000c29da5704'
 
 
         task_types_id_list = session.query(TblFeatureType.char_task_type_id).filter(
@@ -100,6 +100,7 @@ def configure_cluster(request_id):
                     agent_insertion = TblAgent(uid_agent_id=vm_creation_information[1],
                                                uid_node_id=node_information_individual[0], uid_cluster_id=cluster_id,
                                                uid_customer_id=customer_id, private_ips=vm_creation_information[3],
+					       str_agent_version = '1.0',
                                                var_created_by='system', var_modified_by='system',
                                                ts_created_datetime=time_now, ts_modified_datetime=time_now)
                     session.add(agent_insertion)
@@ -285,7 +286,7 @@ def configure_cluster(request_id):
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-
+        my_logger.error(str(e))
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
@@ -299,7 +300,8 @@ if __name__ == '__main__':
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-
+        my_logger.error(str(e))
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
+

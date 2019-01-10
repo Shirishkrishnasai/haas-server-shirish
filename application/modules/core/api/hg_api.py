@@ -1,5 +1,5 @@
 import yaml
-import re
+import re,sys,os
 import psycopg2
 import json
 import io
@@ -205,9 +205,9 @@ def hg_client():
 def register():
 
 	try:
-		my_logger.debug('in server register api')
+		my_logger.info('in server register api')
 		agent_data=request.json
-		my_logger.debug(agent_data)
+		my_logger.info(agent_data)
 		agent_id=agent_data['agent_id']
 		customer_id=agent_data['customer_id']
 		cluster_id=agent_data['cluster_id']
@@ -219,12 +219,13 @@ def register():
 																			  TblAgent.uid_cluster_id==cluster_id,
 																			  TblAgent.str_agent_version==agent_version).first()
 
-		if required_data[0]==False:
+		print required_data,"this is agent registration file that is bugging me"
+		if required_data[0] == False:
 			update_statement = db_session.query(TblAgent.bool_registered,TblAgent.ts_registered_datetime).filter(TblAgent.uid_agent_id==agent_id,
 																												 TblAgent.uid_cluster_id==cluster_id)
 			update_statement.update({"bool_registered":1,"ts_registered_datetime":registered_time})
 			db_session.commit()
-			my_logger.debug("committing to database done")
+			my_logger.info("committing to database done")
 
 			agent_config_data = db_session.query(TblAgentConfig.config_entity_name,TblAgentConfig.config_entity_value).all()
 			db_session.close()
@@ -233,15 +234,25 @@ def register():
 			return jsonify(agent_config_data_json)
 
 		else:
-			my_logger.debug('i am in else')
+			my_logger.info('i am in else')
 			return jsonify(message="either registration is done previously or agent_data is not correct")
 
 	except psycopg2.DatabaseError, e:
-		my_logger.error(e.pgerror)
+		exc_type, exc_obj, exc_tb = sys.exc_info()
+		fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+		my_logger.error(str(e))
+		my_logger.error(exc_type)
+		my_logger.error(fname)
+		my_logger.error(exc_tb.tb_lineno)
 		return jsonify(message='database error')
 
 	except Exception as e:
-		my_logger.error(e)
+		exc_type, exc_obj, exc_tb = sys.exc_info()
+		fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+		my_logger.error(str(e))
+		my_logger.error(exc_type)
+		my_logger.error(fname)
+		my_logger.error(exc_tb.tb_lineno)
 		return jsonify(message='wrong data format')
 
 @api.route('/api/hivequery', methods=['POST'])
@@ -575,3 +586,4 @@ def clusterStatus(request_id):
 	except Exception as e:
 
 		my_logger.debug(e)
+

@@ -73,10 +73,12 @@ def edgenodeProvision(request_id):
         db_session.commit()
 
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
+	exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.info(" ".join([exc_type, fname, exc_tb.tb_lineno]))
-
+        my_logger.error(str(e))
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
 
 if __name__ == '__main__':
     try:
@@ -89,7 +91,11 @@ if __name__ == '__main__':
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.info(" ".join([exc_type, fname, exc_tb.tb_lineno]))
+        my_logger.error(str(e))
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+
 
 
 
