@@ -25,6 +25,7 @@ def customercreation():
     customer_content = request.json
     print customer_content
     display_name = customer_content['first_name']
+    plan_id = customer_content['cluster_plan']
     # print display_name
 
     user_principal_name = customer_content['first_name'] + '@bhaskarhighgear.onmicrosoft.com'
@@ -40,7 +41,8 @@ def customercreation():
     gateway_id = str(uuid.uuid1())
     resourcegroup_id = GROUP_NAME
 
-    insert_customer_details_first = TblCustomer(uid_customer_id=customer_id)
+    insert_customer_details_first = TblCustomer(uid_customer_id=customer_id,
+                                                int_plan_id = plan_id)
     db.session.add(insert_customer_details_first)
     db.session.commit()
 
