@@ -531,24 +531,24 @@ def cluster_info(customer_id):
     database_conn = mongo_db_conn['local']
 
     customer_id_metrics_list = list(database_conn[customer_id].find())
-    # print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
+    print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
     db_collection_list = []
     if customer_id_metrics_list == []:
 
         available_storage = 0
     else:
         for db_collection in customer_id_metrics_list:
-            # print db_collection,type(db_collection),'dbdbdbdbbdbdbdbd'
+            print db_collection,type(db_collection),'dbdbdbdbbdbdbdbd'
             # print db_collection,type(db_collection),'typeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeedbbbb'
             db_collection_list.append(db_collection)
 
         dicto = db_collection_list[-1]
-        # print dicto,'loooooooooooooool'
+        print dicto,'loooooooooooooool'
         for keys, values in dicto['payload'][3].items():
-            # print keys,values , "valoooooooooooeeeeeees"
+            print keys,values , "valoooooooooooeeeeeees"
             # print keys,values,'kakakakak'
             if keys == 'available_storage':
-                # print values, 'looooooooooooooooooooooooooooooooooooooooooo'
+                print values, 'looooooooooooooooooooooooooooooooooooooooooo'
                 available_storage = values
         print available_storage, 'avaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
