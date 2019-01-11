@@ -568,33 +568,6 @@ def clusterSize():
 
 @api.route('/api/cluster_status/<request_id>', methods=['GET'])
 def clusterStatus(request_id):
-<<<<<<< HEAD
-	try:
-		db_session = scoped_session(session_factory)
-
-		status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_cluster_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
-		print status_select_query_statement,'selectttttttttttttttttttttt'
-		if len(status_select_query_statement) == 0:
-			return jsonify(message="request id not available")
-		else:
-			#result_list = []
-			request_status = status_select_query_statement[0][0]
-			print request_status
-			request_status_select_query_statement = db.session.query(TblMetaRequestStatus.var_request_status).filter(TblMetaRequestStatus.srl_id == request_status).all()
-			print request_status_select_query_statement,len(request_status_select_query_statement),'reqqqqqqqqqqqq'
-			#for request_status in status_select_query_statement[0]:
-			#	print request_status,'reqqqqqqqqqqqqq'
-			if len(request_status_select_query_statement) == 0:
-				return jsonify(request_id=request_id,cluster_status="None")
-			else:
-				status = request_status_select_query_statement[0][0]
-				#cluster_name_query = db.session.query()
-				return jsonify(request_id=request_id,cluster_status=status)
-	except Exception as e:
-
-		my_logger.debug(e)
-
-=======
     try:
         db_session = scoped_session(session_factory)
         status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_customer_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
@@ -653,13 +626,12 @@ def customerLocation():
         dic['location'] = str(tups[2]) + '-' + str(tups[1])
         tuplist.append(dic)
     return jsonify(tuplist)
-#
-# @api.route("/api/age/<cluster_id>",methods=['get'])
-# def customer(cluster_id):
-#     cluster = cluster_id
-#     #role = agent_data['role']
-#     db_session = scoped_session(session_factory)
-#     required_data = db_session.query(TblVmCreation.uid_agent_id).filter(TblVmCreation.uid_cluster_id == cluster,TblVmCreation.var_role == 'hive').all()
-#     print "required data is",required_data,type(required_data)
-#     return jsonify(agent_id= str(required_data))
->>>>>>> d775117e9fe58f0b4a4ffe6223558f2acc1ca46e
+
+@api.route("/api/agent_id/<cluster_id>",methods=['get'])
+def customer(cluster_id):
+    cluster = cluster_id
+    #role = agent_data['role']
+    db_session = scoped_session(session_factory)
+    required_data = db_session.query(TblVmCreation.uid_agent_id).filter(TblVmCreation.uid_cluster_id == cluster,TblVmCreation.var_role == 'hive').all()
+    print "required data is",required_data,type(required_data)
+    return jsonify(agent_id= str(required_data))

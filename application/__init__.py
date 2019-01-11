@@ -169,19 +169,16 @@ def runProcess():
     # customerjobreqestconsumer.start()
     # #azure_upload_host_slave()
     # #azure_upload_host_slave('c02c6724-0e89-11e9-bb3d-3ca9f49ab2cc')
-<<<<<<< HEAD
     installcluster('10a2a31e-10d1-11e9-be6a-843a4b5ce920')
     # kafkaconsumer_process.start()
     # hgmanager_process.start()
     #configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
     #configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
-=======
     # #installcluster('78cd80d8-10ce-11e9-be6a-843a4b5ce920')
     # kafkaconsumer_process.start()
     # hgmanager_process.start()
     # #configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
     # #configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
->>>>>>> d775117e9fe58f0b4a4ffe6223558f2acc1ca46e
     print "method ended"
 
 
