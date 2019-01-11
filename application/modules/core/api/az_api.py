@@ -160,6 +160,7 @@ def userAuthenticate():
         connect.bind_s(dn, password)
         token = jwt.encode(payload, secret_key, algorithm)
         data = {}
+        data['user_name'] = dn
         data['token'] = token
         data['customer_id'] = customer_id
         return jsonify(data=data)

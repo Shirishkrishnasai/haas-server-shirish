@@ -6,7 +6,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application import mongo_conn_string
-from application.models.models import TblCustomerRequest, TblCustomer,TblCluster,TblPlan,TblPlanClusterSizeConfig,TblFeature,TblMetaRequestStatus
+from application.models.models import TblCustomerRequest,TblMetaCloudLocation, TblCustomer,TblCluster,TblPlan,TblPlanClusterSizeConfig,TblFeature,TblMetaRequestStatus
 
 from application.modules.azure.createvm import vmcreation
 from application.common.loggerfile import my_logger
@@ -33,10 +33,13 @@ def installcluster(request_id):
         cloudtype = build_cluster_information["cloud_type"]
         clustername=build_cluster_information["cluster_name"]
         clusterlocation = build_cluster_information["cluster_location"]
+        location= db_session.query(TblMetaCloudLocation.var_location).filter(TblMetaCloudLocation.srl_id == clusterlocation).all()
+        print "clusterlocationclusterlocation", clusterlocation
+        print "clusterlocationclusterlocation",location
         size_id=build_cluster_information["size_id"]
 
         plan_info = db_session.query(TblCustomer.int_plan_id).filter(TblCustomer.uid_customer_id == customer_id).all()
-        print plan_info
+        print "planinfoplaninfo",plan_info
         plan_id = plan_info[0][0]
         print plan_id
         cluster_id = str(uuid.uuid1())
@@ -59,7 +62,7 @@ def installcluster(request_id):
                 vm_creation_list.append(customer_id)
                 vm_creation_list.append(agentid)
                 vm_creation_list.append(role)
-                vm_creation_list.append(clusterlocation)
+                vm_creation_list.append(location)
                 vm_creation_list.append(size_id)
                 vm_creation_list.append(plan_id)
 
@@ -83,7 +86,7 @@ def installcluster(request_id):
                                        uid_cluster_type_id=str(cloudtype),
                                        txt_fqdn=fqdn,
                                         var_cluster_name =clustername,
-                                       char_cluster_region =clusterlocation ,
+                                       char_cluster_region =location ,
                                        int_size_id = size_id,
                                        var_created_by = created_by,
                                         var_modified_by = modified_by,
