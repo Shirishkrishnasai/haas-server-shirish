@@ -42,3 +42,4 @@ def kafkataskconsumer():
 
         print "Task Stats consumer ended..."
         time.sleep(2)
+

@@ -9,7 +9,6 @@ from application.common.loggerfile import my_logger
 
 def hgsuper():
     while True:
-        my_logger.debug("supervisor:hai")
         db_session = scoped_session(session_factory)
         try:
             metatablestatus = db_session.query(TblMetaRequestStatus.var_request_status, TblMetaRequestStatus.srl_id).all()
@@ -17,14 +16,12 @@ def hgsuper():
             completed_request_status_value = request_status_values['COMPLETED']
             update_request_status_value = request_status_values['ASSIGNED']
             time_updated = datetime.datetime.now()
-            print "hg supervisor connected to database"
             customer_req_data = db_session.query(TblCustomerRequest.uid_request_id, TblCustomerRequest.char_feature_id,
                                                  TblCustomerRequest.txt_dependency_request_id) \
                 .filter(TblCustomerRequest.bool_assigned == 'f').all()
             print customer_req_data
 
             for row in customer_req_data:
-                print 'in customer_req_data'
 
                 request_id = row[0]
                 feature_id = row[1]
@@ -77,7 +74,7 @@ def hgsuper():
                         db_session.commit()
 
                         my_logger.debug("Closing Request")
-                time.sleep(1)
+                time.sleep(5)
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -87,3 +84,5 @@ def hgsuper():
             my_logger.error(exc_tb.tb_lineno)
         finally:
             db_session.close()
+
+	time.sleep(5)
