@@ -587,3 +587,18 @@ def clusterStatus(request_id):
 
 		my_logger.debug(e)
 
+@api.route('/api/hivestatus/<requestid>', methods=['GET'])
+def hivestatus(requestid):
+    db.session = scoped_session(session_factory)
+    result = db.session.query(TblHiveRequest.hive_query_output).filter(TblHiveRequest.uid_hive_request_id == requestid).all()
+    request=result[0][0]
+    print request
+    if request ==None:
+        return jsonify(message="request_status_not_available")
+    else :
+        result = str(result).replace("u'"," ").replace("'","")
+        resp = eval(result)
+        respon = json.dumps(resp)
+        response= json.loads(respon)
+        print response
+        return (response[0][0])

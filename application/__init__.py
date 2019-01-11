@@ -139,8 +139,8 @@ def site_map():
 
 
 def runProcess():
-    # selecturl_process = Process(target=hgSelectQueryUrlScheduler)
-    # selecturl_process.start()
+    selecturl_process = Process(target=hgSelectQueryUrlScheduler)
+    selecturl_process.start()
     # hgsuperscheduler_process = Process(target=hgsuperscheduler)
     # hgmanagerscheduler_process = Process(target=hgmanagerscheduler)
     # kafkataskconsumer_process = Process(target=kafkataskconsumer)
@@ -173,7 +173,6 @@ def runProcess():
     # kafkaconsumer_process.start()
     # hgmanager_process.start()
     configure_cluster('6ee4297c-14a8-11e9-a7f3-24be0513cbc7')
-    # configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")>>>>>>> application/__init__.py
     print "method ended"
 
 
