@@ -88,7 +88,7 @@ from application.modules.core.daemons.task_status_consumer import kafkataskconsu
 from application.common.util import azure_upload_host_slave
 
 from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
-
+from application.modules.cluster.workers.configure_cluster import configure_cluster
 app.register_blueprint(azfiledownload, url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
 app.register_blueprint(jobdiagnostics, url_prefix='')
@@ -103,7 +103,7 @@ app.register_blueprint(filebrowser, url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
 app.register_blueprint(jobdiagnostics, url_prefix='')
 app.register_blueprint(clusterlocation, url_prefix='')
-# app.register_blueprint(cloudtype, url_prefix='')
+#app.register_blueprint(cloudtype, url_prefix='')
 app.register_blueprint(clustersize, url_prefix='')
 app.register_blueprint(customerusers, url_prefix='')
 app.register_blueprint(jobdetails, url_prefix='')
@@ -127,20 +127,20 @@ def has_no_empty_params(rule):
 def site_map():
     links = []
     for rule in app.url_map.iter_rules():
-        # Filter out rules we can't navigate to in a browser
-        # and rules that require parameters
+        #Filter out rules we can't navigate to in a browser
+        #and rules that require parameters
         if "GET" in rule.methods and has_no_empty_params(rule):
             url = url_for(rule.endpoint, **(rule.defaults or {}))
             links.append((url, rule.endpoint))
-    # links is now a list of url, endpoint tuples
+    #links is now a list of url, endpoint tuples
     print (links)
 
 
 
 
 def runProcess():
-    # selecturl_process = Process(target=hgSelectQueryUrlScheduler)
-    # selecturl_process.start()
+    selecturl_process = Process(target=hgSelectQueryUrlScheduler)
+    selecturl_process.start()
     # hgsuperscheduler_process = Process(target=hgsuperscheduler)
     # hgmanagerscheduler_process = Process(target=hgmanagerscheduler)
     # kafkataskconsumer_process = Process(target=kafkataskconsumer)
@@ -150,7 +150,7 @@ def runProcess():
     # hgsuper_process.start()
     # kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
     # kafkaHiveStatusConsumer_process.start()
-    # #hgsuperscheduler_process.start()
+    # hgsuperscheduler_process.start()
     # filebrowsestatus_process = Process(target=filebrowsestatus)
     # jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
     # jobDiagnosticConsumer_process.start()
@@ -161,7 +161,7 @@ def runProcess():
     # hgsuperscheduler_process.start()
     # filebrowsestatus_process = Process(target=filebrowsestatus)
     # filebrowsestatus_process.start()
-    # #hgmanagerscheduler_process.start()
+    # hgmanagerscheduler_process.start()
     # kafkataskconsumer_process.start()
     # mrjobproducer_process = Process(target=mrjobproducer)
     # customerjobreqestconsumer = Process(target=jobinsertion)
@@ -179,6 +179,12 @@ def runProcess():
     # hgmanager_process.start()
     # #configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
     # #configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
+    # azure_upload_host_slave()
+    # azure_upload_host_slave('c02c6724-0e89-11e9-bb3d-3ca9f49ab2cc')
+    # installcluster('78cd80d8-10ce-11e9-be6a-843a4b5ce920')
+    # kafkaconsumer_process.start()
+    # hgmanager_process.start()
+    configure_cluster('6ee4297c-14a8-11e9-a7f3-24be0513cbc7')
     print "method ended"
 
 

@@ -82,15 +82,15 @@ def configure_hive(request_id):
         session.add(agent_tbl_insert)
         session.commit()
 
-
-        name_node_ip = session.query(TblVmCreation.var_ip).filter(and_(TblVmCreation.uid_cluster_id==cluster_id,TblVmCreation.var_role=='namenode')).first()
-        name_node_ip_value = str(name_node_ip[0])
-        my_logger.info(name_node_ip_value)
-        print "nameeeeeeeeeeeeeeee nodeeeeeeeeeeeeeeeeeeeee ippppppppppppppppppppppp"
-        database_connection.hiveconfig.insert_one({"namenode_ip":name_node_ip_value})
+        host_file = ''
+        namenode_datanode_hive = session.query(TblVmCreation.var_ip,TblVmCreation.var_name).filter(TblVmCreation.uid_cluster_id==cluster_id).all()
+        for each_node in namenode_datanode_hive:
+            host_file = host_file+each_node[0]+' '+each_node[1]+'\n'
+        #name_node_ip_value = str(name_node_ip[0])
+        database_connection.hiveconfig.insert_one({"namenode_ip":host_file})
         #querying the same for object id to insert into tasks table(payloadid)
-        namenodeip_query = database_connection.hiveconfig.find_one({"namenode_ip":name_node_ip_value})
-        print namenodeip_query, 'checccccccccccckkkkkkkkkkkkkkkk'
+        namenodeip_query = database_connection.hiveconfig.find_one({"namenode_ip":host_file})
+        print namenodeip_query, 'checccccccccccckkkkkkkkkkkkkkkkkkkkk'
         namenodeip_query_objectid = str(namenodeip_query["_id"])
 
 
@@ -146,9 +146,13 @@ def configure_hive(request_id):
         my_logger.info("done for hive config worker to generate tasks..............now check tasks table........................................")
 
     except Exception as e :
-        exc_type, exc_obj, exc_tb = sys.exc_info()
+	exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.info(" ".join([exc_type, fname, exc_tb.tb_lineno]))
+        my_logger.error(str(e))
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+
 
 if __name__ == '__main__':
     try:
@@ -160,4 +164,8 @@ if __name__ == '__main__':
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.info(" ".join([exc_type, fname, exc_tb.tb_lineno]))
+        my_logger.error(str(e))
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+

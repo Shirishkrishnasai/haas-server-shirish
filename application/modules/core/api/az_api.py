@@ -558,7 +558,6 @@ def cluster_info(customer_id):
     else:
         # list_cus=[]
         list_customer_cluster_info = []
-
         for cluster_info in customer_cluster_info:
             if cluster_info[3] == True:
 
@@ -569,8 +568,11 @@ def cluster_info(customer_id):
 
                 clus_name = clustername[0][0].rstrip()
                 # list_customer_cluster_info=[]
-                node_info_stmnt = "select uid_node_id,char_role,edge_node from tbl_node_information where uid_cluster_id='" + str(
-                    cluster_info[1]) + "' and edge_node = true"
+                #node_info_stmnt = "select uid_node_id,char_role,edge_node from tbl_node_information where uid_cluster_id='" + str(
+                #    cluster_info[1]) + "' and edge_node = true"
+
+                node_info_stmnt = "select uid_node_id,char_role from tbl_node_information where uid_cluster_id='" + str(
+                    cluster_info[1])+"'"
                 cur.execute(node_info_stmnt)
                 cus_node_info = cur.fetchall()
 

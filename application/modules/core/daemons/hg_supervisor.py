@@ -81,10 +81,10 @@ def hgsuper():
 						my_logger.debug("Closing Request")
 					else:
 						pass
-				time.sleep(15)
+			time.sleep(15)
 
 
-				required_data=[]
+				#required_data=[]
 
 		#except Exception as e:
 			#my_logger.error(e)
@@ -101,3 +101,4 @@ def hgsuperscheduler():
 	#scheduler.start()
 	#my_logger.debug("in supervisor")
 	pass
+
