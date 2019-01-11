@@ -833,7 +833,7 @@ class TblHiveRequest(ItemBase,OutputMixin):
     bool_select_query = Column(Boolean)
     txt_url_value = Column(Text)
     bool_url_created = Column(Boolean)
-
+    hive_query_output = Column(Text)
     tbl_customer = relationship(u'TblCustomer')
     tbl_cluster = relationship(u'TblCluster')
     tbl_users = relationship(u'TblUsers')
