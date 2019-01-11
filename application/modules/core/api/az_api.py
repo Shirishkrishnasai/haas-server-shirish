@@ -160,6 +160,7 @@ def userAuthenticate():
         connect.bind_s(dn, password)
         token = jwt.encode(payload, secret_key, algorithm)
         data = {}
+        data['user_name'] = dn
         data['token'] = token
         data['customer_id'] = customer_id
         return jsonify(data=data)
@@ -538,17 +539,17 @@ def cluster_info(customer_id):
         available_storage = 0
     else:
         for db_collection in customer_id_metrics_list:
-            # print db_collection,type(db_collection),'dbdbdbdbbdbdbdbd'
+            print db_collection,type(db_collection),'dbdbdbdbbdbdbdbd'
             # print db_collection,type(db_collection),'typeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeedbbbb'
             db_collection_list.append(db_collection)
 
         dicto = db_collection_list[-1]
-        # print dicto,'loooooooooooooool'
+        print dicto,'loooooooooooooool'
         for keys, values in dicto['payload'][3].items():
-            # print keys,values , "valoooooooooooeeeeeees"
+            print keys,values , "valoooooooooooeeeeeees"
             # print keys,values,'kakakakak'
             if keys == 'available_storage':
-                # print values, 'looooooooooooooooooooooooooooooooooooooooooo'
+                print values, 'looooooooooooooooooooooooooooooooooooooooooo'
                 available_storage = values
         print available_storage, 'avaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
