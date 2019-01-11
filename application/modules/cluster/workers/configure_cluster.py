@@ -106,8 +106,8 @@ def configure_cluster(request_id):
                                     ts_created_datetime=time_now, ts_modified_datetime=time_now)
 
 
-        session.add(agent_insertion)
-        session.commit()
+        	    session.add(agent_insertion)
+	session.commit()
         print "heeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 
         # inserting into kafka tables

@@ -16,16 +16,16 @@ Uid_customer_id = 'aa182743-0aa7-11e9-ba4c-3ca9f49ab2cc'
 Uid_cluster_id = 'ae945516-09bc-11e9-b4fe-000c29da5704'
 
 cluster_feature_provision = TblFeature(char_feature_id='9',
-                                       txt_worker_path='/home/sb4/hadoop -as-service/server/application/modules/cluster/workers/provision_cluster_sprint2.py')
+                                       txt_worker_path='/home/database/haas-server/application/modules/cluster/workers/provision_cluster_sprint2.py')
 cluster_feature_configuration = TblFeature(char_feature_id='10',
                                            txt_dependency_feature_id='9',
-                                           txt_worker_path='/home/sb4/hadoop -as-service/server/application/modules/cluster/workers/configure_cluster.py')
+                                           txt_worker_path='/home/database/haas-server/application/modules/cluster/workers/configure_cluster.py')
 hive_feature_provision = TblFeature(char_feature_id='11',
-                                    txt_worker_path='/home/sb4/hadoop-as-service/server/application/modules/hive/workers/edgenode_provision_worker.py')
+                                    txt_worker_path='/home/database/haas-server/application/modules/hive/workers/edgenode_provision_worker.py')
 
 hive_feature_configuration = TblFeature(char_feature_id='12',
                                         txt_dependency_feature_id='11',
-                                        txt_worker_path='/home/sb4/hadoop-as-service/server/application/modules/hive/workers/hive_config_worker.py')
+                                        txt_worker_path='/home/database/haas-server/application/modules/hive/workers/hive_config_worker.py')
 
 # cluster related
 tbl_feature_type_tbl_task_typeid_1 = TblFeatureType(char_feature_id='10',

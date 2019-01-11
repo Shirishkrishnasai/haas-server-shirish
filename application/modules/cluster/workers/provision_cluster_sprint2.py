@@ -34,7 +34,8 @@ def installcluster(request_id):
         cloudtype = build_cluster_information["cloud_type"]
         clustername=build_cluster_information["cluster_name"]
         clusterlocation = build_cluster_information["cluster_location"]
-        location= db_session.query(TblMetaCloudLocation.var_location).filter(TblMetaCloudLocation.srl_id == clusterlocation).all()
+        location= db_session.query(TblMetaCloudLocation.var_location).filter(TblMetaCloudLocation.srl_id == clusterlocation).first()
+	location = str(location[0])
         print "clusterlocationclusterlocation", clusterlocation
         print "clusterlocationclusterlocation",location
         size_id=build_cluster_information["size_id"]

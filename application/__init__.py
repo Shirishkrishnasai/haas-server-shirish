@@ -48,7 +48,7 @@ def internal_error(e):
         return make_response(jsonify(error="yes",message=output[0]),500)
 from db_setup import init_db
 
-#init_db()
+init_db()
 
 from application.common.file_upload import azfile
 from application.common.file_download import azfiledownload
@@ -76,7 +76,7 @@ from application.modules.mapr.api.job_diagnostics_api import jobdiagnostics
 from application.modules.core.daemons.filebrowsestatus import filebrowsestatus
 from application.modules.core.daemons.hg_manager import hgmanagerscheduler, hgmanager
 from application.modules.hive.daemons.hive_database_result_consumer import hiveDatabaseResult
-from application.modules.core.daemons.hg_supervisor import hgsuperscheduler, hgsuper
+from application.modules.core.daemons.hg_supervisor import hgsuper
 from application.modules.mapr.daemons.job_diagnostic_consumer import diagnosticsconsumer
 from application.modules.mapr.daemons.job_status_consumer import statusconsumer
 from application.modules.mapr.daemons.customer_job_request_consumer import jobinsertion
@@ -141,50 +141,28 @@ def site_map():
 def runProcess():
     selecturl_process = Process(target=hgSelectQueryUrlScheduler)
     selecturl_process.start()
-    # hgsuperscheduler_process = Process(target=hgsuperscheduler)
-    # hgmanagerscheduler_process = Process(target=hgmanagerscheduler)
-    # kafkataskconsumer_process = Process(target=kafkataskconsumer)
-    # kafkaconsumer_process = Process(target=kafkaconsumer)
-    # hgmanager_process = Process(target=hgmanager)
-    # hgsuper_process = Process(target=hgsuper)
-    # hgsuper_process.start()
+    kafkataskconsumer_process = Process(target=kafkataskconsumer)
+    kafkaconsumer_process = Process(target=kafkaconsumer)
+    hgmanager_process = Process(target=hgmanager)
+    hgsuper_process = Process(target=hgsuper)
+    hgsuper_process.start()
     # kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
     # kafkaHiveStatusConsumer_process.start()
-    # hgsuperscheduler_process.start()
-    # filebrowsestatus_process = Process(target=filebrowsestatus)
     # jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
     # jobDiagnosticConsumer_process.start()
     # jobStatusConsumer_process = Process(target=statusconsumer)
     # jobStatusConsumer_process.start()
     # hiveDatabaseResultConsumer = Process(target=hiveDatabaseResult)
     # hiveDatabaseResultConsumer.start()
-    # hgsuperscheduler_process.start()
     # filebrowsestatus_process = Process(target=filebrowsestatus)
     # filebrowsestatus_process.start()
-    # hgmanagerscheduler_process.start()
-    # kafkataskconsumer_process.start()
-    # mrjobproducer_process = Process(target=mrjobproducer)
-    # customerjobreqestconsumer = Process(target=jobinsertion)
-    # mrjobproducer_process.start()
-    # customerjobreqestconsumer.start()
-    # #azure_upload_host_slave()
-    # #azure_upload_host_slave('c02c6724-0e89-11e9-bb3d-3ca9f49ab2cc')
-    installcluster('10a2a31e-10d1-11e9-be6a-843a4b5ce920')
-    # kafkaconsumer_process.start()
-    # hgmanager_process.start()
-    #configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
-    #configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
-    # #installcluster('78cd80d8-10ce-11e9-be6a-843a4b5ce920')
-    # kafkaconsumer_process.start()
-    # hgmanager_process.start()
-    # #configure_cluster('722f868d-09b6-11e9-b4fe-000c29da5704')
-    # #configure_hive("86b4965f-0a6c-11e9-85e3-000c29da5704")
-    # azure_upload_host_slave()
-    # azure_upload_host_slave('c02c6724-0e89-11e9-bb3d-3ca9f49ab2cc')
-    # installcluster('78cd80d8-10ce-11e9-be6a-843a4b5ce920')
-    # kafkaconsumer_process.start()
-    # hgmanager_process.start()
-    configure_cluster('6ee4297c-14a8-11e9-a7f3-24be0513cbc7')
+    kafkataskconsumer_process.start()
+    mrjobproducer_process = Process(target=mrjobproducer)
+    customerjobreqestconsumer = Process(target=jobinsertion)
+    mrjobproducer_process.start()
+    customerjobreqestconsumer.start()
+    kafkaconsumer_process.start()
+    hgmanager_process.start()
     print "method ended"
 
 
