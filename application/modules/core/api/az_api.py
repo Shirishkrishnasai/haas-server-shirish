@@ -160,6 +160,7 @@ def userAuthenticate():
         connect.bind_s(dn, password)
         token = jwt.encode(payload, secret_key, algorithm)
         data = {}
+        data['user_name'] = dn
         data['token'] = token
         data['customer_id'] = customer_id
         return jsonify(data=data)
@@ -531,24 +532,24 @@ def cluster_info(customer_id):
     database_conn = mongo_db_conn['local']
 
     customer_id_metrics_list = list(database_conn[customer_id].find())
-    # print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
+    print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
     db_collection_list = []
     if customer_id_metrics_list == []:
 
         available_storage = 0
     else:
         for db_collection in customer_id_metrics_list:
-            # print db_collection,type(db_collection),'dbdbdbdbbdbdbdbd'
+            print db_collection,type(db_collection),'dbdbdbdbbdbdbdbd'
             # print db_collection,type(db_collection),'typeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeedbbbb'
             db_collection_list.append(db_collection)
 
         dicto = db_collection_list[-1]
-        # print dicto,'loooooooooooooool'
+        print dicto,'loooooooooooooool'
         for keys, values in dicto['payload'][3].items():
-            # print keys,values , "valoooooooooooeeeeeees"
+            print keys,values , "valoooooooooooeeeeeees"
             # print keys,values,'kakakakak'
             if keys == 'available_storage':
-                # print values, 'looooooooooooooooooooooooooooooooooooooooooo'
+                print values, 'looooooooooooooooooooooooooooooooooooooooooo'
                 available_storage = values
         print available_storage, 'avaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
@@ -557,7 +558,6 @@ def cluster_info(customer_id):
     else:
         # list_cus=[]
         list_customer_cluster_info = []
-
         for cluster_info in customer_cluster_info:
             if cluster_info[3] == True:
 
@@ -568,8 +568,11 @@ def cluster_info(customer_id):
 
                 clus_name = clustername[0][0].rstrip()
                 # list_customer_cluster_info=[]
-                node_info_stmnt = "select uid_node_id,char_role,edge_node from tbl_node_information where uid_cluster_id='" + str(
-                    cluster_info[1]) + "' and edge_node = true"
+                #node_info_stmnt = "select uid_node_id,char_role,edge_node from tbl_node_information where uid_cluster_id='" + str(
+                #    cluster_info[1]) + "' and edge_node = true"
+
+                node_info_stmnt = "select uid_node_id,char_role from tbl_node_information where uid_cluster_id='" + str(
+                    cluster_info[1])+"'"
                 cur.execute(node_info_stmnt)
                 cus_node_info = cur.fetchall()
 

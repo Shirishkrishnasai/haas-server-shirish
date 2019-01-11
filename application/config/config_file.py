@@ -27,3 +27,5 @@ postgres_conn = 'postgres://postgres:password@104.211.222.41/haas_demo2'
 SQLALCHEMY_DATABASE_URI = 'postgres://postgres:password@104.211.222.41/haas_demo2'
 mongo_conn_string="mongodb://104.211.222.41:27017"
 sqlite_string= "/opt/agent/haas"
+
+

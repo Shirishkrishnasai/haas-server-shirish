@@ -26,12 +26,12 @@ def configure_cluster(request_id):
         customer_data = session.query(TblCustomerRequest.txt_payload_id, TblCustomerRequest.uid_customer_id,
                                       TblCustomerRequest.char_feature_id, TblCustomerRequest.uid_cluster_id).filter(
             TblCustomerRequest.uid_request_id == request_id).all()
+        print customer_data,'dataaaaaaaa'
         payloadid = customer_data[0][0]
         customer_id = customer_data[0][1]
         feature_id = customer_data[0][2]
         cluster_id = customer_data[0][3]
         #cluster_id = 'ae945516-09bc-11e9-b4fe-000c29da5704'
-
 
         task_types_id_list = session.query(TblFeatureType.char_task_type_id).filter(
             TblFeatureType.char_feature_id == feature_id).all()
@@ -54,7 +54,7 @@ def configure_cluster(request_id):
         print "data querying from vm creation table"
 
         vm_roles_query = session.query(TblVmCreation.uid_cluster_id, TblVmCreation.uid_agent_id, TblVmCreation.var_role,
-                                       TblVmCreation.var_ip, TblVmCreation.uid_vm_id).filter(
+                                       TblVmCreation.var_ip, TblVmCreation.uid_vm_id,TblVmCreation.var_name).filter(
             TblVmCreation.uid_customer_id == customer_id, TblVmCreation.uid_cluster_id == cluster_id,
             TblVmCreation.bool_edge == 'f').all()
         print "5555555555555555555555555555555555555555555555555", vm_roles_query
@@ -63,6 +63,7 @@ def configure_cluster(request_id):
 
         cluster_information_dict = {}
         for cluster_nodes_information in vm_roles_query:
+            print cluster_nodes_information,'clusterrrrrrrrrrrrrrrrrrrrrr'
             cluster_information_dict[cluster_nodes_information[1]] = cluster_nodes_information[2]
             print "passing parameters to task generation"
         print "task type", task_types_info_dict, cluster_information_dict
@@ -91,19 +92,21 @@ def configure_cluster(request_id):
         print node_information_query, "node information has nodeid,vmid filtered by customerid and clusterid.........it gets all the records"
 
         for vm_creation_information in vm_roles_query:
-            print "111111111111111111111111111111111"
-            #	    print vm_creation_information
+        #    print "111111111111111111111111111111111"
+            #      print vm_creation_information
             for node_information_individual in node_information_query:
-                #		print vm_creation_information[4] ,node_information_individual[1],vm_creation_information
+                #   print vm_creation_information[4] ,node_information_individual[1],vm_creation_information
                 if vm_creation_information[4] == node_information_individual[1]:
-                    print vm_creation_information[1], "theeeeeeeeeeeeeerrrrrrrrrrrrrrrrrrrrrreeeeeeeeeeeeeeeeeeeeeeeee"
+        #print vm_creation_information[1], "theeeeeeeeeeeeeerrrrrrrrrrrrrrrrrrrrrreeeeeeeeeeeeeeeeeeeeeeeee"
                     agent_insertion = TblAgent(uid_agent_id=vm_creation_information[1],
-                                               uid_node_id=node_information_individual[0], uid_cluster_id=cluster_id,
-                                               uid_customer_id=customer_id, private_ips=vm_creation_information[3],
-					       str_agent_version = '1.0',
-                                               var_created_by='system', var_modified_by='system',
-                                               ts_created_datetime=time_now, ts_modified_datetime=time_now)
-                    session.add(agent_insertion)
+                                    uid_node_id=node_information_individual[0], uid_cluster_id=cluster_id,
+                                    uid_customer_id=customer_id, private_ips=vm_creation_information[3],
+                                    str_agent_version = '1.0',
+                                    var_created_by='system', var_modified_by='system',
+                                    ts_created_datetime=time_now, ts_modified_datetime=time_now)
+
+
+        session.add(agent_insertion)
         session.commit()
         print "heeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 
@@ -135,7 +138,7 @@ def configure_cluster(request_id):
 
             # generate host string
 
-            host_dns_string += cluster_nodes_information[3]
+            host_dns_string += cluster_nodes_information[3] +' '+ cluster_nodes_information[5]+'\n'
 
             # generate slaves string
 
@@ -169,7 +172,7 @@ def configure_cluster(request_id):
         database_connection.hostdns.insert_one(host_content)
         host_content_query = database_connection.hostdns.find_one(host_content)
         host_content_objectid = str(host_content_query["_id"])
-
+        print host_content_objectid,'obbbbbbbbbbbbbbbbbbbb'
         # Appending hosts payload to list
 
         for task_information in task_generator:
@@ -304,4 +307,5 @@ if __name__ == '__main__':
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
+
 

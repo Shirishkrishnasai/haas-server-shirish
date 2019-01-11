@@ -104,6 +104,8 @@ meta_mr_request_status_3 = TblMetaMrRequestStatus(var_mr_request_status='RUNNING
 meta_mr_request_status_4 = TblMetaMrRequestStatus(var_mr_request_status='FINISHED')
 meta_mr_request_status_5 = TblMetaMrRequestStatus(var_mr_request_status='FAILED')
 meta_mr_request_status_6 = TblMetaMrRequestStatus(var_mr_request_status='KILLED')
+meta_mr_request_status_7 = TblMetaMrRequestStatus(var_mr_request_status='CREATED')
+
 
 # tasktypes
 
@@ -742,6 +744,7 @@ db_session.add(meta_feature_status_2)
 db_session.add(meta_feature_status_3)
 db_session.add(meta_feature_status_4)
 db_session.add(meta_feature_status_5)
+db_session.add(meta_mr_request_status_7)
 db_session.add(meta_mr_request_status_1)
 db_session.add(meta_mr_request_status_2)
 db_session.add(meta_mr_request_status_3)
