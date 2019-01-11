@@ -90,7 +90,7 @@ def configure_hive(request_id):
         database_connection.hiveconfig.insert_one({"namenode_ip":host_file})
         #querying the same for object id to insert into tasks table(payloadid)
         namenodeip_query = database_connection.hiveconfig.find_one({"namenode_ip":host_file})
-        print namenodeip_query, 'checccccccccccckkkkkkkkkkkkkkkk'
+        print namenodeip_query, 'checccccccccccckkkkkkkkkkkkkkkkkkkkk'
         namenodeip_query_objectid = str(namenodeip_query["_id"])
 
 
