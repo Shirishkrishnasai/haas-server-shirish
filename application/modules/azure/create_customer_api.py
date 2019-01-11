@@ -40,7 +40,7 @@ def customercreation():
 
     gateway_id = str(uuid.uuid1())
     resourcegroup_id = GROUP_NAME
-    #inserting plan id and customer id into customer table
+    #inserting plan id and customer id into customer table and committing
 
     insert_customer_details_first = TblCustomer(uid_customer_id=customer_id,
                                                 int_plan_id = plan_id)
