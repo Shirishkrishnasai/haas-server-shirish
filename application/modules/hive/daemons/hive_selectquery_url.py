@@ -1,6 +1,5 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 
-import io
 from azure.storage.file import FileService,FilePermissions
 from configparser import ConfigParser
 from msrestazure.azure_exceptions import CloudError
@@ -11,14 +10,14 @@ from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application.common.loggerfile import my_logger
 from sqlalchemy import and_
-import uuid
+import sys,os
 from datetime import datetime, timedelta
 
 
 
 def selectQueryUrl():
     #while True:
-        #try:
+        try:
             # reads config file to get accountname and key
 
             cfg = ConfigParser()
@@ -41,10 +40,9 @@ def selectQueryUrl():
                 direcs = list(file_service.list_directories_and_files(share_name=each_tuple[0],
                                                                  directory_name='hive'))
                 print direcs
-                my_logger.info("dirctoriesssssssssssssssss liiiiiiiiiiiiiisssssssssssssstttttttttttttttttttt")
 
                 for dire in direcs:
-                    print "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj",dire.name,"heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+                    print dire.name
 
                 # creating expiry date for access signature and converting to str as expiry sparam shouldnt contain tzinfo
                 expiry_date = str(datetime.now().date() + timedelta(days=3))
@@ -70,6 +68,12 @@ def selectQueryUrl():
                 db_session.commit()
             db_session.close()
 
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            my_logger.error(exc_type)
+            my_logger.error(fname)
+            my_logger.error(exc_tb.tb_lineno)
 
 
 def hgSelectQueryUrlScheduler():

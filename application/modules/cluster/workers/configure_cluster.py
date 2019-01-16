@@ -143,7 +143,7 @@ def configure_cluster(request_id):
             # generate slaves string
 
             if cluster_nodes_information[2] != 'namenode':
-                slaves_string += cluster_nodes_information[3]
+                slaves_string += cluster_nodes_information[3]+' '+'\n'
 
             # generate a string for namenode ip
 

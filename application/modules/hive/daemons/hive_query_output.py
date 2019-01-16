@@ -1,15 +1,9 @@
-from apscheduler.schedulers.background import BackgroundScheduler
 import yaml
-import io
-from datetime import datetime
 from application.models.models import TblHiveRequest
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application.common.loggerfile import my_logger
-from sqlalchemy import and_
-import uuid
-from datetime import datetime, timedelta
-import json
+import json,sys,os
 from kafka import KafkaConsumer
 from application.config.config_file import kafka_bootstrap_server
 import time
@@ -18,49 +12,67 @@ import time
 
 def hiveQueryOutput():
     while True:
-        #try:
+        try:
             my_logger.info("in hive query output consumer")
             consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server, group_id='server')
-            consumer.poll(timeout_ms = 30000,max_records=None)
             consumer.subscribe(pattern='hivequeryresult*')
-            my_logger.info("subscribed to topic" + 'hivequeryresult*')
-            consumer.poll(1000)
-            for message in consumer:
-                hive_query_result = message.value
+            while True:
+                message = consumer.poll(timeout_ms=1000, max_records=1)
+                if message != {}:
+                    topicMesages = message.values()
 
-                data = hive_query_result.replace("'", '"')
-                my_logger.info(data)
-                message = json.loads(data)
-                my_logger.info(message)
-                if message.has_key('output'):
-                    print message['output']
-                    decoded_output = json.loads(message['output'].decode('base64', 'strict'))
-
-                    print decoded_output, type(
-                        decoded_output), "1111111111111111111111111111111111111111111111111111111111111111111"
-                    decoded_output = yaml.load(decoded_output)
-
-                    message['output'] = decoded_output
-
-                    print message, type(message['output']), "333333333333333333333333333333333333"
-
-                    print message, type(
-                        message), 'message', message.keys(), 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
+                    for messageValues in topicMesages[0]:
+                        try:
 
 
-                    consumer.commit()
+                            hive_query_result = messageValues.value
 
-                    isexecuted = False
-                    my_logger.info("Exiting from Consumer..")
-                db_session = scoped_session(session_factory)
-                query_output = db_session.query(TblHiveRequest.hive_query_output).filter(TblHiveRequest.uid_hive_request_id == message['hive_request_id'])
-                query_output.update({"hive_query_output":str(message)})
-                db_session.commit()
-                db_session.close()
+                            data = hive_query_result.replace("'", '"')
+                            my_logger.info(data)
+                            message = json.loads(data)
+                            my_logger.info(message)
+                            if message.has_key('output'):
+                                print message['output']
+                                decoded_output = json.loads(message['output'].decode('base64', 'strict'))
 
-                # print message, type(message), 'message', message.keys(),'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
+                                print decoded_output, type(
+                                    decoded_output)
+                                decoded_output = yaml.load(decoded_output)
 
-                isexecuted = False
-                my_logger.info("Exiting fom loop")
+                                message['output'] = decoded_output
+
+                                print message, type(message['output'])
+
+                                print message, type(
+                                    message), 'message', message.keys()
+
+
+                                consumer.commit()
+
+                            db_session = scoped_session(session_factory)
+                            query_output = db_session.query(TblHiveRequest.hive_query_output).filter(TblHiveRequest.uid_hive_request_id == message['hive_request_id'])
+                            query_output.update({"hive_query_output":str(message)})
+                            db_session.commit()
+                            db_session.close()
+
+
+                            isexecuted = False
+                            my_logger.info("Exiting fom loop")
+
+                        except Exception as e:
+                            exc_type, exc_obj, exc_tb = sys.exc_info()
+                            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+                            my_logger.error(exc_type)
+                            my_logger.error(fname)
+                            my_logger.error(exc_tb.tb_lineno)
+
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+            my_logger.error(exc_type)
+            my_logger.error(fname)
+            my_logger.error(exc_tb.tb_lineno)
 
     time.sleep(10)
