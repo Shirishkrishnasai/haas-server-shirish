@@ -48,7 +48,7 @@ def internal_error(e):
         return make_response(jsonify(error="yes",message=output[0]),500)
 from db_setup import init_db
 
-init_db()
+#init_db()
 
 from application.common.file_upload import azfile
 from application.common.file_download import azfiledownload
