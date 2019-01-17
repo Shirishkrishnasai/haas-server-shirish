@@ -1,4 +1,6 @@
-import time, sys, os
+import os
+import sys
+import time
 
 from application.common.loggerfile import my_logger
 from application.common.task_status_updation import taskstatusconsumer
@@ -7,20 +9,18 @@ from flask import json
 from kafka import KafkaConsumer
 
 
-def kafkataskconsumer():
+def _kafkataskconsumer():
     # Connection to kafka
+    consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server, api_version=kafka_api_version)
+    consumer.subscribe(pattern='taskstatus*')
     while True:
-
-        consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server, api_version=kafka_api_version)
-        consumer.subscribe(pattern='taskstatus*')
         # consumer.poll(1000)
-        while True:
+        try:
             message = consumer.poll(timeout_ms=1000, max_records=1)
             # print json.dumps(message)
             if message != {}:
                 # for message in consumer:
                 topicMesages = message.values()
-
                 for messageValues in topicMesages[0]:
                     try:
                         customer_data = messageValues.value
@@ -32,14 +32,27 @@ def kafkataskconsumer():
                     except Exception as e:
                         exc_type, exc_obj, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-
                         my_logger.error(exc_type)
                         my_logger.error(fname)
                         my_logger.error(exc_tb.tb_lineno)
-                        print "Something wrong in kafka"
+                        my_logger.info("Something wrong in kafka")
+                my_logger.info("Message processed..")
+            else:
+                my_logger.info("Didn't get any Message from topic taskstatus*")
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 
-            time.sleep(1)
-
+            my_logger.error(exc_type)
+            my_logger.error(fname)
+            my_logger.error(exc_tb.tb_lineno)
+            my_logger.error("Unable to porcess Mesage")
         print "Task Stats consumer ended..."
         time.sleep(2)
 
+def kafkataskconsumer():
+    try:
+        _kafkataskconsumer()
+    except Exception as e:
+        my_logger.info("CAlling itself..,kafkataskconsumer")
+        kafkataskconsumer()
