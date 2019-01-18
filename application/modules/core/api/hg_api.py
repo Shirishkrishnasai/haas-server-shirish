@@ -593,7 +593,7 @@ def clusterStatus(request_id):
         my_logger.debug(e)
 
 @api.route('/api/hivestatus/<request_id>', methods=['GET'])
-def hivestatus(request):
+def hivestatus(request_id):
     db.session = scoped_session(session_factory)
     result = db.session.query(TblHiveRequest.hive_query_output).filter(TblHiveRequest.uid_hive_request_id == request).all()
     print result,type(result)
@@ -664,7 +664,7 @@ def customerLocation():
         tuplist.append(dic)
     return jsonify(tuplist)
 
-@api.route("/api/agent_id/<cluster_id>",methods=['get'])
+@api.route("/api/agent_id/<cluster_id>",methods=['GET'])
 def customer(cluster_id):
     cluster = cluster_id
     #role = agent_data['role']
@@ -673,3 +673,36 @@ def customer(cluster_id):
     print "required data is",required_data,type(required_data)
     return jsonify(agent_id= str(required_data))
 
+@api.route("/api/hivenoderequest",methods=['POST'])
+def hiveNodeRequest():
+    try:
+        db_session = scoped_session(session_factory)
+        data = request.json
+        my_logger.info(data)
+        customer_id = data['customer_id']
+        cluster_id = data['cluster_id']
+        #request_id = str(uuid.uuid1())
+        for feature_id in data['feature_id']:
+            request_id = str(uuid.uuid1())
+            #print feature_id,'featureeee'
+            customer_request_values = TblCustomerRequest(uid_customer_id=customer_id,
+                                                         uid_cluster_id=cluster_id,
+                                                         uid_request_id=request_id,
+                                                         char_feature_id=feature_id
+                                                        )
+            db_session.add(customer_request_values)
+            db_session.commit()
+            db_session.close()
+        return jsonify(message='success')
+    except Exception as e:
+        return e.message
+
+
+    except psycopg2.DatabaseError, e:
+        my_logger.debug(e.pgerror)
+        return jsonify(message='database error')
+    except psycopg2.OperationalError, e:
+        my_logger.debug(e.pgerror)
+        return jsonify(message='Operational error')
+    except Exception:
+        return jsonify(error='value error', message='not in json format')
