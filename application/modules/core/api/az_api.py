@@ -523,7 +523,7 @@ def cluster_info(customer_id):
     cur = conn.cursor()
     cur.execute("set search_path to highgear;")
 
-    customer_cluster_query_stmnt = "SELECT uid_customer_id,uid_cluster_id,uid_cluster_type_id,valid_cluster FROM tbl_cluster where uid_customer_id='" + str(
+    customer_cluster_query_stmnt = "SELECT uid_customer_id,uid_cluster_id,uid_cluster_type_id,valid_cluster,var_cluster_name FROM tbl_cluster where uid_customer_id='" + str(
         customer_id) + "'"
     cur.execute(customer_cluster_query_stmnt)
     customer_cluster_info = cur.fetchall()
@@ -561,12 +561,12 @@ def cluster_info(customer_id):
         for cluster_info in customer_cluster_info:
             if cluster_info[3] == True:
 
-                customer_type_query = "select char_name from tbl_cluster_type where uid_cluster_type_id='" + str(
+                cloud_type_query = "select char_name from tbl_cluster_type where uid_cluster_type_id='" + str(
                     cluster_info[2]) + "'"
-                cur.execute(customer_type_query)
+                cur.execute(cloud_type_query)
                 clustername = cur.fetchall()
 
-                clus_name = clustername[0][0].rstrip()
+                cloud_name = clustername[0][0].rstrip()
                 # list_customer_cluster_info=[]
                 #node_info_stmnt = "select uid_node_id,char_role,edge_node from tbl_node_information where uid_cluster_id='" + str(
                 #    cluster_info[1]) + "' and edge_node = true"
@@ -583,8 +583,8 @@ def cluster_info(customer_id):
 
                 list_customer_cluster_info.append(
                     {"customer_id": cluster_info[0], "node_information": list_cus, "cluster_id": cluster_info[1],
-                     "cluster_type_id": cluster_info[2], "clustername": clus_name, "valid_cluster": cluster_info[3],
-                     "available_storage": available_storage})
+                     "cluster_type_id": cluster_info[2], "clustername": cluster_info[4], "valid_cluster": cluster_info[3],
+                     "available_storage": available_storage,"cloud_tytpe":cloud_name})
 
         reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
 

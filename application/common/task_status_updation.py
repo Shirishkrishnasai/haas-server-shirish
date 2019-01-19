@@ -1,6 +1,6 @@
 from application import session_factory
 from application.common.loggerfile import my_logger
-from application.models.models import TblTask, TblMetaTaskStatus,TblMetaRequestStatus,TblCustomerRequest
+from application.models.models import TblTask, TblMetaTaskStatus, TblMetaRequestStatus, TblCustomerRequest
 from sqlalchemy.orm import scoped_session
 
 
@@ -23,11 +23,9 @@ def taskstatusconsumer(task_status_information):
         request = db_session.query(TblTask.uid_request_id).filter(TblTask.uid_task_id == taskid).all()
         requests_id = request[0][0]
         task_id = db_session.query(TblTask.uid_task_id).filter(TblTask.uid_request_id == requests_id).all()
-        completedstatus = db_session.query(TblMetaRequestStatus.srl_id).filter(
-            TblMetaRequestStatus.var_request_status == "COMPLETED").all()
+        completedstatus = db_session.query(TblMetaRequestStatus.srl_id).filter(TblMetaRequestStatus.var_request_status == "COMPLETED").all()
         completed = completedstatus[0][0]
-        runningstatus = db_session.query(TblMetaRequestStatus.srl_id).filter(
-            TblMetaRequestStatus.var_request_status == "RUNNING").all()
+        runningstatus = db_session.query(TblMetaRequestStatus.srl_id).filter(TblMetaRequestStatus.var_request_status == "RUNNING").all()
         running = runningstatus[0][0]
         tuple = []
         for task in task_id:

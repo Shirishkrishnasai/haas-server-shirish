@@ -1,5 +1,5 @@
 import yaml
-import re,sys,os
+import re
 import psycopg2
 import json
 import io
@@ -17,7 +17,8 @@ from application import app, db, conn_string, mongo_conn_string, session_factory
 from application.common.loggerfile import my_logger
 from application.config.config_file import schema_statement, request_status, kafka_bootstrap_server
 from application.models.models import TblCustomerRequest, TblAgentConfig, TblAgent, TblNodeInformation, \
-    TblMetaCloudLocation, TblHiveMetaStatus, TblHiveRequest, TblFeature, TblPlan, TblSize, TblMetaRequestStatus,TblCluster,TblVmCreation,TblPlanClusterSize
+    TblMetaCloudLocation, TblHiveMetaStatus, TblHiveRequest, TblFeature, TblPlan, TblSize, TblMetaRequestStatus, \
+    TblCluster, TblVmCreation
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from kafka import KafkaProducer
@@ -106,7 +107,7 @@ def hg_client():
     feature_request = customer_request['features']
     db_session = scoped_session(session_factory)
     requests = []
-    cluster_id= None
+    cluster_id = None
     for customer_data in feature_request:
         feature_request_id = {}
         request_id = str(uuid.uuid1())
@@ -128,7 +129,7 @@ def hg_client():
             payload = customer_data['payload']
             if payload.has_key('cluster_id'):
                 cluster_id = payload['cluster_id']
-                insert= TblCluster(uid_cluster_id=cluster_id)
+                insert = TblCluster(uid_cluster_id=cluster_id)
                 db_session.add(insert)
                 db_session.commit()
             print cluster_id, "kjbdvdhjbdhfgduidfh"
@@ -188,7 +189,7 @@ def hg_client():
                 insert_customer = TblCustomerRequest(uid_request_id=request_id[0],
                                                      uid_customer_id=customer_request['customer_id'],
                                                      char_feature_id=feature_id,
-                                                     uid_cluster_id = cluster_id)
+                                                     uid_cluster_id=cluster_id)
                 db_session.add(insert_customer)
                 db_session.commit()
 
@@ -207,9 +208,9 @@ def hg_client():
 
 
                 # except Exception as e:
-            #	return e.message
-            # finally:
-            #   db_session.close()
+                #	return e.message
+                # finally:
+                #   db_session.close()
     return jsonify(request_id=request_id[0], message='success')
 
 
@@ -258,186 +259,183 @@ def register():
         my_logger.error(e)
         return jsonify(message='wrong data format')
 
+
 @api.route('/api/hivequery', methods=['POST'])
 def hg_hive_client():
+    # try:
+    # posted data
+    data = request.json
+    my_logger.info(data)
 
-	#try:
-		#posted data
-		data = request.json
-		my_logger.info(data)
+    customerid = data['customer_id']
+    clusterid = data['cluster_id']
+    noderole = data['node_role']
+    username = data['user_name']
+    database = data['database']
+    agentid = data['agent_id']
+    # trimming query
+    posted_query = data['query_string'].strip()
 
-		customerid = data['customer_id']
-		clusterid = data['cluster_id']
-		noderole = data['node_role']
-		username = data['user_name']
-		database = data['database']
-		agentid = data['agent_id']
-		#trimming query
-		posted_query = data['query_string'].strip()
+    if posted_query.endswith(';'):
+        posted_query = posted_query[:-1]
+    # splitting query for checking select statement
+    splitted_string = posted_query.split()
+    print splitted_string
+    producer = KafkaProducer(bootstrap_servers=kafka_bootstrap_server)
+    kafka_topic = "hivequery_" + customerid + "_" + clusterid
+    my_logger.debug(kafka_topic)
+    kafkatopic = kafka_topic.decode('utf-8')
+    # query data to send
+    hive_query_data = {}
+    hive_query_data['event_type'] = "query"
+    hive_query_data['node_role'] = str(noderole)
+    hive_query_data['agent_id'] = str(agentid)
+    # generating hive request id
+    hive_request_id_value = str(uuid.uuid1())
 
+    splitted_string[0] = splitted_string[0].upper()
 
-		if posted_query.endswith(';'):
-			posted_query = posted_query[:-1]
-		#splitting query for checking select statement
-		splitted_string = posted_query.split()
-		print splitted_string
-		producer = KafkaProducer(bootstrap_servers=kafka_bootstrap_server)
-		kafka_topic = "hivequery_" + customerid + "_" + clusterid
-		my_logger.debug(kafka_topic)
-		kafkatopic = kafka_topic.decode('utf-8')
-		#query data to send
-		hive_query_data = {}
-		hive_query_data['event_type'] = "query"
-		hive_query_data['node_role'] = str(noderole)
-		hive_query_data['agent_id'] = str(agentid)
-		#generating hive request id
-		hive_request_id_value = str(uuid.uuid1())
+    resultset_words = 'describe|show'
+    no_resultset_words = 'create|alter|load|insert|use|drop|truncate'
+    select_query_bool_value = 0
 
-		splitted_string[0]=splitted_string[0].upper()
+    if splitted_string[0] == 'SELECT':
+        select_query_bool_value = 1
 
-		resultset_words = 'describe|show'
-		no_resultset_words = 'create|alter|load|insert|use|drop|truncate'
-		select_query_bool_value = 0
+        explain_query = "explain " + posted_query
 
+        posted_query = "insert overwrite directory '/" + hive_request_id_value + "' " + posted_query
 
-		if splitted_string[0]=='SELECT':
-			select_query_bool_value = 1
+        encoded_explain = explain_query.encode('base64', 'strict')
+        # url
+        hive_query_data['output_type'] = "url"
+        # str(customerid+"_"+clusterid+"_"+hive_request_id_value)
+        hive_query_data['explain'] = encoded_explain
 
-			explain_query = "explain "+posted_query
+    # elif re.search('select',posted_query,re.IGNORECASE):
+    #	hive_query_data['output_type'] = "select"
+    #	explain_query = "expalin"+" "+posted_query
+    #	encoded_explain = explain_query.encode('base64','strict')
+    #	hive_query_data['explain']=encoded_explain
+    elif re.search(resultset_words, posted_query, re.IGNORECASE):
+        hive_query_data['output_type'] = 'tuples'
+    elif re.search(no_resultset_words, posted_query, re.IGNORECASE):
+        hive_query_data['output_type'] = 'noresult'
+    else:
+        hive_query_data['output_type'] = 'null'
 
-			posted_query = "insert overwrite directory '/"+hive_request_id_value+"' "+posted_query
+    encoded_string = posted_query.encode('base64', 'strict')
 
-			encoded_explain = explain_query.encode('base64','strict')
-			#url
-			hive_query_data['output_type'] = "url"
-			#str(customerid+"_"+clusterid+"_"+hive_request_id_value)
-			hive_query_data['explain'] = encoded_explain
+    hive_query_data['query_string'] = encoded_string
 
-		#elif re.search('select',posted_query,re.IGNORECASE):
-		#	hive_query_data['output_type'] = "select"
-		#	explain_query = "expalin"+" "+posted_query
-		#	encoded_explain = explain_query.encode('base64','strict')
-		#	hive_query_data['explain']=encoded_explain
-		elif re.search(resultset_words,posted_query,re.IGNORECASE):
-			hive_query_data['output_type'] = 'tuples'
-		elif re.search(no_resultset_words,posted_query,re.IGNORECASE):
-			hive_query_data['output_type'] = 'noresult'
-		else:
-			hive_query_data['output_type'] = 'null'
+    hive_query_data['hive_request_id'] = hive_request_id_value
+    hive_query_data['database'] = str(database)
+    print '...................................................................................................', hive_query_data
 
-		encoded_string = posted_query.encode('base64','strict')
+    db_session = scoped_session(session_factory)
 
-		hive_query_data['query_string']= encoded_string
+    producer.send(kafkatopic, str(hive_query_data))
+    producer.flush()
+    my_logger.debug("done for hive producer")
 
+    hive_meta_status_values = db_session.query(TblHiveMetaStatus.var_status, TblHiveMetaStatus.srl_id).all()
+    hive_meta_status_values_dict = dict(hive_meta_status_values)
+    hive_request_status_values = TblHiveRequest(uid_hive_request_id=hive_request_id_value,
+                                                uid_customer_id=customerid,
+                                                uid_cluster_id=clusterid,
+                                                var_user_name=username,
+                                                ts_requested_time=datetime.datetime.now(),
+                                                txt_query_string=posted_query,
+                                                int_query_status=hive_meta_status_values_dict['INITIALIZED'],
+                                                ts_status_time=datetime.datetime.now(),
+                                                bool_select_query=select_query_bool_value,
+                                                bool_url_created=0)
+    db_session.add(hive_request_status_values)
+    db_session.commit()
+    db_session.close()
+    my_logger.info("committing to database and closing session done")
 
-		hive_query_data['hive_request_id'] = hive_request_id_value
-		hive_query_data['database']=str(database)
-		print '...................................................................................................',hive_query_data
-
-		db_session = scoped_session(session_factory)
-
-		producer.send(kafkatopic, str(hive_query_data))
-		producer.flush()
-		my_logger.debug("done for hive producer")
-
-		hive_meta_status_values = db_session.query(TblHiveMetaStatus.var_status,TblHiveMetaStatus.srl_id).all()
-		hive_meta_status_values_dict = dict(hive_meta_status_values)
-		hive_request_status_values = TblHiveRequest(uid_hive_request_id = hive_request_id_value,
-													uid_customer_id=customerid,
-													uid_cluster_id=clusterid,
-													var_user_name=username,
-													ts_requested_time=datetime.datetime.now(),
-													txt_query_string=posted_query,
-													int_query_status = hive_meta_status_values_dict['INITIALIZED'],
-													ts_status_time = datetime.datetime.now(),
-													bool_select_query = select_query_bool_value,
-													bool_url_created = 0)
-		db_session.add(hive_request_status_values)
-		db_session.commit()
-		db_session.close()
-		my_logger.info("committing to database and closing session done")
-
-		#messag='eyJkYXRhYmFzZV9uYW1lIjogIltbXCJkZWZhdWx0XCJdLCBbXCJoZWhlXCJdLCBbXCJob29cIl0s\nIFtcIm9uZVwiXSwgW1widGhyZWVcIl0sIFtcInR3b1wiXSwgW1wieXl5XCJdXSJ9\n'
-		#decoded_output = json.loads(messag.decode('base64', 'strict'))
-		#print "....",decoded_output['database_name'],type(decoded_output);
+    # messag='eyJkYXRhYmFzZV9uYW1lIjogIltbXCJkZWZhdWx0XCJdLCBbXCJoZWhlXCJdLCBbXCJob29cIl0s\nIFtcIm9uZVwiXSwgW1widGhyZWVcIl0sIFtcInR3b1wiXSwgW1wieXl5XCJdXSJ9\n'
+    # decoded_output = json.loads(messag.decode('base64', 'strict'))
+    # print "....",decoded_output['database_name'],type(decoded_output);
 
 
-		isexecuted	=True
-		#while isexecuted:
-			#try:
-		#my_logger.info("in hive query result consumer")
-		#consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server,group_id = 'server')
-		# consumer.poll(timeout_ms = 30000,max_records=None)
-		#consumer.subscribe(pattern='hivequeryresult*')
-		#my_logger.info("subscribed to topic"+'hivequeryresult*')
-		return jsonify(hive_request_id = hive_request_id_value,select_query = select_query_bool_value)
-		#consumer.poll(1000)
-		#for message in consumer:
-		#	hive_query_result = message.value
-
-		#	data = hive_query_result.replace("'", '"')
-		#	my_logger.info( data)
-		#	message = json.loads(data)
-		#	my_logger.info(message)
-		#	if message['hive_request_id'] == hive_request_id_value:
-		#		if message.has_key('output'):
-		#			print message['output']
-					#decoded_output = message['output'].decode('base64','strict')
-		#			decoded_output = json.loads(message['output'].decode('base64', 'strict'))
-
-		#			print decoded_output,type(decoded_output),"1111111111111111111111111111111111111111111111111111111111111111111"
-					#decoded_output = decoded_output.replace("\\","").replace('["','"').replace('"]','"').replace('"[',"'[").replace(']"',"]'")
-		#			decoded_output = yaml.load(decoded_output)
-					#decoded_output = ast.literal_eval(decoded_output)
-					#print decoded_output,type(decoded_output),"2222222222222222222222222222222222222222222222222"
-		#			message['output'] = decoded_output
-					#message['output'] = ast.literal_eval("'"+decoded_output+"'")
-					#print ast.literal_eval("'"+decoded_output+"'")
-					#print message,type(message['output']),"222222222.......................55555555555555555"
-					#decoded_output['database_name'] = ast.literal_eval(decoded_output['database_name'])
-		#			print message,type(message['output']),"333333333333333333333333333333333333"
-					#print list(decoded_output),"44444444444444444444444"
-
-					#print message['output'['database_name']],"3333333333333333333333333333333333"
-
-					#decoded_output = message['output'].decode('base64','strict').translate(None,'\\')
-					#message['output'] = dict(decoded_output)
-
-		#			print message, type(message), 'message', message.keys(), 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
-
-		#			consumer.commit()
-		#			consumer.close()
-		#			consumer.unsubscribe()
-		#			isexecuted = False
-		#			my_logger.info("Exiting from Consumer..")
-		#			return jsonify(message)
-				#print message, type(message), 'message', message.keys(),'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
-
-		#		consumer.close()
-		#		consumer.unsubscribe()
+    isexecuted = True
+    # while isexecuted:
+    # try:
+    # my_logger.info("in hive query result consumer")
+    # consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server,group_id = 'server')
+    # consumer.poll(timeout_ms = 30000,max_records=None)
+    # consumer.subscribe(pattern='hivequeryresult*')
+    # my_logger.info("subscribed to topic"+'hivequeryresult*')
+    return jsonify(hive_request_id=hive_request_id_value, select_query=select_query_bool_value)
 
 
-		#		isexecuted = False
-		#		my_logger.info("Exiting fom loop")
-		#		return jsonify(message)
+# consumer.poll(1000)
+# for message in consumer:
+#	hive_query_result = message.value
+
+#	data = hive_query_result.replace("'", '"')
+#	my_logger.info( data)
+#	message = json.loads(data)
+#	my_logger.info(message)
+#	if message['hive_request_id'] == hive_request_id_value:
+#		if message.has_key('output'):
+#			print message['output']
+# decoded_output = message['output'].decode('base64','strict')
+#			decoded_output = json.loads(message['output'].decode('base64', 'strict'))
+
+#			print decoded_output,type(decoded_output),"1111111111111111111111111111111111111111111111111111111111111111111"
+# decoded_output = decoded_output.replace("\\","").replace('["','"').replace('"]','"').replace('"[',"'[").replace(']"',"]'")
+#			decoded_output = yaml.load(decoded_output)
+# decoded_output = ast.literal_eval(decoded_output)
+# print decoded_output,type(decoded_output),"2222222222222222222222222222222222222222222222222"
+#			message['output'] = decoded_output
+# message['output'] = ast.literal_eval("'"+decoded_output+"'")
+# print ast.literal_eval("'"+decoded_output+"'")
+# print message,type(message['output']),"222222222.......................55555555555555555"
+# decoded_output['database_name'] = ast.literal_eval(decoded_output['database_name'])
+#			print message,type(message['output']),"333333333333333333333333333333333333"
+# print list(decoded_output),"44444444444444444444444"
+
+# print message['output'['database_name']],"3333333333333333333333333333333333"
+
+# decoded_output = message['output'].decode('base64','strict').translate(None,'\\')
+# message['output'] = dict(decoded_output)
+
+#			print message, type(message), 'message', message.keys(), 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
+
+#			consumer.commit()
+#			consumer.close()
+#			consumer.unsubscribe()
+#			isexecuted = False
+#			my_logger.info("Exiting from Consumer..")
+#			return jsonify(message)
+# print message, type(message), 'message', message.keys(),'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
+
+#		consumer.close()
+#		consumer.unsubscribe()
 
 
-			#except Exception as e:
+#		isexecuted = False
+#		my_logger.info("Exiting fom loop")
+#		return jsonify(message)
 
-			#	my_logger.error(e)
+
+# except Exception as e:
+
+#	my_logger.error(e)
 
 
 
-	#except psycopg2.DatabaseError, e:
-	#	my_logger.error(e.pgerror)
-	#	my_logger.info('database error')
-	#	return jsonify(message="database error occured")
+# except psycopg2.DatabaseError, e:
+#	my_logger.error(e.pgerror)
+#	my_logger.info('database error')
+#	return jsonify(message="database error occured")
 
-	#except Exception as e:
-	#	my_logger.error(e)
-	#	return jsonify(message=e)
-
-
+# except Exception as e:
+#	my_logger.error(e)
+#	return jsonify(message=e)
 
 
 @api.route('/api/hivedatabase/<customer_id>/<cluster_id>/<agent_id>', methods=['GET'])
@@ -480,8 +478,8 @@ def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
                     return jsonify(message)
                     break
 
-                # else:
-                #	return jsonify(message="empty")
+                    # else:
+                    #	return jsonify(message="empty")
 
 
             except Exception as e:
@@ -492,14 +490,14 @@ def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
         my_logger.error(e)
 
 
-    # except psycopg2.DatabaseError, e:
-    #	my_logger.error(e.pgerror)
-    #	my_logger.info('database error')
-    #	return jsonify(message="database error occured")
+        # except psycopg2.DatabaseError, e:
+        #	my_logger.error(e.pgerror)
+        #	my_logger.info('database error')
+        #	return jsonify(message="database error occured")
 
-    # except Exception as e:
-    #	my_logger.error(e)
-    #	return jsonify(message=e)
+        # except Exception as e:
+        #	my_logger.error(e)
+        #	return jsonify(message=e)
 
 
 @api.route('/api/hiveselectqueryresult/<request_id>', methods=['GET'])
@@ -568,14 +566,13 @@ def clusterSize():
         my_logger.debug(e)
 
 
-
-
 @api.route('/api/cluster_status/<request_id>', methods=['GET'])
 def clusterStatus(request_id):
     try:
         db_session = scoped_session(session_factory)
-        status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_cluster_id).filter(
-                                                                                        TblCustomerRequest.uid_request_id == request_id).all()
+        status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,
+                                                         TblCustomerRequest.uid_cluster_id).filter(
+            TblCustomerRequest.uid_request_id == request_id).all()
         # status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_customer_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
         status = None
         if len(status_select_query_statement) == 0:
@@ -585,8 +582,10 @@ def clusterStatus(request_id):
             request_status = status_select_query_statement[0][0]
             print cluster_id, "hi"
             print request_status, "hello"
-            request_status_select_query_statement = db.session.query(TblMetaRequestStatus.var_request_status).filter(TblMetaRequestStatus.srl_id == request_status).all()
-            cluster_details = db.session.query(TblCluster.var_cluster_name, TblCluster.char_cluster_region).filter(TblCluster.uid_cur_id == cluster_id).all()
+            request_status_select_query_statement = db.session.query(TblMetaRequestStatus.var_request_status).filter(
+                TblMetaRequestStatus.srl_id == request_status).all()
+            cluster_details = db.session.query(TblCluster.var_cluster_name, TblCluster.char_cluster_region).filter(
+                TblCluster.uid_cluster_id == cluster_id).all()
             # cluster_details = db.session.query(TblCluster.var_cluster_name, TblCluster.char_cluster_region).filter(TblCluster.uid_customer_id == customer_id).all()
             if len(cluster_details) == 0:
                 return jsonify(message="cluster_Id not avilable", request_id=request_id)
@@ -605,50 +604,20 @@ def clusterStatus(request_id):
 
         my_logger.debug(e)
 
-# @api.route('/api/hivestatus/<request_id>', methods=['GET'])
-# def hivestatus(request):
-#     db.session = scoped_session(session_factory)
-#     result = db.session.query(TblHiveRequest.hive_query_output).filter(TblHiveRequest.uid_hive_request_id == request).all()
-#     print result,type(result)
-#     if result ==None:
-# 	try:
-# 		db_session = scoped_session(session_factory)
-#
-# 		status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_cluster_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
-# 		print status_select_query_statement,'selectttttttttttttttttttttt'
-# 		if len(status_select_query_statement) == 0:
-# 			return jsonify(message="request id not available")
-# 		else:
-# 			#result_list = []
-# 			request_status = status_select_query_statement[0][0]
-# 			print request_status
-# 			request_status_select_query_statement = db.session.query(TblMetaRequestStatus.var_request_status).filter(TblMetaRequestStatus.srl_id == request_status).all()
-# 			print request_status_select_query_statement,len(request_status_select_query_statement),'reqqqqqqqqqqqq'
-# 			#for request_status in status_select_query_statement[0]:
-# 			#	print request_status,'reqqqqqqqqqqqqq'
-# 			if len(request_status_select_query_statement) == 0:
-# 				return jsonify(request_id=request_id,cluster_status="None")
-# 			else:
-# 				status = request_status_select_query_statement[0][0]
-# 				#cluster_name_query = db.session.query()
-# 				return jsonify(request_id=request_id,cluster_status=status)
-# 	except Exception as e:
-#
-# 		my_logger.debug(e)
 
-@api.route('/api/hivestatus/<requestid>', methods=['GET'])
-def hivestatus(requestid):
+@api.route('/api/hivestatus/<request>', methods=['GET'])
+def hivestatus(request):
     db.session = scoped_session(session_factory)
-    result = db.session.query(TblHiveRequest.hive_query_output).filter(TblHiveRequest.uid_hive_request_id == requestid).all()
-    request=result[0][0]
-    print request
-    if request ==None:
+    result = db.session.query(TblHiveRequest.hive_query_output).filter(
+        TblHiveRequest.uid_hive_request_id == request).all()
+    print result, type(result)
+    if result == None:
         return jsonify(message="request_status_not_available")
-    else :
-        result = str(result).replace("u'"," ").replace("'","")
+    else:
+        result = str(result).replace("u'", " ").replace("'", "")
         resp = eval(result)
         respon = json.dumps(resp)
-        response= json.loads(respon)
+        response = json.loads(respon)
         print response
         return (response[0][0])
 
@@ -671,7 +640,19 @@ def customerLocation():
     for tups in sorted(dict_location):
         dic = {}
         dic['key'] = str(tups[0])
-        dic['location'] = str(tups[2]) + '-' + str(tups[1])
+        dic['location'] = str(tups[1]) + '-' + str(tups[2])
         tuplist.append(dic)
     return jsonify(tuplist)
 
+
+@api.route("/api/<cluster_id>/<role>", methods=['GET'])
+def customer(cluster_id, role):
+    print "hello "
+    print cluster_id
+    print role
+    db_session = scoped_session(session_factory)
+    required_data = db_session.query(TblVmCreation.uid_agent_id).filter(TblVmCreation.uid_cluster_id == cluster_id,
+                                                                        TblVmCreation.var_role == role).all()
+    print required_data, type(required_data)
+
+    return jsonify(agent_id=required_data)
