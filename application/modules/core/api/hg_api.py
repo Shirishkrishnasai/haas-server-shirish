@@ -538,7 +538,7 @@ def customerPlan():
             plan_dicts['plan_name'] = str(tups[1])
             # print plan_dicts,'dulllllllllllll'
             result_list.append(plan_dicts)
-        print     result_list
+        print result_list
         return jsonify(cluster_plans=result_list)
     except Exception as e:
 
