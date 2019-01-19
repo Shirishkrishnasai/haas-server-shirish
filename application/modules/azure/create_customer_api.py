@@ -9,7 +9,7 @@ from application.config.config_file import application_id, customer_client_id, s
 from application.modules.azure.create_ldap_customer import azureldapcustomer
 from azure.mgmt.resource import ResourceManagementClient
 from application.models.models import TblCustomer, TblCustomerAzureResourceGroup, TblVirtualNetwork, TblAzureAppGateway, \
-    TblSubnet, TblClusterType
+    TblSubnet, TblClusterType,TblMetaCloudLocation
 from application import db
 from application.common.loggerfile import my_logger
 from azure.mgmt.network.models import NetworkSecurityGroup
@@ -23,21 +23,19 @@ def customercreation():
     # Gathering information of customer and retriving configuration data of azure
     #    try:
     customer_content = request.json
-    print customer_content
     display_name = customer_content['first_name']
     plan_id = customer_content['cluster_plan']
-    # print display_name
-
     user_principal_name = customer_content['first_name'] + '@bhaskarhighgear.onmicrosoft.com'
     password = customer_content['password']
     mail_nickname = customer_content['second_name']
     customer_content = request.json
-    LOCATION = customer_content['location']
+    locate = customer_content['location']
+    location = db.session.query(TblMetaCloudLocation.var_location).filter(TblMetaCloudLocation.srl_id == locate).all()
+    location = location[0][0]
     GROUP_NAME = str(uuid.uuid1())
     customer_id = GROUP_NAME
     customer_email = customer_content['email']
     # Connection to postgres and inserting customer details to database
-
     gateway_id = str(uuid.uuid1())
     resourcegroup_id = GROUP_NAME
     #inserting plan id and customer id into customer table and committing into customer table
@@ -100,22 +98,18 @@ def customercreation():
         tenant=tenant_id)
 
     client_login = ResourceManagementClient(credentials, subscription_id)
-    resource_group_creation = client_login.resource_groups.create_or_update(GROUP_NAME, {'location': LOCATION})
+    resource_group_creation = client_login.resource_groups.create_or_update(GROUP_NAME, {'location': location})
     # Virtual Network creation
 
     virtual_network_id_query = db.session.query(func.max(TblVirtualNetwork.srl_id)).all()
     virtual_network_ip_info = db.session.query(TblVirtualNetwork.inet_ip_range).filter(
         TblVirtualNetwork.srl_id == virtual_network_id_query[0][0]).all()
-    print virtual_network_ip_info, "info", type(virtual_network_ip_info)
-    print "handling it"
     if len(virtual_network_ip_info) == 0:
         # if virtual_network_ip_info[0][0] == None:
-        print "into if"
         vn_ip = "10.0.0.0/24"
     else:
-        print "it has got into else, cant help"
         ip_of_previous_cluster = virtual_network_ip_info[0][0]
-        print ip_of_previous_cluster
+        my_logger.debug(ip_of_previous_cluster)
         splitting_vn_ip = ip_of_previous_cluster.split('.')
         splitting_vn_ip_range = splitting_vn_ip[2]
         ip_value = int(splitting_vn_ip_range) + 1
@@ -123,7 +117,7 @@ def customercreation():
 
     VNET_NAME = str(uuid.uuid1())
     network_client = NetworkManagementClient(credentials, subscription_id)
-    vnet_creation = network_client.virtual_networks.create_or_update(GROUP_NAME, VNET_NAME, {'location': LOCATION,
+    vnet_creation = network_client.virtual_networks.create_or_update(GROUP_NAME, VNET_NAME, {'location': location,
                                                                                              'address_space': {
                                                                                                  'address_prefixes': [
                                                                                                      vn_ip]}})
@@ -149,12 +143,12 @@ def customercreation():
 
     NSG = network_client.network_security_groups.create_or_update(GROUP_NAME,
                                                                   NSG_NAME,
-                                                                  NetworkSecurityGroup(location=LOCATION,
+                                                                  NetworkSecurityGroup(location=location,
                                                                                        security_rules=[security_rule,
                                                                                                        security_rule1]))
     NSG.wait()
     nsg_result = NSG.result()
-    print "NSG", nsg_result
+    my_logger.debug(nsg_result)
     subnet_ip = vn_ip
     SUBNET_NAME = 'snet' + str(int(round(time.time() * 1000)))
     my_logger.debug('\nCreate Subnet')
@@ -163,7 +157,7 @@ def customercreation():
                                                                'network_security_group': nsg_result})
     subnet_info = subnet_creation.result()
     subnet_id = subnet_info.id
-    print subnet_id
+    my_logger.debug(subnet_id)
     insert_subnet = TblSubnet(uid_customer_id=customer_id, txt_subnet_id=subnet_id, inet_subnet_ip_range=subnet_ip,
                               var_resource_group_name=GROUP_NAME, var_virtual_network_name=VNET_NAME)
     db.session.add(insert_subnet)

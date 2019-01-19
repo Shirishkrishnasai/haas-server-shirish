@@ -139,13 +139,13 @@ def site_map():
 
 
 def runProcess():
-    selecturl_process = Process(target=hgSelectQueryUrlScheduler)
-    selecturl_process.start()
-    kafkataskconsumer_process = Process(target=kafkataskconsumer)
-    kafkaconsumer_process = Process(target=kafkaconsumer)
-    hgmanager_process = Process(target=hgmanager)
-    hgsuper_process = Process(target=hgsuper)
-    hgsuper_process.start()
+    # selecturl_process = Process(target=hgSelectQueryUrlScheduler)
+    # selecturl_process.start()
+    # kafkataskconsumer_process = Process(target=kafkataskconsumer)
+    # kafkaconsumer_process = Process(target=kafkaconsumer)
+    # hgmanager_process = Process(target=hgmanager)
+    # hgsuper_process = Process(target=hgsuper)
+    # hgsuper_process.start()
     # kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
     # kafkaHiveStatusConsumer_process.start()
     # jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
@@ -156,13 +156,13 @@ def runProcess():
     # hiveDatabaseResultConsumer.start()
     # filebrowsestatus_process = Process(target=filebrowsestatus)
     # filebrowsestatus_process.start()
-    kafkataskconsumer_process.start()
-    mrjobproducer_process = Process(target=mrjobproducer)
-    customerjobreqestconsumer = Process(target=jobinsertion)
-    mrjobproducer_process.start()
-    customerjobreqestconsumer.start()
-    kafkaconsumer_process.start()
-    hgmanager_process.start()
+    # kafkataskconsumer_process.start()
+    # mrjobproducer_process = Process(target=mrjobproducer)
+    # customerjobreqestconsumer = Process(target=jobinsertion)
+    # mrjobproducer_process.start()
+    # customerjobreqestconsumer.start()
+    # kafkaconsumer_process.start()
+    # hgmanager_process.start()
     print "method ended"
 
 
