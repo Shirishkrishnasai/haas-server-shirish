@@ -17,7 +17,7 @@ from application import app, db, conn_string, mongo_conn_string, session_factory
 from application.common.loggerfile import my_logger
 from application.config.config_file import schema_statement, request_status, kafka_bootstrap_server
 from application.models.models import TblCustomerRequest, TblAgentConfig, TblAgent, TblNodeInformation, \
-    TblMetaCloudLocation, TblHiveMetaStatus, TblHiveRequest, TblFeature, TblPlan, TblSize, TblMetaRequestStatus,TblCluster,TblVmCreation
+    TblMetaCloudLocation, TblHiveMetaStatus, TblHiveRequest, TblFeature, TblPlan, TblSize, TblMetaRequestStatus,TblCluster,TblVmCreation,TblPlanClusterSize
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from kafka import KafkaProducer
@@ -569,77 +569,88 @@ def clusterSize():
 
 
 
+
 @api.route('/api/cluster_status/<request_id>', methods=['GET'])
 def clusterStatus(request_id):
     try:
         db_session = scoped_session(session_factory)
-        status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_customer_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
+        status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_cluster_id).filter(
+                                                                                        TblCustomerRequest.uid_request_id == request_id).all()
+        # status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_customer_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
+        status = None
         if len(status_select_query_statement) == 0:
             return jsonify(message="request id not available")
         else:
-            customer_id = status_select_query_statement[0][1]
+            cluster_id = status_select_query_statement[0][1]
             request_status = status_select_query_statement[0][0]
+            print cluster_id, "hi"
+            print request_status, "hello"
             request_status_select_query_statement = db.session.query(TblMetaRequestStatus.var_request_status).filter(TblMetaRequestStatus.srl_id == request_status).all()
-            cluster_details = db.session.query(TblCluster.var_cluster_name, TblCluster.char_cluster_region).filter(TblCluster.uid_customer_id == customer_id).all()
-            if len(cluster_details) ==0:
-                return jsonify(message = "customer id not avilable")
+            cluster_details = db.session.query(TblCluster.var_cluster_name, TblCluster.char_cluster_region).filter(TblCluster.uid_cur_id == cluster_id).all()
+            # cluster_details = db.session.query(TblCluster.var_cluster_name, TblCluster.char_cluster_region).filter(TblCluster.uid_customer_id == customer_id).all()
+            if len(cluster_details) == 0:
+                return jsonify(message="cluster_Id not avilable", request_id=request_id)
+            cluster_name = cluster_details[0][0]
+            cluster_region = cluster_details[0][1]
+            print cluster_name
+            print cluster_region
             if len(request_status_select_query_statement) == 0:
-                return jsonify(request_id=request_id, cluster_status="None",cluster_name=cluster_details[0][0],cluster_location=cluster_details[0][1])
+                return jsonify(request_id=request_id, cluster_status=status, cluster_name=cluster_details[0][0],
+                               cluster_location=cluster_details[0][1])
             else:
                 status = request_status_select_query_statement[0][0]
-                return jsonify(request_id=request_id, cluster_status=status, cluster_name=cluster_details[0][0],cluster_location=cluster_details[0][1])
+                return jsonify(request_id=request_id, cluster_status=status, cluster_name=cluster_details[0][0],
+                               cluster_location=cluster_details[0][1])
     except Exception as e:
 
         my_logger.debug(e)
 
-@api.route('/api/hivestatus/<request_id>', methods=['GET'])
-def hivestatus(request):
-    db.session = scoped_session(session_factory)
-    result = db.session.query(TblHiveRequest.hive_query_output).filter(TblHiveRequest.uid_hive_request_id == request).all()
-    print result,type(result)
-    if result ==None:
-	try:
-		db_session = scoped_session(session_factory)
-
-		status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_cluster_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
-		print status_select_query_statement,'selectttttttttttttttttttttt'
-		if len(status_select_query_statement) == 0:
-			return jsonify(message="request id not available")
-		else:
-			#result_list = []
-			request_status = status_select_query_statement[0][0]
-			print request_status
-			request_status_select_query_statement = db.session.query(TblMetaRequestStatus.var_request_status).filter(TblMetaRequestStatus.srl_id == request_status).all()
-			print request_status_select_query_statement,len(request_status_select_query_statement),'reqqqqqqqqqqqq'
-			#for request_status in status_select_query_statement[0]:
-			#	print request_status,'reqqqqqqqqqqqqq'
-			if len(request_status_select_query_statement) == 0:
-				return jsonify(request_id=request_id,cluster_status="None")
-			else:
-				status = request_status_select_query_statement[0][0]
-				#cluster_name_query = db.session.query()
-				return jsonify(request_id=request_id,cluster_status=status)
-	except Exception as e:
-
-		my_logger.debug(e)
-
-# @api.route('/api/hivestatus/<requestid>', methods=['GET'])
-# def hivestatus(requestid):
+# @api.route('/api/hivestatus/<request_id>', methods=['GET'])
+# def hivestatus(request):
 #     db.session = scoped_session(session_factory)
-#     result = db.session.query(TblHiveRequest.hive_query_output).filter(TblHiveRequest.uid_hive_request_id == requestid).all()
-#     request=result[0][0]
-#     print request
-#     if request ==None:
-# >>>>>>> origin/development
-#         return jsonify(message="request_status_not_available")
-#     else :
-#         result = str(result).replace("u'"," ").replace("'","")
-#         resp = eval(result)
-#         respon = json.dumps(resp)
-#         response= json.loads(respon)
-#         print response
-# <<<<<<< HEAD
-#         return (response[0][0])
+#     result = db.session.query(TblHiveRequest.hive_query_output).filter(TblHiveRequest.uid_hive_request_id == request).all()
+#     print result,type(result)
+#     if result ==None:
+# 	try:
+# 		db_session = scoped_session(session_factory)
+#
+# 		status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_cluster_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
+# 		print status_select_query_statement,'selectttttttttttttttttttttt'
+# 		if len(status_select_query_statement) == 0:
+# 			return jsonify(message="request id not available")
+# 		else:
+# 			#result_list = []
+# 			request_status = status_select_query_statement[0][0]
+# 			print request_status
+# 			request_status_select_query_statement = db.session.query(TblMetaRequestStatus.var_request_status).filter(TblMetaRequestStatus.srl_id == request_status).all()
+# 			print request_status_select_query_statement,len(request_status_select_query_statement),'reqqqqqqqqqqqq'
+# 			#for request_status in status_select_query_statement[0]:
+# 			#	print request_status,'reqqqqqqqqqqqqq'
+# 			if len(request_status_select_query_statement) == 0:
+# 				return jsonify(request_id=request_id,cluster_status="None")
+# 			else:
+# 				status = request_status_select_query_statement[0][0]
+# 				#cluster_name_query = db.session.query()
+# 				return jsonify(request_id=request_id,cluster_status=status)
+# 	except Exception as e:
+#
+# 		my_logger.debug(e)
+
+@api.route('/api/hivestatus/<requestid>', methods=['GET'])
+def hivestatus(requestid):
+    db.session = scoped_session(session_factory)
+    result = db.session.query(TblHiveRequest.hive_query_output).filter(TblHiveRequest.uid_hive_request_id == requestid).all()
+    request=result[0][0]
+    print request
+    if request ==None:
+        return jsonify(message="request_status_not_available")
+    else :
+        result = str(result).replace("u'"," ").replace("'","")
+        resp = eval(result)
+        respon = json.dumps(resp)
+        response= json.loads(respon)
+        print response
+        return (response[0][0])
 
 
 @api.route("/api/customerlocation", methods=['GET'])
@@ -663,13 +674,4 @@ def customerLocation():
         dic['location'] = str(tups[2]) + '-' + str(tups[1])
         tuplist.append(dic)
     return jsonify(tuplist)
-
-@api.route("/api/agent_id/<cluster_id>",methods=['get'])
-def customer(cluster_id):
-    cluster = cluster_id
-    #role = agent_data['role']
-    db_session = scoped_session(session_factory)
-    required_data = db_session.query(TblVmCreation.uid_agent_id).filter(TblVmCreation.uid_cluster_id == cluster,TblVmCreation.var_role == 'hive').all()
-    print "required data is",required_data,type(required_data)
-    return jsonify(agent_id= str(required_data))
 

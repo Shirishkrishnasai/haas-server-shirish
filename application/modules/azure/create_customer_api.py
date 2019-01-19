@@ -9,7 +9,7 @@ from application.config.config_file import application_id, customer_client_id, s
 from application.modules.azure.create_ldap_customer import azureldapcustomer
 from azure.mgmt.resource import ResourceManagementClient
 from application.models.models import TblCustomer, TblCustomerAzureResourceGroup, TblVirtualNetwork, TblAzureAppGateway, \
-    TblSubnet, TblClusterType
+    TblSubnet, TblClusterType,TblMetaCloudLocation
 from application import db
 from application.common.loggerfile import my_logger
 from azure.mgmt.network.models import NetworkSecurityGroup
@@ -32,7 +32,10 @@ def customercreation():
     password = customer_content['password']
     mail_nickname = customer_content['second_name']
     customer_content = request.json
-    LOCATION = customer_content['location']
+    LOCATE = customer_content['location']
+    print LOCATE
+    LOCATION = db.session.query(TblMetaCloudLocation.var_location).filter(TblMetaCloudLocation.srl_id == LOCATE).all()
+    LOCATION = LOCATION[0][0]
     GROUP_NAME = str(uuid.uuid1())
     customer_id = GROUP_NAME
     customer_email = customer_content['email']
