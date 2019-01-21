@@ -72,7 +72,7 @@ from application.modules.mapr.api.job_output_api import jobdetails
 from application.modules.mapr.api.job_list_api import joblist
 from application.modules.mapr.api.mapreduceapi import mapreduce
 from application.modules.mapr.api.job_diagnostics_api import jobdiagnostics
-
+from application.modules.core.api.hg_manager_api import highgearmanager
 from application.modules.core.daemons.filebrowsestatus import filebrowsestatus
 from application.modules.core.daemons.hg_manager import hgmanagerscheduler, hgmanager
 from application.modules.hive.daemons.hive_database_result_consumer import hiveDatabaseResult
@@ -89,6 +89,7 @@ from application.common.util import azure_upload_host_slave
 
 from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
 from application.modules.cluster.workers.configure_cluster import configure_cluster
+#from application.modules.core.daemons.
 app.register_blueprint(azfiledownload, url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
 app.register_blueprint(jobdiagnostics, url_prefix='')
@@ -108,13 +109,13 @@ app.register_blueprint(clustersize, url_prefix='')
 app.register_blueprint(customerusers, url_prefix='')
 app.register_blueprint(jobdetails, url_prefix='')
 app.register_blueprint(joblist, url_prefix='')
-
 app.register_blueprint(customers, url_prefix='')
 app.register_blueprint(mrapi, url_prefix='')
 app.register_blueprint(filebrowser, url_prefix='')
 app.register_blueprint(customerusers, url_prefix='')
 app.register_blueprint(jobdetails, url_prefix='')
 app.register_blueprint(joblist, url_prefix='')
+app.register_blueprint(highgearmanager, url_prefix='')
 
 
 def has_no_empty_params(rule):
