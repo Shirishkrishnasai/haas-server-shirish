@@ -1,90 +1,139 @@
-from flask import Flask,jsonify
-import psycopg2
-from application import conn_string
-from application import app,db
+from sqlalchemy.orm import scoped_session
+from application import session_factory
+from apscheduler.schedulers.background import BackgroundScheduler
+from application import app, conn_string, db
 from flask import Blueprint,render_template,abort
-from application.models.models import TblTask,TblAgent,TblMetaTaskStatus
+from application.models.models import TblMetaTaskStatus, TblAgent, TblTask
+from application.common.kafka_producer import kafkaproducer
+from application.common.loggerfile import my_logger
+from flask import Flask,jsonify
+import sys,os
+import time
 
-
-highgearmanager=Blueprint('highgearmanager', __name__)
+highgearmanager=Blueprint('hgmanager', __name__)
 @highgearmanager.route("/hgmanager/<agent_id>",methods=["GET"])
 def hgmanager(agent_id):
-    try:
-        agent_id=agent_id
-        agent_info_query_statement=db.session.query(TblAgent.bool_registered).filter(TblAgent.uid_agent_id==agent_id).all()
-        r =agent_info_query_statement[0][0]
-        print "hello",agent_info_query_statement,r
-        meta_task_status_query=db.session.query(TblMetaTaskStatus.var_task_status).filter(TblMetaTaskStatus.var_task_status=='ASSIGNED').all()
-        status_result=meta_task_status_query[0][0]
-        print "metastatus",status_result
-        list1 = []
-        dict = {}
-        if r == True:
-            print "hii",status_result
-            task_info_query_statement=db.session.query(TblTask.uid_task_id,TblTask.char_task_type_id,TblTask.txt_dependent_task_id,
-                                                       TblTask.txt_agent_worker_version,TblTask.txt_agent_worker_version_path,
-                                                       TblTask.txt_payload_id).filter(TblAgent.uid_agent_id==agent_id,TblTask!=status_result).all()
+    while True:
+        try:
 
-            print "resultresult",task_info_query_statement
-            for res1 in task_info_query_statement:
+            # Fetching data from meta taskstatus table
+            db_session = scoped_session(session_factory)
+            metatablestatus = db_session.query(TblMetaTaskStatus.var_task_status, TblMetaTaskStatus.srl_id).all()
+            print "metatablestatus1",metatablestatus
+            table_status_values = dict(metatablestatus)
 
-                  dependency_tasks= res1[2]
-                  print "depentask",dependency_tasks
-                  if dependency_tasks==None:
-                    task_id=res1[0]
-                    dict['agent_worker_version_path'] = res1[4]
-                    dict['agent_worker_version'] = res1[3]
-                    dict['task_type_id'] = res1[1]
-                    dict['task_id']=task_id
-                    dict['payload_id']=res1[5]
-                    list1.append(dict)
-                    update_task_status=db.session.query(TblTask).filter(TblTask.uid_task_id==dependency_tasks)
-                    # update_statement="update tbl_tasks set var_task_status='a' where uid_task_id='%s'"
-                    # update_res=cur.execute(update_statement % task_id)
-                    # conn.commit()
-                    print "dictdict",dict
-                  else:
-                    list_of_tasks_list=dependency_tasks.split(',')
-                    list_of_tasks=list_of_tasks_list[0][0]
-                    print "lists",list_of_tasks
-                    task_id=res1[0]
-                    dict['task_id']=task_id
-                    dict['agent_worker_version_path']=res1[4]
-                    dict['agent_worker_version']=res1[3]
-                    dict['task_type_id']=res1[1]
-                    dict['payload_id']=res1[5]
+            print "metatablestatus2",table_status_values
+            task_status_value = table_status_values['CREATED']
+            update_task_status_value = table_status_values['ASSIGNED']
+            completed_task_status_value = table_status_values['COMPLETED']
+            agent_verification_result = db_session.query(TblAgent.bool_registered, TblAgent.uid_agent_id).all()
+            print "metatablestatus3", agent_verification_result,task_status_value
+            # Geting agents from database
+            print agent_verification_result,"1111111111111111111111111111111111111111"
+            for agent_registration in agent_verification_result:
+                agent_tasks_data = []
+                if agent_registration[0] == True:
+                    print "agent verification done"
+                    #print "true"
+                    # Listing tasks
+                    #print task_status_value, "task_status"
+                    #print agent_registration
+                    print agent_registration[1],"ggggggggggggggggggggggggggg"
+                    print task_status_value,'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
 
+                    created_tasks = db_session.query(TblTask.uid_task_id, TblTask.char_task_type_id,
+                                                     TblTask.txt_dependent_task_id, TblTask.txt_agent_worker_version,
+                                                     TblTask.txt_agent_worker_version_path, TblTask.txt_payload_id,
+                                                     TblTask.int_task_status).filter(
+                        TblTask.uid_agent_id == agent_registration[1], TblTask.int_task_status == task_status_value).all()
+                    agent_customer_cluster_details = db_session.query(TblAgent.uid_customer_id,
+                                                                      TblAgent.uid_cluster_id).filter(
+                        TblAgent.uid_agent_id == agent_registration[1]).all()
+                    print "hg manager fetched tasks and agent information",agent_customer_cluster_details
+                    print created_tasks, "tasksssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+                    for each_tuple in created_tasks:
+                        dependency_tasks = each_tuple[2]
+                        print dependency_tasks
+                        if dependency_tasks == None:
+                            taskdata = {}
+                            task_id = each_tuple[0]
+                            payload = each_tuple[5]
+                            payload_str = str(payload)
+                            taskdata['agent_id'] = agent_registration[1]
+                            taskdata['event_type'] = 'tasks'
+                            taskdata['cluster_id'] = agent_customer_cluster_details[0][1]
+                            taskdata['customer_id'] = agent_customer_cluster_details[0][0]
+                            taskdata['worker_path'] = each_tuple[4]
+                            taskdata['worker_version'] = each_tuple[3]
+                            taskdata['task_type_id'] = each_tuple[1]
+                            taskdata['task_id'] = task_id
+                            taskdata['payload_id'] = payload_str
+                            taskdata['task_status'] = each_tuple[6]
+                            agent_tasks_data.append(taskdata)
+                            print "helllooooo",payload_str
+                            # print agent_tasks_data,'no dependencies'
+                            update_taskstatus_statement = db_session.query(TblTask).filter(TblTask.uid_task_id == task_id)
+                            update_taskstatus_statement.update({"int_task_status": update_task_status_value})
+                            db_session.commit()
+                        else:
+                            list_of_dependency_tasks = dependency_tasks.split(',')
+                            task_id = each_tuple[0]
+                            taskdata = {}
+                            payload = each_tuple[5]
+                            payload_str = str(payload)
+                            taskdata['agent_id'] = agent_registration[1]
+                            taskdata['event_type'] = 'tasks'
+                            taskdata['cluster_id'] = agent_customer_cluster_details[0][1]
+                            taskdata['customer_id'] = agent_customer_cluster_details[0][0]
+                            taskdata['task_id'] = task_id
+                            taskdata['worker_path'] = each_tuple[4]
+                            taskdata['worker_version'] = each_tuple[3]
+                            taskdata['task_type_id'] = each_tuple[1]
+                            taskdata['payload_id'] = payload_str
+                            taskdata['task_status'] = each_tuple[6]
+                            completedtasks = []
+                            print payload_str
+                            for each_id in list_of_dependency_tasks:
+                                dependency_task_id = each_id.replace('"', '')
+                                dependency_task_status = db_session.query(TblTask.int_task_status).filter(
+                                    TblTask.uid_task_id == dependency_task_id)
+                                dependency_task_status_value = dependency_task_status[0]
+                                if dependency_task_status_value[0] == completed_task_status_value:
+                                    completedtasks.append(dependency_task_status)
+                            if len(completedtasks) == len(list_of_dependency_tasks):
+                                agent_tasks_data.append(taskdata)
 
-                   # list1.append(dict)
-                    for id in list_of_tasks_list:
-                        list = []
-                        id = str(id)
-                        id1 = id.split('"')
-                        id2 = id1[1]
-                        print "hellllll",id2
+                                print agent_tasks_data, 'dependency', 'last if'
+                                update_assigned_statement = db_session.query(TblTask).filter(TblTask.uid_task_id == task_id)
+                                update_assigned_statement.update({"int_task_status": update_task_status_value})
+                                db_session.commit()
+                    	    print "107",agent_tasks_data
+                    if agent_tasks_data == []:
+                        print("nodata")
+                    else:
+                        print agent_tasks_data, "agent data"
+                       # kafkaproducer(message=agent_tasks_data)
+                        return jsonify(message=agent_tasks_data)
 
-                        # statement2 = "select var_task_status from tbl_tasks where uid_task_id='%s'"
-                        # result = cur.execute(statement2 % id2)
-                        # result1 = cur.fetchall()
-                        # result2 = result1[0][0]
-                        # result3 = result2.split('@')
-                        statement2=db.session.query(TblTask).filter(TblTask.uid_task_id==dependency_tasks).all()
-                        result2 = statement2[0][0]
-                        result3 = result2.split('@')
-                        print "result3",result3
-                        if result3[0] == "completed":
-                            list.append(result3)
-                    print "hhhhhh",list
-                    if len(list) == len(list_of_tasks):
-                        list1.append(dict)
-                        update_statement=db.session.query(TblTask).filter(TblTask.uid_task_id==dependency_tasks).update(TblTask.uid_task_id==status_result)
-                        # update_statement = "update tbl_tasks set var_task_status='a' where uid_task_id='%s'"
-                        # update_res = cur.execute(update_statement % task_id)
-                        # conn.commit()
-            print "resultis",list1
-        return jsonify(data=list1)
+                        print "hgmanager producedddddddddddddddddddd"
+                else:
+                    print 'hgmanager else'
+        #           return jsonify(message="agent is not registered")
 
-    except Exception as e:
-        return e.message
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 
+            my_logger.error(exc_type)
+            my_logger.error(fname)
+            my_logger.error(exc_tb.tb_lineno)
+        finally:
+            print "HG_MANAGER in Finally"
+            db_session.close()
+        time.sleep(15)
 
+def hgmanagerscheduler():
+    #scheduler = BackgroundScheduler()
+    #scheduler.add_job(hgmanager, 'cron', minute='*/1')
+    #scheduler.start()
+    pass
