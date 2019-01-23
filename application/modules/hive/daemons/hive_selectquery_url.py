@@ -16,10 +16,10 @@ from datetime import datetime, timedelta
 
 
 def selectQueryUrl():
-    #while True:
-        try:
+    while True:
+        #try:
             # reads config file to get accountname and key
-
+            print "heyyyyyyyyyyyyyyyyyyyyyyyyyy"
             cfg = ConfigParser()
             cfg.read('application/config/azure_config.ini')
             account_name = cfg.get('file_storage', 'account_name')
@@ -28,6 +28,7 @@ def selectQueryUrl():
             # passing accountname and key to function
             file_service = FileService(account_name=account_name, account_key=account_key)
             my_logger.info('file account credentials ok')
+            print "in hive select query url creating file"
 
             db_session = scoped_session(session_factory)
             hive_request_ids = db_session.query(TblHiveRequest.uid_cluster_id,
@@ -68,12 +69,12 @@ def selectQueryUrl():
                 db_session.commit()
             db_session.close()
 
-        except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            my_logger.error(exc_type)
-            my_logger.error(fname)
-            my_logger.error(exc_tb.tb_lineno)
+        # except Exception as e:
+        #     exc_type, exc_obj, exc_tb = sys.exc_info()
+        #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        #     my_logger.error(exc_type)
+        #     my_logger.error(fname)
+        #     my_logger.error(exc_tb.tb_lineno)
 
 
 def hgSelectQueryUrlScheduler():

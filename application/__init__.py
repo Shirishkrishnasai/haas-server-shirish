@@ -61,6 +61,10 @@ from multiprocessing import Process
 
 from application.modules.core.api.hg_api import api
 from application.modules.core.api.az_api import azapi
+
+from application.modules.hive.api.hive_query_request import hivequery
+from application.modules.hive.api.hive_query_output_api import hivequeryoutput
+
 from application.modules.core.api.customeruserlist import customerusers
 from application.modules.core.api.get_cluster_size import clustersize
 from application.modules.core.api.get_cluster_location import clusterlocation
@@ -89,6 +93,9 @@ from application.common.util import azure_upload_host_slave
 
 from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
 from application.modules.cluster.workers.configure_cluster import configure_cluster
+
+app.register_blueprint(hivequeryoutput, url_prefix='')
+app.register_blueprint(hivequery, url_prefix='')
 app.register_blueprint(azfiledownload, url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
 app.register_blueprint(jobdiagnostics, url_prefix='')
