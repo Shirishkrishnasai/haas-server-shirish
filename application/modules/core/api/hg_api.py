@@ -18,7 +18,7 @@ from application.common.loggerfile import my_logger
 from application.config.config_file import schema_statement, request_status, kafka_bootstrap_server
 from application.models.models import TblCustomerRequest, TblAgentConfig, TblAgent, TblNodeInformation, \
     TblMetaCloudLocation, TblHiveMetaStatus, TblHiveRequest, TblFeature, TblPlan, TblSize, TblMetaRequestStatus, \
-    TblCluster, TblVmCreation
+    TblCluster, TblVmCreation,TblMetaTaskStatus,TblTask
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from kafka import KafkaProducer
@@ -656,3 +656,5 @@ def customer(cluster_id, role):
     print required_data, type(required_data)
 
     return jsonify(agent_id=required_data)
+
+

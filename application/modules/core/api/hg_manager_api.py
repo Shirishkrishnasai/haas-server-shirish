@@ -19,28 +19,16 @@ def hgmanager(agent_id):
             # Fetching data from meta taskstatus table
             db_session = scoped_session(session_factory)
             metatablestatus = db_session.query(TblMetaTaskStatus.var_task_status, TblMetaTaskStatus.srl_id).all()
-            print "metatablestatus1",metatablestatus
             table_status_values = dict(metatablestatus)
-
-            print "metatablestatus2",table_status_values
             task_status_value = table_status_values['CREATED']
             update_task_status_value = table_status_values['ASSIGNED']
             completed_task_status_value = table_status_values['COMPLETED']
             agent_verification_result = db_session.query(TblAgent.bool_registered, TblAgent.uid_agent_id).all()
-            print "metatablestatus3", agent_verification_result,task_status_value
             # Geting agents from database
-            print agent_verification_result,"1111111111111111111111111111111111111111"
             for agent_registration in agent_verification_result:
                 agent_tasks_data = []
                 if agent_registration[0] == True:
                     print "agent verification done"
-                    #print "true"
-                    # Listing tasks
-                    #print task_status_value, "task_status"
-                    #print agent_registration
-                    print agent_registration[1],"ggggggggggggggggggggggggggg"
-                    print task_status_value,'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
-
                     created_tasks = db_session.query(TblTask.uid_task_id, TblTask.char_task_type_id,
                                                      TblTask.txt_dependent_task_id, TblTask.txt_agent_worker_version,
                                                      TblTask.txt_agent_worker_version_path, TblTask.txt_payload_id,
@@ -49,8 +37,7 @@ def hgmanager(agent_id):
                     agent_customer_cluster_details = db_session.query(TblAgent.uid_customer_id,
                                                                       TblAgent.uid_cluster_id).filter(
                         TblAgent.uid_agent_id == agent_registration[1]).all()
-                    print "hg manager fetched tasks and agent information",agent_customer_cluster_details
-                    print created_tasks, "tasksssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+                    print "hg manager fetched tasks and agent information"
                     for each_tuple in created_tasks:
                         dependency_tasks = each_tuple[2]
                         print dependency_tasks
@@ -70,7 +57,6 @@ def hgmanager(agent_id):
                             taskdata['payload_id'] = payload_str
                             taskdata['task_status'] = each_tuple[6]
                             agent_tasks_data.append(taskdata)
-                            print "helllooooo",payload_str
                             # print agent_tasks_data,'no dependencies'
                             update_taskstatus_statement = db_session.query(TblTask).filter(TblTask.uid_task_id == task_id)
                             update_taskstatus_statement.update({"int_task_status": update_task_status_value})
@@ -103,17 +89,16 @@ def hgmanager(agent_id):
                             if len(completedtasks) == len(list_of_dependency_tasks):
                                 agent_tasks_data.append(taskdata)
 
-                                print agent_tasks_data, 'dependency', 'last if'
+
                                 update_assigned_statement = db_session.query(TblTask).filter(TblTask.uid_task_id == task_id)
                                 update_assigned_statement.update({"int_task_status": update_task_status_value})
                                 db_session.commit()
-                    	    print "107",agent_tasks_data
                     if agent_tasks_data == []:
                         print("nodata")
                     else:
                         print agent_tasks_data, "agent data"
                        # kafkaproducer(message=agent_tasks_data)
-                        return jsonify(message=agent_tasks_data)
+                        return jsonify(agent_tasks_data)
 
                         print "hgmanager producedddddddddddddddddddd"
                 else:
