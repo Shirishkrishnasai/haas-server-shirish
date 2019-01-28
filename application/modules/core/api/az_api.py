@@ -620,20 +620,21 @@ def clustermembers(customer_id, cluster_id):
 
 @azapi.route("/api/azure_credentials/<customer_id>", methods=['GET'])
 def azureFileStorageCredentials(customer_id):
-    # customer_request=request.json
-    try:
-        db_session = scoped_session(session_factory)
-        azure_file_storage_credentials_statement = db.session.query(TblAzureFileStorageCredentials).all()
+	# customer_request=request.json
+	try:
+		db_session = scoped_session(session_factory)
+		azure_file_storage_credentials_statement = db.session.query(TblAzureFileStorageCredentials).all()
+		print azure_file_storage_credentials_statement,'azureeeee'
+		values_list = []
+		keys_list = []
+		for val in azure_file_storage_credentials_statement:
+			values_dict = dict(val)
+			print values_dict,'valllllllllll'
+			azure_account_name = values_dict['account_name']
+			keys_list.append(values_dict['account_primary_key'])
+			keys_list.append(values_dict['account_secondary_key'])
+			# azure_file_storage_credentials_statement_result  = zip(*val)[0]
 
-        values_list = []
-        keys_list = []
-        for val in azure_file_storage_credentials_statement:
-            values_dict = dict(val)
-            azure_account_name = values_dict['account_name']
-            keys_list.append(values_dict['account_primary_key'])
-            keys_list.append(values_dict['account_secondary_key'])
-            # azure_file_storage_credentials_statement_result  = zip(*val)[0]
-
-        return jsonify(account_name=azure_account_name, key=str(random.choice(keys_list)))
-    except Exception as e:
-        return e.message
+		return jsonify(account_name=azure_account_name, key=str(random.choice(keys_list)))
+	except Exception as e:
+		print e.message
