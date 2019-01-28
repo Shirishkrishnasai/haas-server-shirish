@@ -35,7 +35,9 @@ application/modules/core/api/get_cluster_location.py
 application/modules/core/api/get_cluster_size.py
 application/modules/core/api/hg_api.py
 application/modules/core/api/hg_file_browser.py
+application/modules/core/api/hg_manager_api.py
 application/modules/core/api/list_cluster_members.py
+application/modules/core/api/task_status_updation.py
 application/modules/core/daemons/__init__.py
 application/modules/core/daemons/filebrowsestatus.py
 application/modules/core/daemons/hg_manager.py

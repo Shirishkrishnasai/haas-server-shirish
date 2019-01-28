@@ -3,7 +3,7 @@ import sys
 import time
 
 from application.common.loggerfile import my_logger
-from application.common.task_status_updation import taskstatusconsumer
+from application.modules.core.api.task_status_updation import taskstatusupdation
 from application.config.config_file import kafka_bootstrap_server, kafka_api_version
 from flask import json
 from kafka import KafkaConsumer
@@ -27,7 +27,7 @@ def _kafkataskconsumer():
                         data = customer_data.replace("'", '"')
                         json_loads_customer_data = json.loads(data)
                         if json_loads_customer_data['event_type'] == "task_status":
-                            taskstatusconsumer(task_status_information=json_loads_customer_data)
+                            taskstatusupdation(task_status_information=json_loads_customer_data)
                         my_logger.info("Updated Status")
                     except Exception as e:
                         exc_type, exc_obj, exc_tb = sys.exc_info()

@@ -834,11 +834,28 @@ class TblHiveRequest(ItemBase,OutputMixin):
     txt_url_value = Column(Text)
     bool_url_created = Column(Boolean)
     hive_query_output = Column(Text)
+    txt_hive_database = Column(Text)
+    bool_query_complete = Column(Boolean)
     tbl_customer = relationship(u'TblCustomer')
     tbl_cluster = relationship(u'TblCluster')
     tbl_users = relationship(u'TblUsers')
     tbl_agent = relationship(u'TblAgent')
     tbl_hive_meta_status = relationship(u'TblHiveMetaStatus')
+
+class TblHiveDatabases(ItemBase,OutputMixin):
+    __tablename__ = 'tbl_hive_databases'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
+    uid_cluster_id = Column(ForeignKey(u'highgear.tbl_cluster.uid_cluster_id'))
+    uid_agent_id = Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
+    txt_output = Column(Text)
+    bool_query_complete = Column(Boolean)
+
+    tbl_customer = relationship(u'TblCustomer')
+    tbl_cluster = relationship(u'TblCluster')
+    tbl_agent = relationship(u'TblAgent')
+
 
 class TblHiveMetaStatus(ItemBase,OutputMixin):
     __tablename__ = 'tbl_hive_meta_status'
