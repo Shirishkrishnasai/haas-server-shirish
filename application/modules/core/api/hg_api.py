@@ -388,17 +388,25 @@ def hiveSelectQueryResult(request_id):
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
 
-@api.route('/api/hivestatus/<requestid>', methods=['GET'])
-def hivestatus(requestid):
+@api.route('/api/hivestatus/<request>', methods=['GET'])
+def hivestatus(request):
     db.session = scoped_session(session_factory)
     result = db.session.query(TblHiveRequest.hive_query_output).filter(
-        TblHiveRequest.uid_hive_request_id == requestid).first()
+        TblHiveRequest.uid_hive_request_id == request).all()
     print result, type(result)
-    if result[0] == None:
-        return jsonify(message="please try again in few seconds. ur output is on the way")
+    if result == None:
+        return jsonify(message="request_status_not_available")
     else:
+        result = eval(result[0][0])
+        print result, type(result),"11111111111111111111111"
+        tup= {}
+        for key, value in result.iteritems():
+            dict = {}
+            dict[str(key)]=str(value)
 
-        return (result[0])
+            tup.update({key:value})
+            print tup,"helloooooooooooooo"
+        return jsonify(tup)
 
 
 @api.route('/api/customer_plan', methods=['GET'])
