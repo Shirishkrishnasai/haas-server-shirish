@@ -334,7 +334,7 @@ def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
                 consumer.subscribe(pattern='hivedatabaseresult*')
                 my_logger.debug("subscribed to topic")
 
-                
+
                 for message in consumer:
                     print "first message"
 

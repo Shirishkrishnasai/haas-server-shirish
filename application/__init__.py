@@ -85,15 +85,15 @@ from application.modules.core.daemons.hg_supervisor import hgsuper
 from application.modules.mapr.daemons.job_diagnostic_consumer import diagnosticsconsumer
 from application.modules.mapr.daemons.job_status_consumer import statusconsumer
 from application.modules.mapr.daemons.customer_job_request_consumer import jobinsertion
-from application.modules.hive.daemons.hive_status_consumer import kafkaHiveStatusConsumer
+#from application.modules.hive.daemons.hive_status_consumer import kafkaHiveStatusConsumer
 from application.modules.core.daemons.kafka_job_producer import mrjobproducer
 from application.modules.hive.daemons.hive_selectquery_url import hgSelectQueryUrlScheduler
 from application.modules.core.daemons.metrics_consumer import kafkaconsumer
-from application.modules.core.daemons.task_status_consumer import kafkataskconsumer
+#from application.modules.core.daemons.task_status_consumer import kafkataskconsumer
 from application.common.util import azure_upload_host_slave
 
-from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
-from application.modules.cluster.workers.configure_cluster import configure_cluster
+#from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
+#from application.modules.cluster.workers.configure_cluster import configure_cluster
 
 app.register_blueprint(hivequeryoutput, url_prefix='')
 app.register_blueprint(hivequery, url_prefix='')
@@ -146,10 +146,10 @@ def site_map():
 
 
 
-
+#hgSelectQueryUrlScheduler()
 def runProcess():
-    # selecturl_process = Process(target=hgSelectQueryUrlScheduler)
-    # selecturl_process.start()
+    #selecturl_process = Process(target=hgSelectQueryUrlScheduler)
+    #selecturl_process.start()
     # kafkataskconsumer_process = Process(target=kafkataskconsumer)
     # kafkaconsumer_process = Process(target=kafkaconsumer)
     # hgmanager_process = Process(target=hgmanager)
