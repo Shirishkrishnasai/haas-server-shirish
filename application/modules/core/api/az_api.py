@@ -517,78 +517,77 @@ def divideMilliSeconds(fromtime, totime):
     return minutes
 
 
-@azapi.route('/api/cluster/<customer_id>', methods=['GET'])
-def cluster_info(customer_id):
-    conn = psycopg2.connect(conn_string)
-    cur = conn.cursor()
-    cur.execute("set search_path to highgear;")
-
-    customer_cluster_query_stmnt = "SELECT uid_customer_id,uid_cluster_id,uid_cluster_type_id,valid_cluster,var_cluster_name FROM tbl_cluster where uid_customer_id='" + str(
-        customer_id) + "'"
-    cur.execute(customer_cluster_query_stmnt)
-    customer_cluster_info = cur.fetchall()
-    print customer_cluster_info, "cciiiiiiiiiiiiiiiiiiiiiiiii"
-    mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
-    database_conn = mongo_db_conn['local']
-
-    customer_id_metrics_list = list(database_conn[customer_id].find())
-    print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
-    db_collection_list = []
-    if customer_id_metrics_list == []:
-
-        available_storage = 0
-    else:
-        for db_collection in customer_id_metrics_list:
-            print db_collection,type(db_collection),'dbdbdbdbbdbdbdbd'
-            # print db_collection,type(db_collection),'typeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeedbbbb'
-            db_collection_list.append(db_collection)
-
-        dicto = db_collection_list[-1]
-        print dicto,'loooooooooooooool'
-        for keys, values in dicto['payload'][3].items():
-            print keys,values , "valoooooooooooeeeeeees"
-            # print keys,values,'kakakakak'
-            if keys == 'available_storage':
-                print values, 'looooooooooooooooooooooooooooooooooooooooooo'
-                available_storage = values
-        print available_storage, 'avaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-
-    if customer_cluster_info == []:
-        return jsonify(clusterinformation=[])
-    else:
-        # list_cus=[]
-        list_customer_cluster_info = []
-        for cluster_info in customer_cluster_info:
-            if cluster_info[3] == True:
-
-                cloud_type_query = "select char_name from tbl_cluster_type where uid_cluster_type_id='" + str(
-                    cluster_info[2]) + "'"
-                cur.execute(cloud_type_query)
-                clustername = cur.fetchall()
-
-                cloud_name = clustername[0][0].rstrip()
-                # list_customer_cluster_info=[]
-                #node_info_stmnt = "select uid_node_id,char_role,edge_node from tbl_node_information where uid_cluster_id='" + str(
-                #    cluster_info[1]) + "' and edge_node = true"
-
-                node_info_stmnt = "select uid_node_id,char_role from tbl_node_information where uid_cluster_id='" + str(
-                    cluster_info[1])+"'"
-                cur.execute(node_info_stmnt)
-                cus_node_info = cur.fetchall()
-
-                list_cus = []
-
-                for cus in cus_node_info:
-                    list_cus.append({"node_id": cus[0], "char_role": cus[1]})
-
-                list_customer_cluster_info.append(
-                    {"customer_id": cluster_info[0], "node_information": list_cus, "cluster_id": cluster_info[1],
-                     "cluster_type_id": cluster_info[2], "clustername": cluster_info[4], "valid_cluster": cluster_info[3],
-                     "available_storage": available_storage,"cloud_tytpe":cloud_name})
-
-        reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
-
-        return jsonify(clusterinformation=reversed_list_customer_cluster_info)
+# @azapi.route('/api/cluster/<customer_id>', methods=['GET'])
+# def cluster_info(customer_id):
+#     conn = psycopg2.connect(conn_string)
+#     cur = conn.cursor()
+#     cur.execute("set search_path to highgear;")
+#
+#     customer_cluster_query_stmnt = "SELECT uid_customer_id,uid_cluster_id,uid_cluster_type_id,valid_cluster,var_cluster_name FROM tbl_cluster where uid_customer_id='" + str(
+#         customer_id) + "'"
+#     cur.execute(customer_cluster_query_stmnt)
+#     customer_cluster_info = cur.fetchall()
+#     print customer_cluster_info, "cciiiiiiiiiiiiiiiiiiiiiiiii"
+#     mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
+#     database_conn = mongo_db_conn['local']
+#
+#     customer_id_metrics_list = list(database_conn[customer_id].find())
+#     print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
+#     db_collection_list = []
+#     if customer_id_metrics_list == []:
+#
+#         available_storage = 0
+#     else:
+#         for db_collection in customer_id_metrics_list:
+#             print db_collection,type(db_collection),'dbdbdbdbbdbdbdbd'
+#             # print db_collection,type(db_collection),'typeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeedbbbb'
+#             db_collection_list.append(db_collection)
+#
+#         dicto = db_collection_list[-1]
+#         print dicto,'loooooooooooooool'
+#         for keys, values in dicto['payload'][3].items():
+#             print keys,values , "valoooooooooooeeeeeees"
+#             # print keys,values,'kakakakak'
+#             if keys == 'available_storage':
+#                 print values, 'looooooooooooooooooooooooooooooooooooooooooo'
+#                 available_storage = values
+#         print available_storage, 'avaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+#
+#     if customer_cluster_info == []:
+#         return jsonify(clusterinformation=[])
+#     else:
+#         # list_cus=[]
+#         list_customer_cluster_info = []
+#         for cluster_info in customer_cluster_info:
+#             if cluster_info[3] == True:
+#
+#                 cloud_type_query = "select char_name from tbl_cluster_type where uid_cluster_type_id='" + str(
+#                     cluster_info[2]) + "'"
+#                 cur.execute(cloud_type_query)
+#                 clustername = cur.fetchall()
+#
+#                 cloud_name = clustername[0][0].rstrip()
+#                 # list_customer_cluster_info=[]
+#                 #node_info_stmnt = "select uid_node_id,char_role,edge_node from tbl_node_information where uid_cluster_id='" + str(
+#                 #    cluster_info[1]) + "' and edge_node = true"
+#
+#                 node_info_stmnt = "select uid_node_id,char_role from tbl_node_information where uid_cluster_id='" + str(
+#                     cluster_info[1])+"'"
+#                 cur.execute(node_info_stmnt)
+#                 cus_node_info = cur.fetchall()
+#
+#                 list_cus = []
+#
+#                 for cus in cus_node_info:
+#                     list_cus.append({"node_id": cus[0], "char_role": cus[1]})
+#
+#                 list_customer_cluster_info.append(
+#                     {"customer_id": cluster_info[0], "node_information": list_cus, "cluster_id": cluster_info[1],
+#                      "cluster_type_id": cluster_info[2], "clustername": cluster_info[4], "valid_cluster": cluster_info[3],
+#                      "available_storage": available_storage,"cloud_tytpe":cloud_name})
+#
+#         reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
+#         return jsonify(clusterinformation=reversed_list_customer_cluster_info)
 
 
 @azapi.route("/api/cluster_members/<customer_id>/<cluster_id>", methods=['GET'])

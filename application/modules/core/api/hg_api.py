@@ -532,3 +532,52 @@ def customer(cluster_id, role):
     return jsonify(agent_id=required_data)
 
 
+@api.route('/api/cluster/<customer_id>', methods=['GET'])
+def cluster_info(customer_id):
+    db_session = scoped_session(session_factory)
+    customer_cluster_info = db_session.query(TblCluster.uid_customer_id,TblCluster.uid_cluster_id,TblCluster.uid_cluster_type_id,TblCluster.valid_cluster,TblCluster.ts_created_datetime)\
+        .filter(TblCluster.uid_customer_id == customer_id).all()
+    #print customer_cluster_info, "cciiiiiiiiiiiiiiiiiiiiiiiii"
+    if customer_cluster_info == []:
+        return jsonify(message="No clusters to be displayed")
+    else:
+        list_customer_cluster_info = []
+        for cluster_info in customer_cluster_info:
+            if cluster_info[3] == True:
+                mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
+                database_conn = mongo_db_conn['local']
+                customer_id_metrics_list = list(database_conn[customer_id].find())
+                #print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
+
+                #print customer_id_metrics_list[-1]['payload'][3],'payyyyyyyyyyyylllllll'
+                #print customer_id_metrics_list[-1]['payload'][-2], 'paoooooooooyyyyylllllll'
+                available_storage = customer_id_metrics_list[-1]['payload'][-2]['available_storage']
+                print available_storage,'vallllll'
+                # metrics_dict =  customer_id_metrics_list[-1]
+                #for keys, values in metrics_dict['payload'][3].items():
+                    # print keys,values , "valoooooooooooeeeeeees"
+                #    if keys == 'available_storage':
+                        #print values, 'looooooooooooooooooooooooooooooooooooooooooo'
+                #        available_storage = values
+            else:
+                available_storage = 0
+            clustername = db_session.query(TblClusterType.char_name).\
+                filter(TblClusterType.uid_cluster_type_id == cluster_info[2]).all()
+            clus_name = clustername[0][0].rstrip()
+
+            cus_node_info = db_session.query(TblNodeInformation.uid_node_id,TblNodeInformation.char_role).\
+                filter(TblNodeInformation.uid_cluster_id == cluster_info[1]).all()
+
+            node_info_list = []
+
+            for cus in cus_node_info:
+                node_info_list.append({"node_id": cus[0], "char_role": cus[1]})
+
+            list_customer_cluster_info.append(
+                {"customer_id": cluster_info[0], "node_information": node_info_list, "cluster_id": cluster_info[1],
+                 "cluster_type_id": cluster_info[2], "clustername": clus_name, "valid_cluster": cluster_info[3],
+                 "cluster_up_time":cluster_info[4],"available_storage": available_storage})
+
+        reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
+
+        return jsonify(clusterinformation=reversed_list_customer_cluster_info)
