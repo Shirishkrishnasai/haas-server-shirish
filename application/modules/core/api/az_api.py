@@ -587,7 +587,6 @@ def divideMilliSeconds(fromtime, totime):
 #                      "available_storage": available_storage,"cloud_tytpe":cloud_name})
 #
 #         reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
-#
 #         return jsonify(clusterinformation=reversed_list_customer_cluster_info)
 
 

@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="5ea0f7d9-3a76-4667-9bf4-9a3706cc7c24" name="Default Changelist" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/core/api/az_api.py" afterPath="$PROJECT_DIR$/application/modules/core/api/az_api.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/core/api/hg_api.py" afterPath="$PROJECT_DIR$/application/modules/core/api/hg_api.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -51,8 +50,8 @@
       <file leaf-file-name="az_api.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/application/modules/core/api/az_api.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="121">
-              <caret line="570" column="10" lean-forward="false" selection-start-line="570" selection-start-column="10" selection-end-line="570" selection-end-column="10" />
+            <state relative-caret-position="301">
+              <caret line="589" column="0" lean-forward="false" selection-start-line="589" selection-start-column="0" selection-end-line="589" selection-end-column="0" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -347,9 +346,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="30" width="1366" height="738" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18568233" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18568233" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -638,8 +637,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/application/modules/core/api/az_api.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="121">
-          <caret line="570" column="10" lean-forward="false" selection-start-line="570" selection-start-column="10" selection-end-line="570" selection-end-column="10" />
+        <state relative-caret-position="301">
+          <caret line="589" column="0" lean-forward="false" selection-start-line="589" selection-start-column="0" selection-end-line="589" selection-end-column="0" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
