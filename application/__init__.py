@@ -50,16 +50,16 @@ from db_setup import init_db
 
 #init_db()
 
-from application.common.file_upload import azfile
-from application.common.file_download import azfiledownload
-from application.common.util import azure_upload_host_slave
-from application.modules.azure.create_customer_api import customers
+#from application.common.file_upload import azfile
+#from application.common.file_download import azfiledownload
+#from application.common.util import azure_upload_host_slave
+#from application.modules.azure.create_customer_api import customers
 from multiprocessing import Process
 
 
 
 
-from application.modules.core.api.hg_api import api
+#from application.modules.core.api.hg_api import api
 from application.modules.core.api.az_api import azapi
 
 from application.modules.hive.api.hive_query_request import hivequery
@@ -71,13 +71,14 @@ from application.modules.core.api.get_cluster_location import clusterlocation
 from application.modules.core.api.hg_file_browser import filebrowser
 
 from application.modules.mapr.api.hg_mr_job import mrapi
-from application.modules.mapr.api.hg_mr_job import mrjobstatus
+#from application.modules.mapr.api.hg_mr_job import mrjobstatus
 from application.modules.mapr.api.job_output_api import jobdetails
 from application.modules.mapr.api.job_list_api import joblist
 from application.modules.mapr.api.mapreduceapi import mapreduce
 from application.modules.mapr.api.job_diagnostics_api import jobdiagnostics
 from application.modules.core.api.hg_manager_api import highgearmanager
 from application.modules.core.api.task_status_updation import taskstatus
+from application.modules.core.daemons.kafka_job_producer import  jobproducer
 from application.modules.core.daemons.filebrowsestatus import filebrowsestatus
 from application.modules.core.daemons.hg_manager import hgmanagerscheduler, hgmanager
 from application.modules.hive.daemons.hive_database_result_consumer import hiveDatabaseResult
@@ -87,25 +88,25 @@ from application.modules.mapr.daemons.job_status_consumer import statusconsumer
 from application.modules.mapr.daemons.customer_job_request_consumer import jobinsertion
 #from application.modules.hive.daemons.hive_status_consumer import kafkaHiveStatusConsumer
 from application.modules.core.daemons.kafka_job_producer import mrjobproducer
-from application.modules.hive.daemons.hive_selectquery_url import hgSelectQueryUrlScheduler
+#from application.modules.hive.daemons.hive_selectquery_url import hgSelectQueryUrlScheduler
 from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 #from application.modules.core.daemons.task_status_consumer import kafkataskconsumer
-from application.common.util import azure_upload_host_slave
+#from application.common.util import azure_upload_host_slave
 
 #from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
 #from application.modules.cluster.workers.configure_cluster import configure_cluster
 
 app.register_blueprint(hivequeryoutput, url_prefix='')
 app.register_blueprint(hivequery, url_prefix='')
-app.register_blueprint(azfiledownload, url_prefix='')
+#app.register_blueprint(azfiledownload, url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
 app.register_blueprint(jobdiagnostics, url_prefix='')
 app.register_blueprint(clusterlocation, url_prefix='')
 app.register_blueprint(clustersize, url_prefix='')
-app.register_blueprint(api, url_prefix='')
-app.register_blueprint(azfile, url_prefix='')
+#app.register_blueprint(api, url_prefix='')
+#app.register_blueprint(azfile, url_prefix='')
 app.register_blueprint(azapi, url_prefix='')
-app.register_blueprint(mrjobstatus, url_prefix='')
+#pp.register_blueprint(mrjobstatus, url_prefix='')
 app.register_blueprint(mrapi, url_prefix='')
 app.register_blueprint(filebrowser, url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
@@ -114,17 +115,16 @@ app.register_blueprint(clusterlocation, url_prefix='')
 #app.register_blueprint(cloudtype, url_prefix='')
 app.register_blueprint(clustersize, url_prefix='')
 app.register_blueprint(customerusers, url_prefix='')
-app.register_blueprint(jobdetails, url_prefix='')
 app.register_blueprint(joblist, url_prefix='')
-app.register_blueprint(customers, url_prefix='')
-app.register_blueprint(mrapi, url_prefix='')
+#app.register_blueprint(customers, url_prefix='')
+#app.register_blueprint(mrapi, url_prefix='')
 app.register_blueprint(filebrowser, url_prefix='')
 app.register_blueprint(customerusers, url_prefix='')
 app.register_blueprint(jobdetails, url_prefix='')
 app.register_blueprint(joblist, url_prefix='')
 app.register_blueprint(highgearmanager, url_prefix='')
 app.register_blueprint(taskstatus, url_prefix='')
-
+app.register_blueprint(jobproducer, url_prefix='')
 
 def has_no_empty_params(rule):
     defaults = rule.defaults if rule.defaults is not None else ()

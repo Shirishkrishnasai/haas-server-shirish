@@ -49,12 +49,12 @@ application/modules/core/daemons/task_status_consumer.py
 application/modules/core/workers/__init__.py
 application/modules/hive/__init__.py
 application/modules/hive/api/__init__.py
+application/modules/hive/api/hive_query_output_api.py
+application/modules/hive/api/hive_query_request.py
 application/modules/hive/daemons/__init__.py
 application/modules/hive/daemons/hive_database_consumer.py
 application/modules/hive/daemons/hive_database_result_consumer.py
-application/modules/hive/daemons/hive_query_output.py
 application/modules/hive/daemons/hive_selectquery_url.py
-application/modules/hive/daemons/hive_status_consumer.py
 application/modules/hive/workers/__init__.py
 application/modules/hive/workers/edgenode_provision_worker.py
 application/modules/hive/workers/hive_config_worker.py

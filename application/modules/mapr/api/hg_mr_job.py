@@ -90,14 +90,14 @@ def hg_mrjob_client():
         #print data,'dddddddddddddddaaaaaaaaaaaaa'
 
         request_id = str(uuid.uuid1())
+        print request_id
         date_time = datetime.datetime.now()
         posted_args = request.args
         input_path = posted_args['input_file_path']
         output_path = posted_args['output_file_path']
         print input_path,'inpuuuuuuuuuut'
-        customer_request = request.values
-        print customer_request
-        customer_id = customer_request['customer_id']
+        customer_request = request.values.to_dict()
+        customer_id = customer_request['?customer_id']
         print customer_id,'cusssssssssst'
         cluster_id = customer_request['cluster_id']
         print cluster_id,'classssssss'
@@ -108,6 +108,8 @@ def hg_mrjob_client():
         job_description = customer_request['job_description']
         print job_description,'descc'
         #print "hey"
+        ff = request.files
+        print ff, "bjhgjkhgjkhjkrghjkhbjkbjkhbjkhnnnnnnnnnnnnnnnnnb"
         filename = request.files['files'].filename
         print 'nameeeeeeeeeeeeeeeeeeee',filename
         posted_file = request.files
