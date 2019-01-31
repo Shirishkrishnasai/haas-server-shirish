@@ -91,7 +91,7 @@ from application.modules.hive.daemons.hive_selectquery_url import hgSelectQueryU
 from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 #from application.modules.core.daemons.task_status_consumer import kafkataskconsumer
 from application.common.util import azure_upload_host_slave
-
+from application.modules.hive.workers.edgenode_provision_worker import edgenodeProvision
 #from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
 #from application.modules.cluster.workers.configure_cluster import configure_cluster
 
@@ -148,6 +148,7 @@ def site_map():
 
 #hgSelectQueryUrlScheduler()
 def runProcess():
+    edgenodeProvision('bd17dcb4-251b-11e9-8b29-000d3af26ae2')
     #selecturl_process = Process(target=hgSelectQueryUrlScheduler)
     #selecturl_process.start()
     # kafkataskconsumer_process = Process(target=kafkataskconsumer)
