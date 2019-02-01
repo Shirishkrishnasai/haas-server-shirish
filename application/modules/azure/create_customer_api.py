@@ -143,7 +143,7 @@ def customercreation():
 
     security_rule2 = SecurityRule(protocol=SecurityRuleProtocol.tcp, source_address_prefix='*',
                                   description='Test security rule', name="Security2" + NSG_NAME,
-                                  source_port_range='*', destination_port_range="445", priority=199,
+                                  source_port_range='*', destination_port_range="445", priority=198,
                                   destination_address_prefix='*', access=SecurityRuleAccess.allow,
                                   direction=SecurityRuleDirection.inbound)
 
