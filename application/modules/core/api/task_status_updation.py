@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, Request, Blueprint
 from application import session_factory
 from application.common.loggerfile import my_logger
-from application.models.models import TblTask, TblMetaTaskStatus, TblMetaRequestStatus, TblCustomerRequest
+from application.models.models import TblTask, TblMetaTaskStatus, TblMetaRequestStatus, TblCustomerRequest, TblCluster
 from sqlalchemy.orm import scoped_session
 taskstatus=Blueprint('taskstatus', __name__)
 @taskstatus.route("/taskstatus", methods=['POST'])
@@ -13,6 +13,7 @@ def task_status_update():
         taskid = task_status_information["payload"]["task_id"]
         taskstatus = task_status_information["payload"]["status"]
         customerid = task_status_information["customer_id"]
+        clusterid = task_status_information["cluster_id"]
         taskstatuslower = str(taskstatus.upper())
         metataskstatus = db_session.query(TblMetaTaskStatus.srl_id).filter(
             TblMetaTaskStatus.var_task_status == taskstatuslower).all()
@@ -40,6 +41,9 @@ def task_status_update():
             print "im in if"
             requests = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == requests_id)
             requests.update({"int_request_status": completed})
+            db_session.commit()
+            valid_cluster_status = db_session.query(TblCluster.valid_cluster).filter(TblCluster.uid_cluster_id==clusterid)
+            valid_cluster_status.update({"valid_cluster": True})
             db_session.commit()
             return jsonify(message=completed)
         else:
