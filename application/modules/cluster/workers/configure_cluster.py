@@ -293,6 +293,8 @@ def configure_cluster(request_id):
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
+    finally:
+        session.close()
 if __name__ == '__main__':
     try:
         if len(sys.argv)>=1:

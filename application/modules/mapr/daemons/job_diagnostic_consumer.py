@@ -8,7 +8,7 @@ from application.common.loggerfile import my_logger
 
 def diagnosticsconsumer():
     try:
-        session = scoped_session(session_factory)
+        db_session = scoped_session(session_factory)
         print "in job diagnostics consumerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
 
         consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server)
@@ -19,9 +19,9 @@ def diagnosticsconsumer():
             print job_data,"innnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
             data = job_data.replace("'", '"')
             json_loads_job_data = json.loads(data)
-            update_customer_job_request=session.query(TblCustomerJobRequest).filter(TblCustomerJobRequest.uid_customer_id==json_loads_job_data['customer_id'],TblCustomerJobRequest.uid_request_id==json_loads_job_data['request_id'])
+            update_customer_job_request=db_session.query(TblCustomerJobRequest).filter(TblCustomerJobRequest.uid_customer_id==json_loads_job_data['customer_id'],TblCustomerJobRequest.uid_request_id==json_loads_job_data['request_id'])
             update_customer_job_request.update({"var_request_status":json_loads_job_data})
-            session.commit()
+            db_session.commit()
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -29,4 +29,6 @@ def diagnosticsconsumer():
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()
 
