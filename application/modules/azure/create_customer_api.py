@@ -141,11 +141,17 @@ def customercreation():
                                   destination_address_prefix='*', access=SecurityRuleAccess.allow,
                                   direction=SecurityRuleDirection.inbound)
 
+    security_rule2 = SecurityRule(protocol=SecurityRuleProtocol.tcp, source_address_prefix='*',
+                                  description='Test security rule', name="Security2" + NSG_NAME,
+                                  source_port_range='*', destination_port_range="445", priority=199,
+                                  destination_address_prefix='*', access=SecurityRuleAccess.allow,
+                                  direction=SecurityRuleDirection.inbound)
+
     NSG = network_client.network_security_groups.create_or_update(GROUP_NAME,
                                                                   NSG_NAME,
                                                                   NetworkSecurityGroup(location=location,
                                                                                        security_rules=[security_rule,
-                                                                                                       security_rule1]))
+                                                                                                       security_rule1,security_rule2]))
     NSG.wait()
     nsg_result = NSG.result()
     my_logger.debug(nsg_result)

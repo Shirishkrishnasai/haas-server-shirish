@@ -4,7 +4,8 @@ import pymongo
 from bson.objectid import ObjectId
 from sqlalchemy import and_
 from sqlalchemy.orm import scoped_session
-
+from configparser import ConfigParser
+from azure.storage.file import FileService, FilePermissions
 from application import mongo_conn_string
 from application import session_factory
 from application.models.models import  TblEdgenode
@@ -29,7 +30,7 @@ def edgenodeProvision(request_id):
         collection_name = database_connection['highgear']
         edgenode_mongo_info = collection_name.find_one({"_id": ObjectId(payload_id)})
         my_logger.debug(edgenode_mongo_info)
-
+        print edgenode_mongo_info,'edgenode mongo'
         cluster_id = edgenode_mongo_info['cluster_id']
         location = edgenode_mongo_info['cluster_location']
         plan_info = db_session.query(TblCustomer.int_plan_id).filter(TblCustomer.uid_customer_id == customer_id).first()
@@ -63,14 +64,27 @@ def edgenodeProvision(request_id):
                 print vm_creation_list
         my_logger.info("calling createvm method")
         print "calling vm_creation"
-        vm_information = vmcreation(vm_creation_info)#u should call another function probably
-        my_logger.debug(vm_information)
+        #vm_information = vmcreation(vm_creation_info)#u should call another function probably
+        #my_logger.debug(vm_information)
         metatablestatus = db_session.query(TblMetaRequestStatus.var_request_status, TblMetaRequestStatus.srl_id).all()
         table_status_values = dict(metatablestatus)
         completed_task_status_value = table_status_values['COMPLETED']
         update_assigned_statement = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == request_id)
         update_assigned_statement.update({"int_request_status": completed_task_status_value})
         db_session.commit()
+
+        cfg = ConfigParser()
+        cfg.read('application/config/azure_config.ini')
+        account_name = cfg.get('file_storage', 'account_name')
+        account_key = cfg.get('file_storage', 'key')
+
+        file_service = FileService(account_name=account_name, account_key=account_key)
+
+        file_service.create_share(cluster_id)
+        file_service.create_directory(cluster_id, 'system')
+        file_service.create_directory(cluster_id, 'hive')
+        file_service.create_directory(cluster_id, 'spark')
+        print "doneeee"
 
     except Exception as e:
 	exc_type, exc_obj, exc_tb = sys.exc_info()
