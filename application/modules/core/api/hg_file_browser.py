@@ -65,6 +65,8 @@ def filebrowsing(customerid,clusterid,filename):
                return jsonify(message='unable to connect mongo')
         except Exception as e:
                return jsonify(e.message)
+        finally:
+                db_session.close()
 
 
 

@@ -201,6 +201,7 @@ def vmcreation(required_data_list):
             if len(failed_data_list)>=1:
                 vmcreation(failed_data_list)
             print('\nfinal')
+            db_session.close()
 
 
 

@@ -69,18 +69,17 @@ def hiveQuery(agentid):
 
 
                 db_session.commit()
-                db_session.close()
                 my_logger.info("committing to database and closing session done")
 
 
             return jsonify(hive_req_data)
         else:
             return jsonify(404)
-
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()

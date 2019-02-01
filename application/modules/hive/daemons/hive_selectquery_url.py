@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 
 def selectQueryUrl():
     #while True:
-        #try:
+        try:
             # reads config file to get accountname and key
             print "heyyyyyyyyyyyyyyyyyyyyyyyyyy"
             cfg = ConfigParser()
@@ -67,15 +67,14 @@ def selectQueryUrl():
                 hive_request_tbl_url_update.update({"txt_url_value":str(file_url),
                                                     "bool_url_created":1})
                 db_session.commit()
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            my_logger.error(exc_type)
+            my_logger.error(fname)
+            my_logger.error(exc_tb.tb_lineno)
+        finally:
             db_session.close()
-
-        # except Exception as e:
-        #     exc_type, exc_obj, exc_tb = sys.exc_info()
-        #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        #     my_logger.error(exc_type)
-        #     my_logger.error(fname)
-        #     my_logger.error(exc_tb.tb_lineno)
-
 
 def hgSelectQueryUrlScheduler():
     scheduler = BackgroundScheduler()

@@ -15,6 +15,7 @@ def customerclustersize(customer_id,clusterid):
     cluster_size_info={}
     cluster_size_info['cluster_size']=size_table_query[0][0]
     cluster_size_info['number 0f nodes']=clustersize_query[0][0]
+    session.close()
     return jsonify(cluster_size_info)
 
 
