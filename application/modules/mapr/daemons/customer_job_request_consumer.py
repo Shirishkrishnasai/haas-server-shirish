@@ -14,7 +14,7 @@ def jobinsertion():
         print 'in consumer'
         consumer.subscribe(pattern='mrjobapplication_*')
         print consumer
-        session = scoped_session(session_factory)
+        db_session = scoped_session(session_factory)
         for message in consumer:
 
             job_information=message.value
@@ -25,11 +25,11 @@ def jobinsertion():
             print 'in'
             print job_information_dict['request_id']
             print job_information_dict['application_id']
-            update_customer_job_request=session.query(TblCustomerJobRequest).filter(TblCustomerJobRequest.uid_request_id == "4953039a-e807-11e8-aed7-3ca9f491576c")
+            update_customer_job_request=db_session.query(TblCustomerJobRequest).filter(TblCustomerJobRequest.uid_request_id == "4953039a-e807-11e8-aed7-3ca9f491576c")
             print update_customer_job_request,"in"
             update_customer_job_request.update({"var_application_id":job_information_dict['application_id']})
-            session.commit()
-            session.close()
+            db_session.commit()
+            #db_session.close()
             print 'completed'
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -38,3 +38,5 @@ def jobinsertion():
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()

@@ -248,7 +248,7 @@ def hg_mrjob_client():
     finally:
         my_logger.info("done")
         #return "in finall"
-
+        db_session.close()
 
 def fileProgress(start, size):
     my_logger.debug("%d%d", start, size)
@@ -256,24 +256,27 @@ def fileProgress(start, size):
 mrjobstatus=Blueprint('mrjobstatus',__name__)
 @mrjobstatus.route("/api/mrjobstatus/<mr_job_id>",methods=['GET'])
 def mrJobStatus(mr_job_id):
-    print "inside"
-    #data = request.headers
-    #data= request.args
-    #print data,type(data)
-    #print data,type(data)
-    #id_list = data["mr_job_id"]
-    #print id_list,type(id_list),"lllllllll"
-    #id_data = eval(mr_job_id)
-    #print id_data,type(id_data)
-    session = scoped_session(session_factory)
-    result_dict = {}
-    #for ids in id_data :
-    #    print ids,type(ids),'idsssssssssssssssssssssssssss'
-    customer_job_request_id_list = session.query(TblCustomerJobRequest.int_request_status).filter(TblCustomerJobRequest.uid_request_id == mr_job_id).all()
-    print customer_job_request_id_list
-    for mr_request_id in customer_job_request_id_list:
-        mr_request_id_list = session.query(TblMetaMrRequestStatus.var_mr_request_status).filter(TblMetaMrRequestStatus.srl_id == mr_request_id).all()
-        print mr_request_id_list
-        result_dict[mr_job_id] = mr_request_id_list[0][0]
-    print result_dict
-    return jsonify(result_dict)
+   try:
+        print "inside"
+        #data = request.headers
+        #data= request.args
+        #print data,type(data)
+        #print data,type(data)
+        #id_list = data["mr_job_id"]
+        #print id_list,type(id_list),"lllllllll"
+        #id_data = eval(mr_job_id)
+        #print id_data,type(id_data)
+        db_session = scoped_session(session_factory)
+        result_dict = {}
+        #for ids in id_data :
+        #    print ids,type(ids),'idsssssssssssssssssssssssssss'
+        customer_job_request_id_list = db_session.query(TblCustomerJobRequest.int_request_status).filter(TblCustomerJobRequest.uid_request_id == mr_job_id).all()
+        print customer_job_request_id_list
+        for mr_request_id in customer_job_request_id_list:
+            mr_request_id_list = db_session.query(TblMetaMrRequestStatus.var_mr_request_status).filter(TblMetaMrRequestStatus.srl_id == mr_request_id).all()
+            print mr_request_id_list
+            result_dict[mr_job_id] = mr_request_id_list[0][0]
+        print result_dict
+        return jsonify(result_dict)
+   finally:
+       db_session.close()
