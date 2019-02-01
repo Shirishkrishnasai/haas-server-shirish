@@ -15,3 +15,5 @@ def metricSubscriber(data):
     except pymongo.errors.ConnectionFailure, e:
         my_logger.debug(e)
         #return jsonify(message='unable to connect mongo')
+    finally:
+        db_collection.close()
