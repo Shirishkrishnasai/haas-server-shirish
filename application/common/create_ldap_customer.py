@@ -3,6 +3,7 @@ import ldap.modlist as modlist
 from application import db
 from application.config.config_file import ldap_connection, ldap_connection_dn, ldap_connection_password
 from application.models.models import TblCustomer, TblUsers
+from flask import jsonify
 
 
 def azureldapcustomer(customer_id, display_name, customer_gid_id, user_principal_name, mail_nickname, password):
@@ -69,3 +70,5 @@ def azureldapcustomer(customer_id, display_name, customer_gid_id, user_principal
         return e.message
     except ldap.LDAPError as e:
         return jsonify(str(e))
+    finally:
+        db.session.close()

@@ -3,7 +3,7 @@ import re
 import psycopg2,sys,os,json
 import io
 from azure.storage.file import FileService, FilePermissions
-from application.models.models import TblMetaFileUpload, TblFileUpload, TblMetaHdfsUpload
+from application.models.models import TblMetaFileUpload, TblFileUpload, TblMetaHdfsUpload, TblClusterType
 from configparser import ConfigParser
 from msrestazure.azure_exceptions import CloudError
 import pymongo

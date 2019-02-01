@@ -70,7 +70,6 @@ def fileDownload(uploadid):
                                                               ts_requested_time=datetime.now())
                 db_session.add(file_download_insert_values)
                 db_session.commit()
-                db_session.close()
                 my_logger.info("file url inserted into database now returning url")
                 return file_url
 
@@ -85,7 +84,6 @@ def fileDownload(uploadid):
                                                               ts_requested_time=datetime.now())
                 db_session.add(file_download_insert_values)
                 db_session.commit()
-                db_session.close()
                 my_logger.info("file url committed to database now returning url")
                 return file_url
             else:
@@ -104,7 +102,7 @@ def fileDownload(uploadid):
         my_logger.error(e)
     finally:
         my_logger.debug("its finally block and its over")
-
+        db_session.close()
 
 def fileProgress(start, size):
     my_logger.debug("%d%d", start, size)

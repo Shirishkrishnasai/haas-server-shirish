@@ -20,7 +20,6 @@ def kafkaproducer(message):
             clusterid = cluster_customer_details["cluster_id"]
             cluster_info_string = json.dumps(cluster_customer_details)
             producer.send(getGeneratedTopicForTasks(clusterid, customerid), cluster_info_string)
-        producer.close()
         return True
 
     except Exception as e:
@@ -31,7 +30,7 @@ def kafkaproducer(message):
 
     finally:
         my_logger.info("Returning From Producer")
-
+        producer.close()
     return True
 
 
@@ -90,7 +89,6 @@ def kafkaproducer_old(message):
                     my_logger.info("sending message to kafka topic")
                     producer.flush()
         producer.close()
-        db_session.close()
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -98,3 +96,5 @@ def kafkaproducer_old(message):
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()
