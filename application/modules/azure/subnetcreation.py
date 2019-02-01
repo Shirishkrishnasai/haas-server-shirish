@@ -45,7 +45,7 @@ def resource():
 
    resource_client = ResourceManagementClient(credentials, subscription_id)
 
-
+   cur.close()
    print('\nCreate Resource Group')
    resource_client.resource_groups.create_or_update(GROUP_NAME, {'location': LOCATION})
 

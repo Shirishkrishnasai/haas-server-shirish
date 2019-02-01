@@ -14,5 +14,5 @@ def users(customer_id):
     users_list = []
     for users in customer_users:
         users_list.append({"user_name": users[0], "bool_active": users[1], "customer_id": users[2]})
-
+    session.close()
     return jsonify(user_data=users_list)

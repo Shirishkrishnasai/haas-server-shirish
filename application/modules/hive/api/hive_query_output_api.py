@@ -25,7 +25,6 @@ def hiveQueryOutput():
         query_output = db_session.query(TblHiveRequest.hive_query_output).filter(TblHiveRequest.uid_hive_request_id == message['hive_request_id'])
         query_output.update({"hive_query_output":str(message)})
         db_session.commit()
-        db_session.close()
         print "all hive query output is inserted to table"
         return jsonify(message="success")
    except Exception as e:
@@ -34,3 +33,5 @@ def hiveQueryOutput():
        my_logger.error(exc_type)
        my_logger.error(fname)
        my_logger.error(exc_tb.tb_lineno)
+   finally:
+       db_session.close()

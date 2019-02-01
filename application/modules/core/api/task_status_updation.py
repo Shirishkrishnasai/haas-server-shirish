@@ -51,3 +51,5 @@ def task_status_update():
         return jsonify(message="completed")
     except Exception as e:
         return e.message
+    finally:
+        db_session.close()

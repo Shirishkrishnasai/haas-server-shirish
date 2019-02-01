@@ -10,7 +10,8 @@ import jwt
 import ldap
 import psycopg2
 import pymongo
-from application import app, db, mongo_conn_string, conn_string, session_factory
+from sqlalchemy.orm import scoped_session
+from application import app, mongo_conn_string, conn_string, session_factory
 from application.config.config_file import ldap_connection, ldap_connection_dn, ldap_connection_password
 from application.models.models import TblUsers, TblNodeInformation, TblCustomer, TblAzureFileStorageCredentials
 from flask import jsonify, request, Blueprint
@@ -27,8 +28,8 @@ Getting list of customers from LDAP
 @azapi.route("/api/customer/<customer_id>", methods=['GET'])
 def getCustomerUsers(customer_id):
     try:
-
-        select_customer_dn = db.session.query(TblCustomer.txt_customer_dn).filter(
+        db_session = scoped_session(session_factory)
+        select_customer_dn = db_session.query(TblCustomer.txt_customer_dn).filter(
             TblCustomer.uid_customer_id == customer_id).all()
         customer_dn = select_customer_dn[0][0]
         my_logger.debug(customer_dn)
@@ -50,6 +51,8 @@ def getCustomerUsers(customer_id):
         return jsonify(str(e))
     except Exception as e:
         return e.message
+    finally:
+        db_session.close
 
 
 """
@@ -59,6 +62,7 @@ Create Customer user in LDAP
 @azapi.route('/api/customer/user/ldap', methods=['POST'])
 def createUserLdap():
     try:
+        db_session = scoped_session(session_factory)
         content = request.json
         my_logger.debug(content)
         display_name = content['first_name'] + content['second_name']
@@ -69,11 +73,11 @@ def createUserLdap():
         cn = content['first_name'] + content['second_name']
         connect = ldap.initialize(ldap_connection)
         connect.simple_bind_s(ldap_connection_dn, ldap_connection_password)
-        select_customer_dn = db.session.query(TblCustomer.txt_customer_dn).filter(
+        select_customer_dn = db_session.query(TblCustomer.txt_customer_dn).filter(
             TblCustomer.uid_customer_id == customer_id).all()
         customer_dn = select_customer_dn[0][0]
         my_logger.debug(customer_dn)
-        customer_gid_query = db.session.query(TblCustomer.int_gid_id).filter(
+        customer_gid_query = db_session.query(TblCustomer.int_gid_id).filter(
             TblCustomer.uid_customer_id == customer_id).all()
         customer_gid_id = customer_gid_query[0][0]
         my_logger.debug(customer_gid_id)
@@ -102,10 +106,10 @@ def createUserLdap():
                             bool_active=1,
                             ts_created_time=datetime.datetime.now(),
                             var_created_by='system')
-            db.session.add(data)
-            db.session.commit()
+            db_session.add(data)
+            db_session.commit()
 
-            select_user_dn = db.session.query(TblUsers).filter(TblUsers.var_user_name == uid).order_by(
+            select_user_dn = db_session.query(TblUsers).filter(TblUsers.var_user_name == uid).order_by(
                 TblUsers.srl_id.desc()).all()
 
             get_data = [rows.to_json() for rows in select_user_dn]
@@ -113,9 +117,6 @@ def createUserLdap():
             return jsonify(message="user is added", userdata=get_data)
         else:
             return jsonify(message="user is not added")
-
-
-
     except ldap.INVALID_CREDENTIALS:
         return jsonify(message="Your username or password is incorrect.")
     except ldap.LDAPError as e:
@@ -130,6 +131,8 @@ def createUserLdap():
         return jsonify(message='Operational error')
     except Exception:
         return jsonify(message='not in json format')
+    finally:
+        db_session.close()
 
 
 """
@@ -140,11 +143,12 @@ Authenticating user
 @azapi.route('/api/customer/user/auth', methods=['POST'])
 def userAuthenticate():
     try:
+        db_session=scoped_session(session_factory)
         content = request.json
         my_logger.debug(content)
         mail = content['email']
         password = content['password']
-        select_user_dn = db.session.query(TblUsers.uid_customer_id).filter(TblUsers.var_user_name == mail).all()
+        select_user_dn = db_session.query(TblUsers.uid_customer_id).filter(TblUsers.var_user_name == mail).all()
         customer_id = select_user_dn[0][0]
         my_logger.debug(customer_id)
 
@@ -154,7 +158,7 @@ def userAuthenticate():
         algorithm = 'HS256'
         secret_key = "qwartile"
         connect = ldap.initialize(ldap_connection)
-        select_user_dn = db.session.query(TblUsers.txt_dn).filter(TblUsers.var_user_name == mail).all()
+        select_user_dn = db_session.query(TblUsers.txt_dn).filter(TblUsers.var_user_name == mail).all()
         dn = select_user_dn[0][0]
         my_logger.debug(dn)
         connect.bind_s(dn, password)
@@ -179,6 +183,8 @@ def userAuthenticate():
         return jsonify(message='Operational error')
     except Exception:
         return jsonify(message='general errors')
+    finally:
+        db_session.close()
 
 
 """
@@ -189,9 +195,10 @@ Deleting user
 @azapi.route('/api/customer/user/del', methods=['POST'])
 def removeUser():
     try:
+        db_session = scoped_session(session_factory)
         content = request.json
         uid = content['user_name']
-        select_user_dn = db.session.query(TblUsers.txt_dn).filter(TblUsers.var_user_name == uid).all()
+        select_user_dn = db_session.query(TblUsers.txt_dn).filter(TblUsers.var_user_name == uid).all()
         # get_data = [rows.to_json() for rows in select_user_dn]
         dn = select_user_dn[0][0]
         my_logger.debug(dn)
@@ -200,9 +207,9 @@ def removeUser():
         del_user = connect.delete_s(dn)
         my_logger.debug(del_user)
         if del_user:
-            object = db.session.query(TblUsers).filter(TblUsers.var_user_name == uid)
+            object = db_session.query(TblUsers).filter(TblUsers.var_user_name == uid)
             object.update({"bool_active": 0})
-            db.session.commit()
+            db_session.commit()
             return jsonify(message="user deleted")
         else:
             return jsonify(message="user deletion is un successful")
@@ -221,6 +228,8 @@ def removeUser():
         return jsonify(message='Operational error')
     except Exception:
         return jsonify(message='not in json format')
+    finally:
+        db_session.close()
 
 
 """
@@ -594,11 +603,12 @@ def divideMilliSeconds(fromtime, totime):
 def clustermembers(customer_id, cluster_id):
     # customer_request=request.json
     try:
+        db_session = scoped_session(session_factory)
         customer_id = customer_id
         cluster_id = cluster_id
         # Query cluster members from tbl_node_information
 
-        cluster_info_query_statement = db.session.query(TblNodeInformation). \
+        cluster_info_query_statement = db_session.query(TblNodeInformation). \
             filter(TblNodeInformation.uid_customer_id == customer_id,
                    TblNodeInformation.uid_cluster_id == cluster_id).all()
 
@@ -615,25 +625,28 @@ def clustermembers(customer_id, cluster_id):
             return jsonify(cluster_members=cluster_roles)
     except Exception as e:
         return e.message
+    finally:
+        db_session.close()
 
 
 @azapi.route("/api/azure_credentials/<customer_id>", methods=['GET'])
 def azureFileStorageCredentials(customer_id):
 	# customer_request=request.json
-	try:
-		db_session = scoped_session(session_factory)
-		azure_file_storage_credentials_statement = db.session.query(TblAzureFileStorageCredentials).all()
-		print azure_file_storage_credentials_statement,'azureeeee'
-		values_list = []
-		keys_list = []
-		for val in azure_file_storage_credentials_statement:
-			values_dict = dict(val)
-			print values_dict,'valllllllllll'
-			azure_account_name = values_dict['account_name']
-			keys_list.append(values_dict['account_primary_key'])
-			keys_list.append(values_dict['account_secondary_key'])
-			# azure_file_storage_credentials_statement_result  = zip(*val)[0]
-
-		return jsonify(account_name=azure_account_name, key=str(random.choice(keys_list)))
-	except Exception as e:
-		print e.message
+    try:
+        db_session = scoped_session(session_factory)
+        azure_file_storage_credentials_statement = db_session.query(TblAzureFileStorageCredentials).all()
+        print azure_file_storage_credentials_statement,'azureeeee'
+        values_list = []
+        keys_list = []
+        for val in azure_file_storage_credentials_statement:
+            values_dict = dict(val)
+            print values_dict,'valllllllllll'
+            azure_account_name = values_dict['account_name']
+            keys_list.append(values_dict['account_primary_key'])
+            keys_list.append(values_dict['account_secondary_key'])
+            # azure_file_storage_credentials_statement_result  = zip(*val)[0]
+            return jsonify(account_name=azure_account_name, key=str(random.choice(keys_list)))
+    except Exception as e:
+        print e.message
+    finally:
+             db_session.close()
