@@ -4,7 +4,7 @@ from application.models.models import TblFeature, TblTaskType,TblCustomerAzureRe
     TblMetaFeatureStatus, TblMetaMrRequestStatus, TblImage, TblMetaCloudType, \
     TblPlan, TblSize, TblPlanClusterSize, TblPlanClusterSizeConfig, TblMetaVmSize, \
     TblMetaFileUpload, TblHiveMetaStatus, TblMetaCloudLocation, TblEdgenode, TblClusterType, TblCluster, \
-    TblAzureAppGateway, TblVmCreation, TblCustomer, TblVmInformation
+    TblAzureAppGateway, TblVmCreation, TblCustomer, TblVmInformation, TblAzureFileStorageCredentials
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -694,11 +694,18 @@ tbl_vm_info_3 = TblVmInformation(uid_vm_id='cdf3a62e-0cf4-11e9-8adb-3ca9f49ab2cc
                                  txt_ip='192.168.100.49'
 
                                  )
+
+
+tbl_azure_credentials = TblAzureFileStorageCredentials(account_name='sbvsolutions',
+                                                       account_primary_key='HLkFq07o9m9Nr/IJWXgKMiS1j5O65p1ojrpWydYEtbD7xzBBbQ95LFYoeQHOhLupzJCTUunayaIoUqiAYWv4XQ==',
+                                                       account_secondary_key='9fASv4JGbIhzM03rGFb84TuYtHVVNjfIE35N54IL4rFBOlrnqGnQTUpLPRvPHWURGqmo0QyalFtrY8fBc5JBvw=='
+                                                       )
+
 #db_session.add(tbl_vm_info_1)
 #db_session.add(tbl_vm_info_2)
 #db_session.add(tbl_vm_info_2)
 db_session.add(tbl_azure_resource_group)
-
+db_session.add(tbl_azure_credentials)
 db_session.add(tbl_customer)
 
 #db_session.add(tbl_vm_info_1)
