@@ -87,7 +87,7 @@ def edgenodeProvision(request_id):
         print "doneeee"
 
     except Exception as e:
-	exc_type, exc_obj, exc_tb = sys.exc_info()
+        exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         my_logger.error(str(e))
         my_logger.error(exc_type)
@@ -95,6 +95,7 @@ def edgenodeProvision(request_id):
         my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
+
 if __name__ == '__main__':
     try:
         if len(sys.argv)>=1:
