@@ -72,6 +72,7 @@ def edgenodeProvision(request_id):
         update_assigned_statement = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == request_id)
         update_assigned_statement.update({"int_request_status": completed_task_status_value})
         db_session.commit()
+
         cfg = ConfigParser()
         cfg.read('application/config/azure_config.ini')
         account_name = cfg.get('file_storage', 'account_name')
