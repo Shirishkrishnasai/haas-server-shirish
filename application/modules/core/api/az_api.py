@@ -164,9 +164,11 @@ def userAuthenticate():
         connect.bind_s(dn, password)
         token = jwt.encode(payload, secret_key, algorithm)
         data = {}
-        data['user_name'] = dn
+        data['user_name'] = mail
+	
         data['token'] = token
         data['customer_id'] = customer_id
+	print data, "userrrrrrrrrrrrrrrrrrrr relatedddddddddddddddddddddddddd daaaaaaaaaaaaaaaaaaaaaaaaaattttttttttttttttttttttaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         return jsonify(data=data)
 
     except ldap.INVALID_CREDENTIALS:

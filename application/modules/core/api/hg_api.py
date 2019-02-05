@@ -273,7 +273,7 @@ def register():
 
 @api.route('/api/hivequery', methods=['POST'])
 def hg_hive_client():
-    try:
+    #try:
         # posted data
         data = request.json
         my_logger.info(data)
@@ -314,14 +314,14 @@ def hg_hive_client():
         my_logger.info("committing to database and closing session done")
         return jsonify(hive_request_id=hive_request_id_value, select_query=select_query_bool_value, role = 'hive')
 
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
-        db_session.close()
+    #except Exception as e:
+     #   exc_type, exc_obj, exc_tb = sys.exc_info()
+      #  fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+       # my_logger.error(exc_type)
+        #my_logger.error(fname)
+       # my_logger.error(exc_tb.tb_lineno)
+    #finally:
+     #   db_session.close()
 
 
 @api.route('/api/hivedatabase/<customer_id>/<cluster_id>/<agent_id>', methods=['GET'])
@@ -406,12 +406,13 @@ def hiveSelectQueryResult(request_id):
 
 @api.route('/api/hivestatus/<request>', methods=['GET'])
 def hivestatus(request):
-    try:
+    #try:
         db_session = scoped_session(session_factory)
         result = db_session.query(TblHiveRequest.hive_query_output).filter(
             TblHiveRequest.uid_hive_request_id == request).all()
         print result, type(result)
         if result == None:
+	    db_session.close()
             return jsonify(message="request_status_not_available")
         else:
             result = eval(result[0][0])
@@ -423,16 +424,17 @@ def hivestatus(request):
 
                 tup.update({key:value})
                 print tup,"helloooooooooooooo"
+	    db_session.close()
             return jsonify(tup)
-    except Exception as e:
+    #except Exception as e:
 
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
-        db_session.close()
+       # exc_type, exc_obj, exc_tb = sys.exc_info()
+       # fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+       # my_logger.error(exc_type)
+       # my_logger.error(fname)
+       # my_logger.error(exc_tb.tb_lineno)
+    #finally:
+     #   db_session.close()
 
 
 @api.route('/api/customer_plan', methods=['GET'])
@@ -579,10 +581,10 @@ def customer(cluster_id, role):
         print role
         db_session = scoped_session(session_factory)
         required_data = db_session.query(TblVmCreation.uid_agent_id).filter(TblVmCreation.uid_cluster_id == cluster_id,
-                                                                            TblVmCreation.var_role == role).all()
+                                                                            TblVmCreation.var_role == role).first()
         print required_data, type(required_data)
 
-        return jsonify(agent_id=required_data)
+        return jsonify(agent_id=required_data[0])
     except Exception as e:
 
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -597,11 +599,11 @@ def customer(cluster_id, role):
 @api.route('/api/cluster/<customer_id>', methods=['GET'])
 def cluster_info(customer_id):
     try:
-        print customer_id
+        #print customer_id
         db_session = scoped_session(session_factory)
         customer_cluster_info = db_session.query(TblCluster.uid_customer_id,TblCluster.uid_cluster_id,TblCluster.uid_cluster_type_id,TblCluster.valid_cluster,TblCluster.ts_created_datetime,TblCluster.var_cluster_name)\
             .filter(TblCluster.uid_customer_id == customer_id).all()
-        print customer_cluster_info, "cciiiiiiiiiiiiiiiiiiiiiiiii"
+        #print customer_cluster_info, "cciiiiiiiiiiiiiiiiiiiiiiiii"
         if customer_cluster_info == []:
             return jsonify(message="No clusters to be displayed")
         else:
@@ -611,7 +613,7 @@ def cluster_info(customer_id):
                     mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
                     database_conn = mongo_db_conn['local']
                     customer_id_metrics_list = list(database_conn[customer_id].find())
-                    print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
+                    #print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
                     if customer_id_metrics_list == []:
                         available_storage = 'NA'
 
@@ -658,3 +660,42 @@ def cluster_info(customer_id):
     finally:
         db_session.close()
 
+@api.route("/api/status/<customer_id>/<cluster_id>", methods=['GET'])
+def status(customer_id,cluster_id):
+        db_session = scoped_session(session_factory)
+        valid_cluster= db_session.query(TblCluster.valid_cluster).filter(TblCluster.uid_cluster_id == cluster_id,TblCluster.uid_customer_id == customer_id).first()
+        print valid_cluster,"validcluster"
+        if valid_cluster[0]== True :
+            db_session.close()
+            return jsonify(status="completed")
+        else :
+            return jsonify(message="not a valid cluster")
+@api.route("/api/addhivenode", methods=['POST'])
+def edgenode():
+    try:
+        customer_request = request.json
+        db_session = scoped_session(session_factory)
+        customer_id=customer_request['customer_id']
+        cluster_id = customer_request['cluster_id']
+        request_id1 = str(uuid.uuid1())
+        request_id2 = str(uuid.uuid1())
+        print request_id1,request_id2
+        insert_customer = TblCustomerRequest(uid_request_id=request_id1,
+                                                        uid_customer_id=customer_id,
+                                                        char_feature_id=11,
+                                                        uid_cluster_id=cluster_id)
+        db_session.add(insert_customer)
+        db_session.commit()
+        insert_customer = TblCustomerRequest(uid_request_id=request_id2,
+                                                    uid_customer_id=customer_id,
+                                                     txt_dependency_request_id=request_id1,
+                                                    char_feature_id=12,
+                                                     uid_cluster_id=cluster_id)
+        db_session.add(insert_customer)
+        db_session.commit()
+        return jsonify(request_id=request_id1, message='success')
+    except Exception as e:
+
+        my_logger.debug(e)
+    finally:
+        db_session.close()

@@ -98,12 +98,12 @@ def installcluster(request_id):
         db_session.add(cluster_insertion)
         db_session.commit()
 
-        status_list = db_session.query(TblMetaRequestStatus.srl_id).filter(
-            TblMetaRequestStatus.var_request_status == 'COMPLETED').all()
-        print status_list, 'sttaaaaaaattttt'
+        #status_list = db_session.query(TblMetaRequestStatus.srl_id).filter(
+         #  TblMetaRequestStatus.var_request_status == 'COMPLETED').all()
+        #print status_list, 'sttaaaaaaattttt'
         customer_request_update = db_session.query(TblCustomerRequest).filter(
             TblCustomerRequest.txt_dependency_request_id == request_id)
-        customer_request_update.update({"uid_cluster_id": cluster_id, "int_request_status": status_list[0][0]})
+        customer_request_update.update({"uid_cluster_id": cluster_id})
         db_session.commit()
 
         customer_request_update_default = db_session.query(TblCustomerRequest).filter(

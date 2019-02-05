@@ -39,21 +39,22 @@ def task_status_update():
         print tuple
         if all(x == completedstatus for x in tuple):
             print "im in if"
+            valid_cluster_status = db_session.query(TblCluster.valid_cluster).filter(
+                TblCluster.uid_cluster_id == clusterid)
+            valid_cluster_status.update({"valid_cluster": True})
+            db_session.commit()
             requests = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == requests_id)
             requests.update({"int_request_status": completed})
             db_session.commit()
-            valid_cluster_status = db_session.query(TblCluster.valid_cluster).filter(TblCluster.uid_cluster_id==clusterid)
-            valid_cluster_status.update({"valid_cluster": True})
-            db_session.commit()
-            return jsonify(message=completed)
+
+            return jsonify(message="completed")
         else:
             print "im in else"
             requests = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == requests_id)
             requests.update({"int_request_status": running})
             db_session.commit()
-            return jsonify(message=running)
-        return jsonify(message="completed")
+            return jsonify(message="running")
     except Exception as e:
-        return e.message
+        print e.message
     finally:
         db_session.close()

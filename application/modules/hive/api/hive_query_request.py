@@ -11,12 +11,14 @@ hivequery = Blueprint('hivequery', __name__)
 def hiveQuery(agentid):
     try:
 
+	print "in hive request query aoi called by agent with its agent id"
         hive_req_data = []
         db_session = scoped_session(session_factory)
         agent_queries_reqids=db_session.query(TblHiveRequest.txt_query_string,
                                               TblHiveRequest.uid_hive_request_id,
                                               TblHiveRequest.txt_hive_database).filter(and_(TblHiveRequest.uid_agent_id==agentid,
                                                                                             TblHiveRequest.bool_query_complete=='f')).all()
+	print agent_queries_reqids, ".............................................................................."
         if agent_queries_reqids :
             for tuplees in agent_queries_reqids:
                 posted_query = str(tuplees[0]).strip()

@@ -15,7 +15,7 @@ from sqlalchemy import and_
 
 def configure_hive(request_id):
 
-    try:
+    #try:
         #request_id = sys.argv[1]
         session = scoped_session(session_factory)
 
@@ -24,17 +24,20 @@ def configure_hive(request_id):
         feature_id = customer_feature_ids[1]
 
         dependent_request_id = customer_feature_ids[2]
-        payloadid = session.query(TblCustomerRequest.txt_payload_id).filter(TblCustomerRequest.uid_request_id == dependent_request_id).first()
-        payload_id = str(payloadid[0])
+        #payloadid = session.query(TblCustomerRequest.uid_cluster_id).filter(TblCustomerRequest.uid_request_id == dependent_request_id).first()
+        cluster_id_query = session.query(TblCustomerRequest.uid_cluster_id).filter(TblCustomerRequest.uid_request_id == dependent_request_id).first()
+        cluster_id = cluster_id_query[0]
+
+        #payload_id = str(payloadid[0])
         mongo_connection = pymongo.MongoClient(mongo_conn_string)
         database_connection = mongo_connection['haas']
-        collection_connection = database_connection['highgear']
+        #collection_connection = database_connection['highgear']
 
 
 
 
-        hive_node_information = collection_connection.find_one({"_id": ObjectId(payload_id)})
-        cluster_id = hive_node_information['cluster_id']
+        #hive_node_information = collection_connection.find_one({"_id": ObjectId(payload_id)})
+        #cluster_id = hive_node_information['cluster_id']
         print cluster_id ,'clsssssssssssssssssssssssussssssssssssssssssssssss'
         #cluster_id = "9a1ada8b-c888-11e8-bace-000c29b9b7fd"
 
@@ -143,31 +146,33 @@ def configure_hive(request_id):
                                             )
                 session.add(tasks_tbl_inserts)
                 session.commit()
+                session.close()
 
         my_logger.info("done for hive config worker to generate tasks..............now check tasks table........................................")
 
-    except Exception as e :
-	exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(str(e))
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
-        session.close()
+    # except Exception as e :
+    #     exc_type, exc_obj, exc_tb = sys.exc_info()
+    #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #     my_logger.error(str(e))
+    #     my_logger.error(exc_type)
+    #     my_logger.error(fname)
+    #     my_logger.error(exc_tb.tb_lineno)
+    # finally:
+    #     session.close()
 
 if __name__ == '__main__':
-    try:
+    #try:
         if len(sys.argv)>=1:
             request_id = sys.argv[1]
             configure_hive(request_id)
         else:
             print "args not passed"
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(str(e))
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
+    # except Exception as e:
+    #     exc_type, exc_obj, exc_tb = sys.exc_info()
+    #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #     my_logger.error(str(e))
+    #     my_logger.error(exc_type)
+    #     my_logger.error(fname)
+    #     my_logger.error(exc_tb.tb_lineno)
+
 
