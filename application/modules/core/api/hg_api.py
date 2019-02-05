@@ -323,64 +323,125 @@ def hg_hive_client():
     #finally:
      #   db_session.close()
 
-
 @api.route('/api/hivedatabase/<customer_id>/<cluster_id>/<agent_id>', methods=['GET'])
 def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
-    try:
-        print "hellooooooooooo"
-        producer = KafkaProducer(bootstrap_servers=kafka_bootstrap_server, api_version=(0, 10, 1))
-        kafka_topic = "hivedatabasequery_" + customer_id + "_" + cluster_id
-        kafkatopic = kafka_topic.decode('utf-8')
-        query_status_data = {}
-        query_status_data['cluster_id'] = str(cluster_id)
-        query_status_data['agent_id'] = str(agent_id)
 
-        producer.send(kafkatopic, str(query_status_data))
-        producer.flush()
-        print 'flushedddddd'
+    db_session = scoped_session(session_factory)
+    hive_request_id = uuid.uuid1()
+    print hive_request_id,'hive requestssss'
+    query_string = "show databases"
+    hive_request_database_values = TblHiveRequest(uid_hive_request_id=str(hive_request_id),
+                                                uid_customer_id=customer_id,
+                                                uid_cluster_id=cluster_id,
+                                                uid_agent_id=agent_id,
+                                                ts_requested_time=datetime.datetime.now(),
+                                                txt_query_string=query_string,
+                                                ts_status_time=datetime.datetime.now(),
+                                                bool_url_created=0,
+                                                bool_select_query=0,
+                                                txt_hive_database='default',
+                                                bool_query_complete=0)
+    db_session.add(hive_request_database_values)
+    db_session.commit()
+    db_session.close()
+    my_logger.info("committing to database and closing session done")
 
-        while True:
+    #time.sleep(120)
+    t_end = time.time() + 120
+    while time.time() < t_end:
 
-            try:
-                my_logger.debug("in hive database result consumer")
-                consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server, request_timeout_ms=5000)
-                # consumer.poll(timeout_ms = 30000,max_records=None)
-                consumer.subscribe(pattern='hivedatabaseresult*')
-                my_logger.debug("subscribed to topic")
+        hive_databases_result = db_session.query(TblHiveRequest.hive_query_output). \
+            filter(TblHiveRequest.uid_hive_request_id == str(hive_request_id)).all()
+        if hive_databases_result[0][0] is not None:
+            print hive_databases_result, type(hive_databases_result), 'hiveeeeeeeeeee'
 
+            databases = eval(hive_databases_result[0][0])
+            print databases, type(databases), 'databases'
+            databases_output = databases[str('output')]
 
-                for message in consumer:
-                    print "first message"
+            return jsonify(databases=databases_output)
+        #else:
+        #    print "o=in elseeeeeeeeee"
+    #hive_databases_result = hive_databases_result_func(hive_request_id)
+    #print hive_databases_result,'databaseeee result'
+    # hive_databases_result = db_session.query(TblHiveRequest.hive_query_output).\
+    #     filter(TblHiveRequest.uid_hive_request_id == str(hive_request_id)).all()
+    # if hive_databases_result[0][0] is None:
+    #     time.sleep(60)
+    #     hive_databases_result = db_session.query(TblHiveRequest.hive_query_output). \
+    #         filter(TblHiveRequest.uid_hive_request_id == str(hive_request_id)).all()
+    #     #hive_databases_result = hive_databases_result_func(hive_request_id)
+    #     if hive_databases_result[0][0] is None:
+    #         return jsonify(message = "query not completed")
+    #print hive_databases_result, type(hive_databases_result),'hiveeeeeeeeeee'
 
-                    hivedatabaseresult = message.value
+    #databases  = eval(hive_databases_result[0][0])
+    #print databases, type(databases), 'databases'
+    #databases_output = databases[str('output')]
 
-                    data = hivedatabaseresult.replace("'", '"')
-                    print data, 'dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-                    message = json.loads(data)
-                    print message, type(message), 'message', message.keys()
-                    return jsonify(message)
-                    break
-
-                    # else:
-                    #	return jsonify(message="empty")
-
-
-            except Exception as e:
-
-                my_logger.debug(e)
-    except Exception as e:
-
-        my_logger.error(e)
-
-
-        # except psycopg2.DatabaseError, e:
-        #	my_logger.error(e.pgerror)
-        #	my_logger.info('database error')
-        #	return jsonify(message="database error occured")
-
-        # except Exception as e:
-        #	my_logger.error(e)
-        #	return jsonify(message=e)
+    #return jsonify(databases = databases_output)
+#def hive_databases_result_func(hive_request_id):
+#    db_session = scoped_session(session_factory)
+#    hive_databases_result = db_session.query(TblHiveRequest.hive_query_output). \
+#        filter(TblHiveRequest.uid_hive_request_id == str(hive_request_id)).all()
+#    return hive_databases_result
+# @api.route('/api/hivedatabase/<customer_id>/<cluster_id>/<agent_id>', methods=['GET'])
+# def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
+#     try:
+#         print "hellooooooooooo"
+#         producer = KafkaProducer(bootstrap_servers=kafka_bootstrap_server, api_version=(0, 10, 1))
+#         kafka_topic = "hivedatabasequery_" + customer_id + "_" + cluster_id
+#         kafkatopic = kafka_topic.decode('utf-8')
+#         query_status_data = {}
+#         query_status_data['cluster_id'] = str(cluster_id)
+#         query_status_data['agent_id'] = str(agent_id)
+#
+#         producer.send(kafkatopic, str(query_status_data))
+#         producer.flush()
+#         print 'flushedddddd'
+#
+#         while True:
+#
+#             try:
+#                 my_logger.debug("in hive database result consumer")
+#                 consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server, request_timeout_ms=5000)
+#                 # consumer.poll(timeout_ms = 30000,max_records=None)
+#                 consumer.subscribe(pattern='hivedatabaseresult*')
+#                 my_logger.debug("subscribed to topic")
+#
+#
+#                 for message in consumer:
+#                     print "first message"
+#
+#                     hivedatabaseresult = message.value
+#
+#                     data = hivedatabaseresult.replace("'", '"')
+#                     print data, 'dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+#                     message = json.loads(data)
+#                     print message, type(message), 'message', message.keys()
+#                     return jsonify(message)
+#                     break
+#
+#                     # else:
+#                     #	return jsonify(message="empty")
+#
+#
+#             except Exception as e:
+#
+#                 my_logger.debug(e)
+#     except Exception as e:
+#
+#         my_logger.error(e)
+#
+#
+#         # except psycopg2.DatabaseError, e:
+#         #	my_logger.error(e.pgerror)
+#         #	my_logger.info('database error')
+#         #	return jsonify(message="database error occured")
+#
+#         # except Exception as e:
+#         #	my_logger.error(e)
+#         #	return jsonify(message=e)
 
 
 @api.route('/api/hiveselectqueryresult/<request_id>', methods=['GET'])
