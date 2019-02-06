@@ -326,62 +326,43 @@ def hg_hive_client():
 
 @api.route('/api/hivedatabase/<customer_id>/<cluster_id>/<agent_id>', methods=['GET'])
 def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
-    try:
-        print "hellooooooooooo"
-        producer = KafkaProducer(bootstrap_servers=kafka_bootstrap_server, api_version=(0, 10, 1))
-        kafka_topic = "hivedatabasequery_" + customer_id + "_" + cluster_id
-        kafkatopic = kafka_topic.decode('utf-8')
-        query_status_data = {}
-        query_status_data['cluster_id'] = str(cluster_id)
-        query_status_data['agent_id'] = str(agent_id)
 
-        producer.send(kafkatopic, str(query_status_data))
-        producer.flush()
-        print 'flushedddddd'
+    db_session = scoped_session(session_factory)
+    hive_request_id = uuid.uuid1()
+    print hive_request_id,'hive requestssss'
+    query_string = "show databases"
+    hive_request_database_values = TblHiveRequest(uid_hive_request_id=str(hive_request_id),
+                                                uid_customer_id=customer_id,
+                                                uid_cluster_id=cluster_id,
+                                                uid_agent_id=agent_id,
+                                                ts_requested_time=datetime.datetime.now(),
+                                                txt_query_string=query_string,
+                                                ts_status_time=datetime.datetime.now(),
+                                                bool_url_created=0,
+                                                bool_select_query=0,
+                                                txt_hive_database='default',
+                                                bool_query_complete=0)
+    db_session.add(hive_request_database_values)
+    db_session.commit()
+    db_session.close()
+    my_logger.info("committing to database and closing session done")
 
-        while True:
+    #time.sleep(120)
+    t_end = time.time() + 120
+    while time.time() < t_end:
 
-            try:
-                my_logger.debug("in hive database result consumer")
-                consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server, request_timeout_ms=5000)
-                # consumer.poll(timeout_ms = 30000,max_records=None)
-                consumer.subscribe(pattern='hivedatabaseresult*')
-                my_logger.debug("subscribed to topic")
+        hive_databases_result = db_session.query(TblHiveRequest.hive_query_output). \
+            filter(TblHiveRequest.uid_hive_request_id == str(hive_request_id)).all()
+        if hive_databases_result[0][0] is not None:
+            print hive_databases_result, type(hive_databases_result), 'hiveeeeeeeeeee'
 
+            databases = eval(hive_databases_result[0][0])
+            print databases, type(databases), 'databases'
+            databases_output = databases[str('output')]
 
-                for message in consumer:
-                    print "first message"
-
-                    hivedatabaseresult = message.value
-
-                    data = hivedatabaseresult.replace("'", '"')
-                    print data, 'dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-                    message = json.loads(data)
-                    print message, type(message), 'message', message.keys()
-                    return jsonify(message)
-                    break
-
-                    # else:
-                    #	return jsonify(message="empty")
-
-
-            except Exception as e:
-
-                my_logger.debug(e)
-    except Exception as e:
-
-        my_logger.error(e)
-
-
-        # except psycopg2.DatabaseError, e:
-        #	my_logger.error(e.pgerror)
-        #	my_logger.info('database error')
-        #	return jsonify(message="database error occured")
-
-        # except Exception as e:
-        #	my_logger.error(e)
-        #	return jsonify(message=e)
-
+            return jsonify(databases=databases_output)
+	else:
+	    return jsonify(databases=[])
 
 @api.route('/api/hiveselectqueryresult/<request_id>', methods=['GET'])
 def hiveSelectQueryResult(request_id):
@@ -409,33 +390,25 @@ def hivestatus(request):
     #try:
         db_session = scoped_session(session_factory)
         result = db_session.query(TblHiveRequest.hive_query_output).filter(
-            TblHiveRequest.uid_hive_request_id == request).all()
-        print result, type(result)
-        if result == None:
-	    db_session.close()
-            return jsonify(message="request_status_not_available")
+            TblHiveRequest.uid_hive_request_id == request).first()
+        #print result, type(result)
+        if result[0] == None:
+            db_session.close()
+
+            return jsonify(message="query under execution..please wait")
         else:
-            result = eval(result[0][0])
-            print result, type(result),"11111111111111111111111"
+            result = eval(result[0])
+            #print result, type(result),"11111111111111111111111"
             tup= {}
             for key, value in result.iteritems():
                 dict = {}
                 dict[str(key)]=str(value)
 
                 tup.update({key:value})
-                print tup,"helloooooooooooooo"
-	    db_session.close()
+                #print tup,"helloooooooooooooo"
+            db_session.close()
+
             return jsonify(tup)
-    #except Exception as e:
-
-       # exc_type, exc_obj, exc_tb = sys.exc_info()
-       # fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-       # my_logger.error(exc_type)
-       # my_logger.error(fname)
-       # my_logger.error(exc_tb.tb_lineno)
-    #finally:
-     #   db_session.close()
-
 
 @api.route('/api/customer_plan', methods=['GET'])
 def customerPlan():
@@ -575,7 +548,7 @@ def customerLocation():
 
 @api.route("/api/<cluster_id>/<role>", methods=['GET'])
 def customer(cluster_id, role):
-    try:
+    #try:
         print "hello "
         print cluster_id
         print role
@@ -583,17 +556,18 @@ def customer(cluster_id, role):
         required_data = db_session.query(TblVmCreation.uid_agent_id).filter(TblVmCreation.uid_cluster_id == cluster_id,
                                                                             TblVmCreation.var_role == role).first()
         print required_data, type(required_data)
+	db_session.close()
 
         return jsonify(agent_id=required_data[0])
-    except Exception as e:
+    #except Exception as e:
 
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
-        db_session.close()
+   #     exc_type, exc_obj, exc_tb = sys.exc_info()
+    #    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+     #   my_logger.error(exc_type)
+      #  my_logger.error(fname)
+       # my_logger.error(exc_tb.tb_lineno)
+    #finally:
+     #   db_session.close()
 
 
 @api.route('/api/cluster/<customer_id>', methods=['GET'])
