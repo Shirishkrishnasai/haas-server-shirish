@@ -360,6 +360,9 @@ def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
             databases_output = databases[str('output')]
 
             return jsonify(databases=databases_output)
+
+        else:
+            return jsonfiy(databases = [])
         #else:
         #    print "o=in elseeeeeeeeee"
     #hive_databases_result = hive_databases_result_func(hive_request_id)
