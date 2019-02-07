@@ -75,7 +75,7 @@ from application.modules.mapr.api.hg_mr_job import mrjobstatus
 from application.modules.mapr.api.job_output_api import jobdetails
 from application.modules.mapr.api.job_list_api import joblist
 from application.modules.mapr.api.mapreduceapi import mapreduce
-from application.modules.mapr.api.job_diagnostics_api import jobdiagnostics
+from application.modules.mapr.daemons.job_diagnostic_consumer import jobdiagnostics
 from application.modules.core.api.hg_manager_api import highgearmanager
 from application.modules.core.api.task_status_updation import taskstatus
 from application.modules.core.daemons.filebrowsestatus import filebrowsestatus
@@ -154,8 +154,8 @@ def runProcess():
     # kafkataskconsumer_process = Process(target=kafkataskconsumer)
     # kafkaconsumer_process = Process(target=kafkaconsumer)
     # hgmanager_process = Process(target=hgmanager)
-    hgsuper_process = Process(target=hgsuper)
-    hgsuper_process.start()
+    # hgsuper_process = Process(target=hgsuper)
+    # hgsuper_process.start()
     # kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
     # kafkaHiveStatusConsumer_process.start()
     # jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)

@@ -5,23 +5,29 @@ from application import session_factory
 from application.models.models import TblCustomerJobRequest
 import json,os,sys
 from application.common.loggerfile import my_logger
+from flask import Blueprint,jsonify, request
+import requests
+
+jobdiagnostics = Blueprint('jobdiagnostics', __name__)
+@jobdiagnostics.route("/api/jobdiagnostics", methods=['POST'])
 
 def diagnosticsconsumer():
     try:
         db_session = scoped_session(session_factory)
         print "in job diagnostics consumerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+        data = request.json
+        print data,'dataa postedddddd'
 
-        consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server)
-        consumer.subscribe(pattern='job_diagnostics*')
-        print "after subscribesssssssssssssssssssssssssssss , diganoooooooooooo"
-        for message in consumer:
-            job_data = message.value
-            print job_data,"innnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
-            data = job_data.replace("'", '"')
-            json_loads_job_data = json.loads(data)
-            update_customer_job_request=db_session.query(TblCustomerJobRequest).filter(TblCustomerJobRequest.uid_customer_id==json_loads_job_data['customer_id'],TblCustomerJobRequest.uid_request_id==json_loads_job_data['request_id'])
-            update_customer_job_request.update({"var_request_status":json_loads_job_data})
-            db_session.commit()
+        #for message in data.items():
+        #    print message
+        #    json_loads_job_data = json.loads(message)
+        #    print json_loads_job_data,'jsonnnnnnnnnnnn'
+        print data['customer_id'],data['request_id']
+        update_customer_job_request=db_session.query(TblCustomerJobRequest).\
+            filter(TblCustomerJobRequest.uid_customer_id==data['customer_id'],TblCustomerJobRequest.uid_request_id==data['request_id'])
+        print "after queryyyy"
+        update_customer_job_request.update({"var_request_status":json_loads_job_data})
+        db_session.commit()
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
