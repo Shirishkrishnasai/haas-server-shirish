@@ -16,8 +16,8 @@ subscription_id='cfed96cf-1241-4c76-827e-785b6d5cff7c'
 kafka_bootstrap_server = ['192.168.100.35:9092']
 kafka_api_version = (0, 10, 1)
 
-file_upload_url="http://104.211.222.41:5000/fileupload"
-path="/opt/mapred-site.xml"
+file_upload_url="http://192.168.100.170:5000/fileupload"
+path="/opt/hadoop/etc/hadoop/mapred-site.xml"
 
 
 postgres_conn = 'postgres://postgres:password@192.168.100.81/haas_demo2'

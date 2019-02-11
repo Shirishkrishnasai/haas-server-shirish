@@ -1,3 +1,4 @@
+import uuid
 import requests
 import datetime
 import io
@@ -97,9 +98,10 @@ def hg_mrjob_client():
         output_path = posted_args['output_file_path']
         print input_path,'inpuuuuuuuuuut'
         customer_request = request.values.to_dict()
-        customer_id = customer_request['?customer_id']
+	print customer_request
+        customer_id = uuid.UUID(customer_request['customer_id']).hex
         print customer_id,'cusssssssssst'
-        cluster_id = customer_request['cluster_id']
+        cluster_id = uuid.UUID(customer_request['cluster_id']).hex
         print cluster_id,'classssssss'
         user_name = customer_request['user_name']
         print user_name ,'useeeeeeeeeeee'
@@ -108,14 +110,12 @@ def hg_mrjob_client():
         job_description = customer_request['job_description']
         print job_description,'descc'
         #print "hey"
-        ff = request.files
-        print ff, "bjhgjkhgjkhjkrghjkhbjkbjkhbjkhnnnnnnnnnnnnnnnnnb"
         filename = request.files['files'].filename
         print 'nameeeeeeeeeeeeeeeeeeee',filename
         posted_file = request.files
         print filename, posted_file,'possssst'
         str_posted_file = posted_file['files'].read()
-        print str_posted_file
+#        print str_posted_file
         utf_posted_file = str_posted_file.encode('base64')
         # getting no of bytes to give value for count
         no_of_bytes = len(utf_posted_file)
@@ -166,8 +166,8 @@ def hg_mrjob_client():
         db_session.commit()
         my_logger.info('values inserted and now returning file file_upload_url')
         print file_upload_id, 'uuuuuuuuuuu'
-        jar_uid = file_upload_id
-        with open('/opt/mapred-site.xml')as f:
+        jar_uid = uuid.UUID(file_upload_id).hex
+        with open('/opt/hadoop/etc/hadoop/mapred-site.xml')as f:
             print "in file opennnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
 
             tree = ET.parse(f)
@@ -186,18 +186,23 @@ def hg_mrjob_client():
                     pass
 
         # Adding the xml_declaration and method helped keep the header info at the top of the file.
-        tree.write('/opt/mapred-site.xml', xml_declaration=True, method='xml', encoding="utf8")
+        tree.write('/opt/hadoop/etc/hadoop/mapred-site.xml', xml_declaration=True, method='xml', encoding="utf8")
+#	path='/opt/hadoop/etc/hadoop/mapred-site.xml'
         up = {'files': open(path, 'rb')}
         params = {"user_name": user_name, "customer_id": customer_id}
         r = requests.post(file_upload_url, files=up, params=params)
         conf_uid = r.text
+	print type(conf_uid)
+	print conf_uid
+	print type(jar_uid)
+	print jar_uid
         print 'hiiiiiiiiiiiiiiiiiiiii uuuuuuuuuuuuuuuiiiiiiiiiiiiidddddddddddd'
-        data = TblCustomerJobRequest(uid_customer_id=customer_id,
+        data = TblCustomerJobRequest(uid_customer_id=str(customer_id),
                                      var_user_name=user_name,
-                                     uid_request_id=request_id,
-                                     uid_cluster_id=cluster_id,
-                                     uid_conf_upload_id=conf_uid,
-                                     uid_jar_upload_id=jar_uid,
+                                     uid_request_id=str(request_id),
+                                     uid_cluster_id=str(cluster_id),
+                                     uid_conf_upload_id=str(conf_uid),
+                                     uid_jar_upload_id=str(jar_uid),
                                      var_job_name=job_name,
                                      txt_job_description=job_description,
                                      var_input_file_path=input_path,
@@ -218,7 +223,7 @@ def hg_mrjob_client():
         db_session.commit()
         print "commmmmmmmmmmmmmmmmmmmmmmmmmmmmiiiiiiiiiiiiiiiitttttttttttttttttttttttttttttteeeeeeeeeeeeeeeeeeeedddddddddddddddd"
 
-        with open('/opt/mapred-site.xml')as f:
+        with open('/opt/hadoop/etc/hadoop/mapred-site.xml')as f:
             tree = ET.parse(f)
             root = tree.getroot()
 
@@ -235,7 +240,7 @@ def hg_mrjob_client():
                     pass
 
         # Adding the xml_declaration and method helped keep the header info at the top of the file.
-        tree.write('/opt/mapred-site.xml', xml_declaration=True, method='xml', encoding="utf8")
+        tree.write('/opt/hadoop/etc/hadoop/mapred-site.xml', xml_declaration=True, method='xml', encoding="utf8")
         f.close()
         db_session.close()
         print "hello"

@@ -13,9 +13,9 @@ def jobinsertion():
         print 'insert application id'
         session = scoped_session(session_factory)
         jobdetails=request.json
-
-
-        job_information_dict = json.loads(jobdetails)
+	
+	print jobdetails
+        job_information_dict = jobdetails
         print 'in'
         print job_information_dict['request_id']
         print job_information_dict['application_id']
@@ -29,6 +29,6 @@ def jobinsertion():
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 
-    my_logger.error(exc_type)
-    my_logger.error(fname)
-    my_logger.error(exc_tb.tb_lineno)
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
