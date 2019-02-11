@@ -90,6 +90,7 @@ from application.modules.core.daemons.kafka_job_producer import mrjobproducer
 from application.modules.hive.daemons.hive_selectquery_url import hgSelectQueryUrlScheduler
 from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 #from application.modules.core.daemons.task_status_consumer import kafkataskconsumer
+from application.modules.core.daemons.hdfs_metrics_consumer import hdfsmongometrics
 from application.common.util import azure_upload_host_slave
 from application.modules.hive.workers.edgenode_provision_worker import edgenodeProvision
 #from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
@@ -124,7 +125,7 @@ app.register_blueprint(jobdetails, url_prefix='')
 app.register_blueprint(joblist, url_prefix='')
 app.register_blueprint(highgearmanager, url_prefix='')
 app.register_blueprint(taskstatus, url_prefix='')
-
+app.register_blueprint(hdfsmongometrics, url_prefix='')
 
 def has_no_empty_params(rule):
     defaults = rule.defaults if rule.defaults is not None else ()
@@ -149,13 +150,13 @@ def site_map():
 #hgSelectQueryUrlScheduler()
 def runProcess():
     #edgenodeProvision('bd17dcb4-251b-11e9-8b29-000d3af26ae2')
-    selecturl_process = Process(target=hgSelectQueryUrlScheduler)
-    selecturl_process.start()
+    # selecturl_process = Process(target=hgSelectQueryUrlScheduler)
+    # selecturl_process.start()
     # kafkataskconsumer_process = Process(target=kafkataskconsumer)
     # kafkaconsumer_process = Process(target=kafkaconsumer)
     # hgmanager_process = Process(target=hgmanager)
-    hgsuper_process = Process(target=hgsuper)
-    hgsuper_process.start()
+    # hgsuper_process = Process(target=hgsuper)
+    # hgsuper_process.start()
     # kafkaHiveStatusConsumer_process = Process(target=kafkaHiveStatusConsumer)
     # kafkaHiveStatusConsumer_process.start()
     # jobDiagnosticConsumer_process = Process(target=diagnosticsconsumer)
