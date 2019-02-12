@@ -652,3 +652,4 @@ def azureFileStorageCredentials(customer_id):
         print e.message
     finally:
              db_session.close()
+

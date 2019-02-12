@@ -673,3 +673,25 @@ def edgenode():
         my_logger.debug(e)
     finally:
         db_session.close()
+
+"""
+Get HDFS Metrics
+"""
+
+@api.route('/api/hdfs_metrics/<customerid>/<clusterid>', methods=['GET'])
+def hdfs_metrics(customerid, clusterid):
+    mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
+    database_conn = mongo_db_conn['highgear']
+    collection = database_conn[clusterid]
+    #collection = database_conn["858b6996-6c3c-4cf2-8ed5-13edc4e4eef0"]
+    #print collection,'colllllllllll'
+    req_data = collection.find({"customer_id": customerid})
+    #print req_data,'daattttttttaaaaaaaaa'
+    metrics_data = list(req_data)
+    print metrics_data,'metrics dataaaaa'
+    if metrics_data !=[]:
+        metrics = metrics_data[0]['clusterMetrics']
+        return jsonify(metrics)
+    else:
+        return jsonify(message='collection with cluster id is not available')
+    #print metrics
