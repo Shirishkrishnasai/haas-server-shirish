@@ -653,20 +653,3 @@ def azureFileStorageCredentials(customer_id):
     finally:
              db_session.close()
 
-"""
-Get HDFS Metrics
-"""
-@azapi.route('/api/hdfs_metrics/<customerid>/<clusterid>', methods=['GET'])
-def hdfs_metrics(customerid, clusterid):
-    mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
-    database_conn = mongo_db_conn['local']
-    collection = database_conn[clusterid]
-
-
-    req_data = collection.find({"customer_id": customerid})
-    #print req_data,'daattttttttaaaaaaaaa'
-    metrics_data = list(req_data)
-    print metrics_data,'metrics dataaaaa'
-    metrics = metrics_data[0]['clusterMetrics']
-    #print metrics
-    return jsonify(metrics)
