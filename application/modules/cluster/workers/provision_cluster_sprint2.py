@@ -45,6 +45,7 @@ def installcluster(request_id):
         plan_id = plan_info[0][0]
         print plan_id
         cluster_id = str(uuid.uuid1())
+
         cluster_size_info = db_session.query(TblPlanClusterSizeConfig.var_role,
                                              TblPlanClusterSizeConfig.int_role_count).filter \
             (and_(TblPlanClusterSizeConfig.int_size_id == size_id, TblPlanClusterSizeConfig.int_plan_id == plan_id)).all()
@@ -118,6 +119,7 @@ def installcluster(request_id):
         account_key = cfg.get('file_storage', 'key')
 
         file_service = FileService(account_name=account_name, account_key=account_key)
+
 
         file_service.create_share(cluster_id)
         file_service.create_directory(cluster_id, 'system')

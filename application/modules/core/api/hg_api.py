@@ -9,7 +9,10 @@ from msrestazure.azure_exceptions import CloudError
 import pymongo
 import uuid
 import datetime
-# from datetime import datetime
+#from datetime import datetime, timezone
+from pytz import timezone
+from dateutil.parser import parse
+
 import time
 from flask import Flask, jsonify, request, Request, Blueprint
 from application import app,  conn_string, mongo_conn_string, session_factory
@@ -572,7 +575,7 @@ def customer(cluster_id, role):
 
 @api.route('/api/cluster/<customer_id>', methods=['GET'])
 def cluster_info(customer_id):
-    try:
+    #try:
         #print customer_id
         db_session = scoped_session(session_factory)
         customer_cluster_info = db_session.query(TblCluster.uid_customer_id,TblCluster.uid_cluster_id,TblCluster.uid_cluster_type_id,TblCluster.valid_cluster,TblCluster.ts_created_datetime,TblCluster.var_cluster_name)\
@@ -615,24 +618,36 @@ def cluster_info(customer_id):
 
                 for cus in cus_node_info:
                     node_info_list.append({"node_id": cus[0], "char_role": cus[1]})
+                et = timezone('Asia/Kolkata')
+                #parse_time = parse(cluster_info[4])
+                now_time = datetime.datetime.now(et)
+                up_time = (now_time - cluster_info[4])
+                print up_time,type(up_time) ,'stttttttttttttttttt'
 
+                def strfdelta(tdelta, fmt):
+                    d = {"days": tdelta.days}
+                    d["hours"], rem = divmod(tdelta.seconds, 3600)
+                    d["minutes"], d["seconds"] = divmod(rem, 60)
+                    return fmt.format(**d)
+                up_time_string = strfdelta(up_time,"{days}d,{hours}h:{minutes}m")
+                print up_time_string
                 list_customer_cluster_info.append(
                     {"customer_id": cluster_info[0], "node_information": node_info_list, "cluster_id": cluster_info[1],
                      "cluster_type_id": cluster_info[2], "clustername": cluster_info[5], "valid_cluster": cluster_info[3],
-                     "cluster_up_time":cluster_info[4],"available_storage": available_storage})
+                     "cluster_up_time":up_time_string,"created_datetime":cluster_info[4],"available_storage": available_storage})
 
             reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
 
             return jsonify(clusterinformation=reversed_list_customer_cluster_info)
-    except Exception as e:
-
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
-        db_session.close()
+    # except Exception as e:
+    #
+    #     exc_type, exc_obj, exc_tb = sys.exc_info()
+    #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #     my_logger.error(exc_type)
+    #     my_logger.error(fname)
+    #     my_logger.error(exc_tb.tb_lineno)
+    # finally:
+    #     db_session.close()
 
 @api.route("/api/status/<customer_id>/<cluster_id>", methods=['GET'])
 def status(customer_id,cluster_id):
