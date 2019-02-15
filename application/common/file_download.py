@@ -97,13 +97,13 @@ def fileDownload(uploadid):
 
 
     except CloudError as e:
-        my_logger.debug("Got Cloud Error")
+        print("Got Cloud Error")
         my_logger.error(e)
     except Exception as e:
-        my_logger.debug("Got Exception")
-        my_logger.error(e)
+        print("Got Exception")
+        print(e)
     finally:
-        my_logger.debug("its finally block and its over")
+        print("its finally block and its over")
 
 
 def fileProgress(start, size):

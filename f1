@@ -1,0 +1,96 @@
+<property>
+  <name>mapreduce.task.io.sort.factor</name>
+  <value>10</value>
+  <description>The number of streams to merge at once while sorting
+  files.  This determines the number of open file handles.</description>
+</property>
+<property>
+  <name>mapreduce.task.io.sort.mb</name>
+  <value>100</value>
+  <description>The total amount of buffer memory to use while sorting
+  files, in megabytes.  By default, gives each merge stream 1MB, which
+  should minimize seeks.</description>
+</property>
+<property>
+  <name>mapreduce.map.sort.spill.percent</name>
+  <value>0.80</value>
+  <description>The soft limit in the serialization buffer. Once reached, a
+  thread will begin to spill the contents to disk in the background. Note that
+  collection will not block if this threshold is exceeded while a spill is
+  already in progress, so spills may be larger than this threshold when it is
+  set to less than .5</description>
+</property>
+<property>
+  <name>mapreduce.job.maps</name>
+  <value>2</value>
+  <description>The default number of map tasks per job.
+  Ignored when mapreduce.jobtracker.address is "local".
+  </description>
+</property>
+<property>
+  <name>mapreduce.job.reduces</name>
+  <value>1</value>
+  <description>The default number of reduce tasks per job. Typically set to 99%
+  of the cluster's reduce capacity, so that if a node fails the reduces can
+  still be executed in a single wave.
+  Ignored when mapreduce.jobtracker.address is "local".
+  </description>
+</property>
+<property>
+  <name>mapreduce.tasktracker.map.tasks.maximum</name>
+  <value>2</value>
+  <description>The maximum number of map tasks that will be run
+  simultaneously by a task tracker.
+  </description>
+</property>
+
+<property>
+  <name>mapreduce.tasktracker.reduce.tasks.maximum</name>
+  <value>2</value>
+  <description>The maximum number of reduce tasks that will be run
+  simultaneously by a task tracker.
+  </description>
+<property>
+  <name>mapreduce.map.memory.mb</name>
+  <value>1024</value>
+  <description>The amount of memory to request from the scheduler for each
+  map task.
+  </description>
+</property>
+
+<property>
+  <name>mapreduce.map.cpu.vcores</name>
+  <value>1</value>
+  <description>The number of virtual cores to request from the scheduler for
+  each map task.
+  </description>
+</property>
+<property>
+  <name>mapreduce.reduce.memory.mb</name>
+  <value>1024</value>
+  <description>The amount of memory to request from the scheduler for each
+  reduce task.
+  </description>
+</property>
+
+<property>
+  <name>mapreduce.reduce.cpu.vcores</name>
+  <value>1</value>
+  <description>The number of virtual cores to request from the scheduler for
+  each reduce task.
+  </description>
+</property>
+<property>
+  <name>yarn.app.mapreduce.am.resource.mb</name>
+  <value>1536</value>
+  <description>The amount of memory the MR AppMaster needs.</description>
+</property>
+
+<property>
+  <name>yarn.app.mapreduce.am.resource.cpu-vcores</name>
+  <value>1</value>
+  <description>
+      The number of virtual CPU cores the MR AppMaster needs.
+  </description>
+</property>
+

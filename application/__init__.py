@@ -75,7 +75,6 @@ from application.modules.mapr.api.hg_mr_job import mrapi
 from application.modules.mapr.api.job_output_api import jobdetails
 from application.modules.mapr.api.job_list_api import joblist
 from application.modules.mapr.api.mapreduceapi import mapreduce
-from application.modules.mapr.api.job_diagnostics_api import jobdiagnostics
 from application.modules.core.api.hg_manager_api import highgearmanager
 from application.modules.core.api.task_status_updation import taskstatus
 from application.modules.core.daemons.kafka_job_producer import  jobproducer
@@ -83,7 +82,7 @@ from application.modules.core.daemons.filebrowsestatus import filebrowsestatus
 from application.modules.core.daemons.hg_manager import hgmanagerscheduler, hgmanager
 from application.modules.hive.daemons.hive_database_result_consumer import hiveDatabaseResult
 from application.modules.core.daemons.hg_supervisor import hgsuper
-from application.modules.mapr.daemons.job_diagnostic_consumer import diagnosticsconsumer
+from application.modules.mapr.daemons.job_diagnostic_consumer import jobdiagnostics
 from application.modules.mapr.daemons.job_status_consumer import jobstatusapi
 from application.modules.mapr.daemons.customer_job_request_consumer import mrjobupdate
 #from application.modules.hive.daemons.hive_status_consumer import kafkaHiveStatusConsumer
