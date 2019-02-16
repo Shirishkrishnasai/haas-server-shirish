@@ -45,6 +45,20 @@ def installcluster(request_id):
         plan_id = plan_info[0][0]
         print plan_id
         cluster_id = str(uuid.uuid1())
+        cfg = ConfigParser()
+        cfg.read('application/config/azure_config.ini')
+        account_name = cfg.get('file_storage', 'account_name')
+        account_key = cfg.get('file_storage', 'key')
+
+        file_service = FileService(account_name=account_name, account_key=account_key)
+
+        file_service.create_share(cluster_id)
+        file_service.create_directory(cluster_id, 'system')
+        file_service.create_directory(cluster_id, 'mapreduce')
+        print "doneeee"
+        db_session.close()
+        #time.sleep(60)
+        db_session = scoped_session(session_factory)
         cluster_size_info = db_session.query(TblPlanClusterSizeConfig.var_role,
                                              TblPlanClusterSizeConfig.int_role_count).filter \
             (and_(TblPlanClusterSizeConfig.int_size_id == size_id, TblPlanClusterSizeConfig.int_plan_id == plan_id)).all()
@@ -98,6 +112,7 @@ def installcluster(request_id):
         db_session.add(cluster_insertion)
         db_session.commit()
 
+
         #status_list = db_session.query(TblMetaRequestStatus.srl_id).filter(
          #  TblMetaRequestStatus.var_request_status == 'COMPLETED').all()
         #print status_list, 'sttaaaaaaattttt'
@@ -112,17 +127,7 @@ def installcluster(request_id):
         db_session.commit()
         db_session.close()
 
-        cfg = ConfigParser()
-        cfg.read('application/config/azure_config.ini')
-        account_name = cfg.get('file_storage', 'account_name')
-        account_key = cfg.get('file_storage', 'key')
-
-        file_service = FileService(account_name=account_name, account_key=account_key)
-
-        file_service.create_share(cluster_id)
-        file_service.create_directory(cluster_id, 'system')
-        file_service.create_directory(cluster_id, 'mapreduce')
-        print "doneeee"
+        #
 
     # installcluster('4a82d464-0aa0-11e9-ba4c-3ca9f49ab2cc')
     except Exception as e:
@@ -144,4 +149,5 @@ if __name__ == '__main__':
             installcluster(request_id)
         else:
             print "args not passed"
+
 

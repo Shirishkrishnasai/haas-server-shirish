@@ -17,53 +17,37 @@ from application.modules.azure.createvm import vmcreation
 def edgenodeProvision(request_id):
     #try:
 
-        #request_id = sys.argv[1]
         db_session = scoped_session(session_factory)
         customer_data = db_session.query(TblCustomerRequest.uid_customer_id,
                                          TblCustomerRequest.char_feature_id,
                                          TblCustomerRequest.uid_cluster_id).filter(TblCustomerRequest.uid_request_id == request_id).first()
         customer_id = customer_data[0]
         feature_id = customer_data[1]
-        #payload_id = customer_data[2]
-        #mongo_connection = pymongo.MongoClient(mongo_conn_string)
-        #database_connection = mongo_connection['haas']
-        #collection_name = database_connection['highgear']
-        #edgenode_mongo_info = collection_name.find_one({"_id": ObjectId(payload_id)})
-        #my_logger.debug(edgenode_mongo_info)
-        #print edgenode_mongo_info,'edgenode mongo'
+
         cluster_id = customer_data[2]
-        #cluster_location = db_session.query(TblCluster.char_cluster_region).filter(TblCluster.uid_cluster_id == cluster_id).first()
-        #location_value_strip = cluster_location[0].strip()
         location = 'south india'
         plan_info = db_session.query(TblCustomer.int_plan_id).filter(TblCustomer.uid_customer_id == customer_id).first()
         size_info = db_session.query(TblCluster.int_size_id).filter(TblCluster.uid_cluster_id==cluster_id).first()
         plan_id = plan_info[0]
         size_id = size_info[0]
 
-        edgenode_info = db_session.query(TblEdgenode.var_role,
-                                         TblEdgenode.int_role_count).filter(and_(TblEdgenode.int_size_id==size_id,
-                                                                                 TblEdgenode.int_plan_id == plan_id,
-                                                                                 TblEdgenode.char_feature_id == feature_id)).all()
-
+        edgenode_info = db_session.query(TblEdgenode.var_role).filter(TblEdgenode.char_feature_id == feature_id).first()
         vm_creation_info=[]
+        role=edgenode_info[0]
 
-        for data in edgenode_info:
-            role=data[0]
-            count_of_role=data[1]
-            for i in range(0,count_of_role):
-                vm_creation_list = []
-                agentid = str(uuid.uuid1())
-                #vm_creation_list.extend([cluster_id,customer_id,agentid,role,location,size_id,plan_id])
+        vm_creation_list = []
+        agentid = str(uuid.uuid1())
+        #vm_creation_list.extend([cluster_id,customer_id,agentid,role,location,size_id,plan_id])
 
-                vm_creation_list.append(cluster_id)
-                vm_creation_list.append(customer_id)
-                vm_creation_list.append(agentid)
-                vm_creation_list.append(role)
-                vm_creation_list.append(location)
-                vm_creation_list.append(size_id)
-                vm_creation_list.append(plan_id)
-                vm_creation_info.append(vm_creation_list)
-                print vm_creation_list
+        vm_creation_list.append(cluster_id)
+        vm_creation_list.append(customer_id)
+        vm_creation_list.append(agentid)
+        vm_creation_list.append(role)
+        vm_creation_list.append(location)
+        vm_creation_list.append(size_id)
+        vm_creation_list.append(plan_id)
+        vm_creation_info.append(vm_creation_list)
+        print vm_creation_list
         my_logger.info("calling createvm method")
         print "calling vm_creation"
         vm_information = vmcreation(vm_creation_info)#u should call another function probably
@@ -114,6 +98,7 @@ if __name__ == '__main__':
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
+
 
 
 

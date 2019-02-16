@@ -13,7 +13,7 @@ import pymongo
 from sqlalchemy.orm import scoped_session
 from application import app, mongo_conn_string, conn_string, session_factory
 from application.config.config_file import ldap_connection, ldap_connection_dn, ldap_connection_password
-from application.models.models import TblUsers, TblNodeInformation, TblCustomer, TblAzureFileStorageCredentials
+from application.models.models import TblUsers, TblNodeInformation, TblCustomer, TblAzureFileStorageCredentials,TblVmCreation
 from flask import jsonify, request, Blueprint
 # import ldap.modlist
 from sqlalchemy.orm import scoped_session
@@ -184,7 +184,7 @@ def userAuthenticate():
         my_logger.debug(e.pgerror)
         return jsonify(message='Operational error')
     except Exception:
-        return jsonify(message='general errors')
+        return jsonify(message='Server is not responding... please try again')
     finally:
         db_session.close()
 
@@ -608,28 +608,27 @@ def clustermembers(customer_id, cluster_id):
         db_session = scoped_session(session_factory)
         customer_id = customer_id
         cluster_id = cluster_id
+        print customer_id
+        print cluster_id
         # Query cluster members from tbl_node_information
 
-        cluster_info_query_statement = db_session.query(TblNodeInformation). \
+        cluster_info_query_statement = db_session.query(TblNodeInformation.char_role,TblNodeInformation.uid_node_id,TblNodeInformation.uid_vm_id). \
             filter(TblNodeInformation.uid_customer_id == customer_id,
                    TblNodeInformation.uid_cluster_id == cluster_id).all()
-
-        list_cluster_info = [i.to_json() for i in cluster_info_query_statement]
-
-        cluster_roles = []
-        if list_cluster_info == []:
-            return jsonify(cluster_members=cluster_roles)
-        else:
-            for dict_cluster_info in list_cluster_info:
-                json_cluster_info = json.loads(dict_cluster_info)
-                cluster_roles.append(
-                    {"role": json_cluster_info['char_role'], "node_id": json_cluster_info['uid_node_id']})
-            return jsonify(cluster_members=cluster_roles)
+        print cluster_info_query_statement
+        tup=[]
+        for clust in cluster_info_query_statement:
+            dict={}
+            vm_name = db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_vm_id == clust[2]).first()
+            dict["role"]=clust[0]
+            dict["node_id"]=clust[1]
+            dict["vm_name"]=vm_name
+            tup.append(dict)
+        return jsonify(cluster_members=tup)
     except Exception as e:
         return e.message
     finally:
         db_session.close()
-
 
 @azapi.route("/api/azure_credentials/<customer_id>", methods=['GET'])
 def azureFileStorageCredentials(customer_id):

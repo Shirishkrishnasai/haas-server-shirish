@@ -81,7 +81,8 @@ def hgmanager(agent_id):
                             for each_id in list_of_dependency_tasks:
                                 dependency_task_id = each_id.replace('"', '')
                                 dependency_task_status = db_session.query(TblTask.int_task_status).filter(
-                                    TblTask.uid_task_id == dependency_task_id)
+                                    TblTask.uid_task_id == dependency_task_id).all()
+				print dependency_task_status
                                 dependency_task_status_value = dependency_task_status[0]
                                 if dependency_task_status_value[0] == completed_task_status_value:
                                     completedtasks.append(dependency_task_status)
@@ -93,15 +94,18 @@ def hgmanager(agent_id):
                                 update_assigned_statement.update({"int_task_status": update_task_status_value})
                                 db_session.commit()
                     if agent_tasks_data == []:
+			#db_session.close()
                         print("nodata")
                         return jsonify("null")
                     else:
+			#db_session.close()
                         print agent_tasks_data, "agent data"
                        # kafkaproducer(message=agent_tasks_data)
                         return jsonify(agent_tasks_data)
 
-                        print "hgmanager producedddddddddddddddddddd"
+                        #print "hgmanager producedddddddddddddddddddd"
             else:
+		
                 print 'hgmanager else'
                 return jsonify("null")
 

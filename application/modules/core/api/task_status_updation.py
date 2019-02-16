@@ -1,12 +1,14 @@
+import smtplib
+from application.common.email_generation import emailsender
 from flask import Flask, jsonify, request, Request, Blueprint
 from application import session_factory
 from application.common.loggerfile import my_logger
-from application.models.models import TblTask, TblMetaTaskStatus, TblMetaRequestStatus, TblCustomerRequest, TblCluster
+from application.models.models import TblTask, TblMetaTaskStatus, TblMetaRequestStatus, TblCustomerRequest, TblCluster,TblUsers
 from sqlalchemy.orm import scoped_session
 taskstatus=Blueprint('taskstatus', __name__)
 @taskstatus.route("/taskstatus", methods=['POST'])
 def task_status_update():
-    try:
+   try:
         db_session = scoped_session(session_factory)
         # db_session.query(TblTask).filter(TblTask.char_feature_id==9).all()
         task_status_information = request.json
@@ -46,15 +48,22 @@ def task_status_update():
             requests = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == requests_id)
             requests.update({"int_request_status": completed})
             db_session.commit()
-
-            return jsonify(message="completed")
+            to_adress = db_session.query(TblUsers.var_user_name).filter(TblUsers.uid_customer_id == customerid)
+            toadress = to_adress[0][0]
+            subject="VM CREATION"
+            message="your VM is created and read to use"
+            print "sending mail to", toadress
+	    emailsender("sriramjasti1@gmailcom",toadress,subject,message,"jasti470@")
+	    print "mail sent"
+	    return jsonify(message="completed")
         else:
             print "im in else"
             requests = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == requests_id)
             requests.update({"int_request_status": running})
             db_session.commit()
             return jsonify(message="running")
-    except Exception as e:
-        print e.message
-    finally:
-        db_session.close()
+   except Exception as e:
+       print e.message
+   finally:
+      db_session.close()
+   return jsonify(message='done')

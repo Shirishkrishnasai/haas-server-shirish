@@ -14,7 +14,7 @@ def emailsender(fromaddr, toaddr, subject, message, password):
         msg['To'] = toaddr
         msg['Subject'] = subject
         email_body = message.split(".")
-        if email_body[1] == "html":
+        if email_body[0] == "html":
             indexfile = open(message, "r")
             body = indexfile.read()
             msg.attach(MIMEText(body, 'html'))
@@ -25,7 +25,7 @@ def emailsender(fromaddr, toaddr, subject, message, password):
 
         server = smtplib.SMTP('smtp.gmail.com:587')
         server.starttls()
-        server.login(fromaddr, password)
+        server.login(fromaddr,password)
         text = msg.as_string()
         server.sendmail(fromaddr, toaddr, text)
         server.quit()

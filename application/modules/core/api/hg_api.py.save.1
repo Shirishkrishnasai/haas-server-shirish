@@ -1,6 +1,5 @@
 import yaml
 import re
-from pytz import timezone
 import psycopg2,sys,os,json
 import io
 from azure.storage.file import FileService, FilePermissions
@@ -18,7 +17,7 @@ from application.common.loggerfile import my_logger
 from application.config.config_file import schema_statement, request_status, kafka_bootstrap_server
 from application.models.models import TblCustomerRequest, TblAgentConfig, TblAgent, TblNodeInformation, \
     TblMetaCloudLocation, TblHiveMetaStatus, TblHiveRequest, TblFeature, TblPlan, TblSize, TblMetaRequestStatus, \
-    TblCluster, TblVmCreation,TblMetaTaskStatus,TblTask,TblUsers
+    TblCluster, TblVmCreation,TblMetaTaskStatus,TblTask
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from kafka import KafkaProducer
@@ -360,10 +359,11 @@ def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
             databases = eval(hive_databases_result[0][0])
             print databases, type(databases), 'databases'
             databases_output = databases[str('output')]
+            result_databases = []
+            for databases_lists in databases_output:
+                result_databases.append(databases_lists[0])
+            return jsonify(databases=result_databases)
 
-            return jsonify(databases=databases_output)
-	#else:
-	 #   return jsonify(databases=[])
 @api.route('/api/hiveselectqueryresult/<request_id>', methods=['GET'])
 def hiveSelectQueryResult(request_id):
     try:
@@ -374,7 +374,7 @@ def hiveSelectQueryResult(request_id):
             TblHiveRequest.uid_hive_request_id == request_id, TblHiveRequest.bool_url_created == True).first()
         print hive_select_query_statement
 
-        return jsonify(url=hive_select_query_statement[0])
+        return jsonify(hive_select_query_statement)
     except Exception as e:
 
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -578,7 +578,7 @@ def cluster_info(customer_id):
         customer_cluster_info = db_session.query(TblCluster.uid_customer_id,TblCluster.uid_cluster_id,TblCluster.uid_cluster_type_id,TblCluster.valid_cluster,TblCluster.ts_created_datetime,TblCluster.var_cluster_name)\
             .filter(TblCluster.uid_customer_id == customer_id).all()
         #print customer_cluster_info, "cciiiiiiiiiiiiiiiiiiiiiiiii"
-        if len(customer_cluster_info) == 0:
+        if customer_cluster_info == []:
             return jsonify(message="No clusters to be displayed")
         else:
             list_customer_cluster_info = []
@@ -587,54 +587,39 @@ def cluster_info(customer_id):
                     mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
                     database_conn = mongo_db_conn['local']
                     customer_id_metrics_list = list(database_conn[customer_id].find())
-                    # print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
+                    #print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
                     if customer_id_metrics_list == []:
                         available_storage = 'NA'
 
-                    # print customer_id_metrics_list[-1]['payload'][3],'payyyyyyyyyyyylllllll'
-                    # print customer_id_metrics_list[-1]['payload'][-2], 'paoooooooooyyyyylllllll'
+                    #print customer_id_metrics_list[-1]['payload'][3],'payyyyyyyyyyyylllllll'
+                    #print customer_id_metrics_list[-1]['payload'][-2], 'paoooooooooyyyyylllllll'
                     else:
                         available_storage = customer_id_metrics_list[-1]['payload'][-2]['available_storage']
-                        # print available_storage,'vallllll'
-                        # metrics_dict =  customer_id_metrics_list[-1]
-                        # for keys, values in metrics_dict['payload'][3].items():
+                    #print available_storage,'vallllll'
+                    # metrics_dict =  customer_id_metrics_list[-1]
+                    #for keys, values in metrics_dict['payload'][3].items():
                         # print keys,values , "valoooooooooooeeeeeees"
-                        #    if keys == 'available_storage':
-                        # print values, 'looooooooooooooooooooooooooooooooooooooooooo'
-                        #        available_storage = values
+                    #    if keys == 'available_storage':
+                            #print values, 'looooooooooooooooooooooooooooooooooooooooooo'
+                    #        available_storage = values
                 else:
                     available_storage = 0
-                # clustername = db_session.query(TblClusterType.char_name).\
+                #clustername = db_session.query(TblClusterType.char_name).\
                 #    filter(TblClusterType.uid_cluster_type_id == cluster_info[2]).all()
-                # clus_name = clustername[0][0].rstrip()
+                #clus_name = clustername[0][0].rstrip()
 
-                cus_node_info = db_session.query(TblNodeInformation.uid_node_id, TblNodeInformation.char_role). \
+                cus_node_info = db_session.query(TblNodeInformation.uid_node_id,TblNodeInformation.char_role).\
                     filter(TblNodeInformation.uid_cluster_id == cluster_info[1]).all()
 
                 node_info_list = []
 
                 for cus in cus_node_info:
                     node_info_list.append({"node_id": cus[0], "char_role": cus[1]})
-                et = timezone('Asia/Kolkata')
-                # parse_time = parse(cluster_info[4])
-                now_time = datetime.datetime.now(et)
-                up_time = (now_time - cluster_info[4])
-                print up_time, type(up_time), 'stttttttttttttttttt'
 
-                def strfdelta(tdelta, fmt):
-                    d = {"days": tdelta.days}
-                    d["hours"], rem = divmod(tdelta.seconds, 3600)
-                    d["minutes"], d["seconds"] = divmod(rem, 60)
-                    return fmt.format(**d)
-
-                up_time_string = strfdelta(up_time, "{days}d,{hours}h:{minutes}m")
-                print up_time_string
                 list_customer_cluster_info.append(
                     {"customer_id": cluster_info[0], "node_information": node_info_list, "cluster_id": cluster_info[1],
-                     "cluster_type_id": cluster_info[2], "clustername": cluster_info[5],
-                     "valid_cluster": cluster_info[3],
-                     "cluster_up_time": up_time_string, "created_datetime": cluster_info[4],
-                     "available_storage": available_storage})
+                     "cluster_type_id": cluster_info[2], "clustername": cluster_info[5], "valid_cluster": cluster_info[3],
+                     "cluster_up_time":cluster_info[4],"available_storage": available_storage})
 
             reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
 
@@ -649,9 +634,9 @@ def cluster_info(customer_id):
     finally:
         db_session.close()
 
+
 @api.route("/api/status/<customer_id>/<cluster_id>", methods=['GET'])
 def status(customer_id,cluster_id):
-    try:
         db_session = scoped_session(session_factory)
         valid_cluster= db_session.query(TblCluster.valid_cluster).filter(TblCluster.uid_cluster_id == cluster_id,TblCluster.uid_customer_id == customer_id).first()
         print valid_cluster,"validcluster"
@@ -659,17 +644,13 @@ def status(customer_id,cluster_id):
             db_session.close()
             return jsonify(status="Completed")
         else :
-           # status_list = db_session.query(TblCustomerRequest.int_request_status).filter(
-           #     TblCustomerRequest.uid_cluster_id == cluster_id, TblCustomerRequest.char_feature_id == '10').first()
-           #status = status_list[0]
-           # meta_status = db_session.query(TblMetaRequestStatus.var_request_status).filter(TblMetaRequestStatus.srl_id == status).first()
-           # stat=meta_status[0]
-	   # if stat== "RUNNING"
-              return jsonify(status="cluster configuration is in progress")
-    except Exception as e:
-        my_logger.debug(e)
-    finally:
-        db_session.close()
+            status_list = db_session.query(TblCustomerRequest.int_request_status).filter(
+                TblCustomerRequest.uid_cluster_id == cluster_id, TblCustomerRequest.char_feature_id == '10').first()
+            print status_list
+            status = status_list[0]
+            meta_status = db_session.query(TblMetaRequestStatus.var_request_status).filter(TblMetaRequestStatus == status).first()
+            return jsonify(status=meta_status[0])
+
 
 @api.route("/api/addhivenode", methods=['POST'])
 def edgenode():
