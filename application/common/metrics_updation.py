@@ -14,6 +14,7 @@ def metricSubscriber(data):
         db_collection = database_conn[customerid]
         print database_conn
         result = db_collection.insert_one(data)
+        print customerid
         print "data inserted"
     except pymongo.errors.ConnectionFailure, e:
         my_logger.error(e)
