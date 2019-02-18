@@ -665,7 +665,7 @@ def status(customer_id,cluster_id):
            # meta_status = db_session.query(TblMetaRequestStatus.var_request_status).filter(TblMetaRequestStatus.srl_id == status).first()
            # stat=meta_status[0]
 	   # if stat== "RUNNING"
-              return jsonify(status="cluster configuration is in progress")
+              return jsonify(status="Cluster configuration is in progress")
     except Exception as e:
         my_logger.debug(e)
     finally:
