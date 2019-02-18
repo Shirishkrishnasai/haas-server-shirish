@@ -218,8 +218,8 @@ class TblCluster(ItemBase, OutputMixin):
     var_modified_by = Column(String(20), server_default="system")
     ts_created_datetime = Column(DateTime(timezone=True), server_default=func.now())
     ts_modified_datetime = Column(DateTime(timezone=True), server_default=func.now())
-
     valid_cluster = Column(Boolean)
+    cluster_created_datetime = Column(DateTime(timezone=True))
 
 
     tbl_cluster_type = relationship(u'TblClusterType')

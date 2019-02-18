@@ -645,6 +645,10 @@ def cluster_info(customer_id):
                 hive_agent_id_info = db_session.query(TblVmCreation.uid_agent_id).\
                     filter(and_(TblVmCreation.uid_cluster_id==cluster_info[1],TblVmCreation.var_role == 'hive',TblVmCreation.bool_edge == 'True')).all()
                 print hive_agent_id_info,'agent idddd'
+                if hive_agent_id_info == []:
+                    hive_agent_id = "null"
+                else:
+                    hive_agent_id = hive_agent_id_info[0][0]
                 # mapreduce_agent_id_info = db_session.query(TblVmCreation.uid_agent_id). \
                 #     filter(and_(TblVmCreation.uid_cluster_id == cluster_info[1], TblVmCreation.var_role == 'map reduce',
                 #                 TblVmCreation.bool_edge == 'True')).all()
@@ -654,7 +658,7 @@ def cluster_info(customer_id):
 
                 list_customer_cluster_info.append(
                     {"customer_id": cluster_info[0], "node_information": node_info_list, "cluster_id": cluster_info[1],
-                     "cluster_type_id": cluster_info[2], "clustername": cluster_info[5],"hive_node_id":hive_agent_id_info[0][0], "valid_cluster": cluster_info[3],
+                     "cluster_type_id": cluster_info[2], "clustername": cluster_info[5],"hive_node_id":str(hive_agent_id), "valid_cluster": cluster_info[3],
                      "cluster_up_time":up_time_string,"cluster_created_datetime":str(cluster_info[4]),"available_storage": available_storage})
 
             reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
