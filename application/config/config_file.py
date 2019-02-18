@@ -21,7 +21,7 @@ file_upload_url="http://104.211.222.41:5000/fileupload"
 path="/opt/mapred-site.xml"
 
 
-#postgres_conn = 'postgres://postgres:password@104.211.222.41/haas_demo2'
+postgres_conn = 'postgres://postgres:password@104.211.222.41/haas_demo2'
 conn_string = "host='192.168.100.81' user='postgres' password='password' dbname='haas_demo2'"
 postgres_conn = 'postgres://postgres:password@104.211.222.41/haas_demo2'
 

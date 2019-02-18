@@ -93,7 +93,7 @@ from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 from application.common.util import azure_upload_host_slave
 from application.modules.hive.workers.edgenode_provision_worker import edgenodeProvision
 #from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
-from application.modules.cluster.workers.configure_cluster import configure_cluster
+#from application.modules.cluster.workers.configure_cluster import configure_cluster
 
 app.register_blueprint(hivequeryoutput, url_prefix='')
 app.register_blueprint(hivequery, url_prefix='')
@@ -145,8 +145,7 @@ def site_map():
     print (links)
 
 
-#configure_cluster('ead4a19f-3346-11e9-be34-000d3af26ae2')
-# hgSelectQueryUrlScheduler()
+hgSelectQueryUrlScheduler()
 def runProcess():
     #edgenodeProvision('bd17dcb4-251b-11e9-8b29-000d3af26ae2')
     #selecturl_process = Process(target=hgSelectQueryUrlScheduler)

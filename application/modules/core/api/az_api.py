@@ -342,6 +342,7 @@ def cluster_metrics(cusid, cluid):
         to_time_params_str = str(to_time_params)
         req_data = collection.find(
             {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
+        print req_data
         # print to_time_params_str,from_time_params_str
         minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
     else:
@@ -600,7 +601,6 @@ def divideMilliSeconds(fromtime, totime):
 #         reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
 #         return jsonify(clusterinformation=reversed_list_customer_cluster_info)
 
-
 @azapi.route("/api/cluster_members/<customer_id>/<cluster_id>", methods=['GET'])
 def clustermembers(customer_id, cluster_id):
     # customer_request=request.json
@@ -619,17 +619,18 @@ def clustermembers(customer_id, cluster_id):
         tup=[]
         for clust in cluster_info_query_statement:
             dict={}
-            vm_name = db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_vm_id == clust[2]).first()
+            #print clust[2],'vmidddddddddddd'
+            #vm_name = db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_vm_id == clust[2]).first()
             dict["role"]=clust[0]
             dict["node_id"]=clust[1]
-            dict["vm_name"]=vm_name
+            #dict["vm_name"]=vm_name[0]
+            dict["vm_id"]=clust[2]
             tup.append(dict)
         return jsonify(cluster_members=tup)
     except Exception as e:
         return e.message
     finally:
         db_session.close()
-
 @azapi.route("/api/azure_credentials/<customer_id>", methods=['GET'])
 def azureFileStorageCredentials(customer_id):
 	# customer_request=request.json
