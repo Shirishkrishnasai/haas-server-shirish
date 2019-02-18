@@ -619,10 +619,12 @@ def clustermembers(customer_id, cluster_id):
         tup=[]
         for clust in cluster_info_query_statement:
             dict={}
-            vm_name = db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_vm_id == clust[2]).first()
+            #print clust[2],'vmidddddddddddd'
+            #vm_name = db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_vm_id == clust[2]).first()
             dict["role"]=clust[0]
             dict["node_id"]=clust[1]
-            dict["vm_name"]=vm_name
+            #dict["vm_name"]=vm_name[0]
+            dict["vm_id"]=clust[2]
             tup.append(dict)
         return jsonify(cluster_members=tup)
     except Exception as e:

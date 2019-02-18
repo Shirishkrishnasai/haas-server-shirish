@@ -145,7 +145,7 @@ def site_map():
     print (links)
 
 
-configure_cluster('ead4a19f-3346-11e9-be34-000d3af26ae2')
+#configure_cluster('ead4a19f-3346-11e9-be34-000d3af26ae2')
 # hgSelectQueryUrlScheduler()
 def runProcess():
     #edgenodeProvision('bd17dcb4-251b-11e9-8b29-000d3af26ae2')
