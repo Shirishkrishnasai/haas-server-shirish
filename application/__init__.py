@@ -93,7 +93,7 @@ from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 from application.common.util import azure_upload_host_slave
 from application.modules.hive.workers.edgenode_provision_worker import edgenodeProvision
 #from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
-#from application.modules.cluster.workers.configure_cluster import configure_cluster
+from application.modules.cluster.workers.configure_cluster import configure_cluster
 
 app.register_blueprint(hivequeryoutput, url_prefix='')
 app.register_blueprint(hivequery, url_prefix='')
@@ -145,14 +145,14 @@ def site_map():
     print (links)
 
 
-
+configure_cluster('ead4a19f-3346-11e9-be34-000d3af26ae2')
 # hgSelectQueryUrlScheduler()
 def runProcess():
     #edgenodeProvision('bd17dcb4-251b-11e9-8b29-000d3af26ae2')
     #selecturl_process = Process(target=hgSelectQueryUrlScheduler)
     #selecturl_process.start()
     # kafkataskconsumer_process = Process(target=kafkataskconsumer)
-    kafkaconsumer_process = Process(target=kafkaconsumer)
+    # kafkaconsumer_process = Process(target=kafkaconsumer)
     # hgmanager_process = Process(target=hgmanager)
     # hgsuper_process = Process(target=hgsuper)
     # hgsuper_process.start()
@@ -171,7 +171,7 @@ def runProcess():
     # customerjobreqestconsumer = Process(target=jobinsertion)
     # mrjobproducer_process.start()
     # customerjobreqestconsumer.start()
-    kafkaconsumer_process.start()
+    # kafkaconsumer_process.start()
     # hgmanager_process.start()
     print "method ended"
 
