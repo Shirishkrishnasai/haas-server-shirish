@@ -23,6 +23,7 @@ from sqlalchemy.orm import scoped_session
 from application import session_factory
 from kafka import KafkaProducer
 from kafka import KafkaConsumer
+from sqlalchemy import and_
 
 api = Blueprint('api', __name__)
 
@@ -327,43 +328,54 @@ def hg_hive_client():
 
 @api.route('/api/hivedatabase/<customer_id>/<cluster_id>/<agent_id>', methods=['GET'])
 def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
+    try:
 
-    db_session = scoped_session(session_factory)
-    hive_request_id = uuid.uuid1()
-    print hive_request_id,'hive requestssss'
-    query_string = "show databases"
-    hive_request_database_values = TblHiveRequest(uid_hive_request_id=str(hive_request_id),
-                                                uid_customer_id=customer_id,
-                                                uid_cluster_id=cluster_id,
-                                                uid_agent_id=agent_id,
-                                                ts_requested_time=datetime.datetime.now(),
-                                                txt_query_string=query_string,
-                                                ts_status_time=datetime.datetime.now(),
-                                                bool_url_created=0,
-                                                bool_select_query=0,
-                                                txt_hive_database='default',
-                                                bool_query_complete=0)
-    db_session.add(hive_request_database_values)
-    db_session.commit()
-    db_session.close()
-    my_logger.info("committing to database and closing session done")
+        db_session = scoped_session(session_factory)
+        hive_request_id = uuid.uuid1()
+        print hive_request_id,'hive requestssss'
+        query_string = "show databases"
+        hive_request_database_values = TblHiveRequest(uid_hive_request_id=str(hive_request_id),
+                                                    uid_customer_id=customer_id,
+                                                    uid_cluster_id=cluster_id,
+                                                    uid_agent_id=agent_id,
+                                                    ts_requested_time=datetime.datetime.now(),
+                                                    txt_query_string=query_string,
+                                                    ts_status_time=datetime.datetime.now(),
+                                                    bool_url_created=0,
+                                                    bool_select_query=0,
+                                                    txt_hive_database='default',
+                                                    bool_query_complete=0)
+        db_session.add(hive_request_database_values)
+        db_session.commit()
+        db_session.close()
+        my_logger.info("committing to database and closing session done")
 
-    #time.sleep(120)
-    t_end = time.time() + 120
-    while time.time() < t_end:
+        #time.sleep(120)
+        t_end = time.time() + 120
+        while time.time() < t_end:
 
-        hive_databases_result = db_session.query(TblHiveRequest.hive_query_output). \
-            filter(TblHiveRequest.uid_hive_request_id == str(hive_request_id)).all()
-        if hive_databases_result[0][0] is not None:
+            hive_databases_result = db_session.query(TblHiveRequest.hive_query_output). \
+                filter(TblHiveRequest.uid_hive_request_id == str(hive_request_id)).all()
             print hive_databases_result, type(hive_databases_result), 'hiveeeeeeeeeee'
+            if hive_databases_result[0][0] is not None:
 
-            databases = eval(hive_databases_result[0][0])
-            print databases, type(databases), 'databases'
-            databases_output = databases[str('output')]
 
-            return jsonify(databases=databases_output)
-	#else:
-	 #   return jsonify(databases=[])
+                databases = eval(hive_databases_result[0][0])
+                print databases, type(databases), 'databases'
+                databases_output = databases[str('output')]
+                result_databases = []
+                for databases_lists in databases_output:
+                    result_databases.append(databases_lists[0])
+                return jsonify(databases=result_databases)
+    except Exception as e:
+
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()
 @api.route('/api/hiveselectqueryresult/<request_id>', methods=['GET'])
 def hiveSelectQueryResult(request_id):
     try:
@@ -569,46 +581,47 @@ def customer(cluster_id, role):
     #finally:
      #   db_session.close()
 
-
 @api.route('/api/cluster/<customer_id>', methods=['GET'])
 def cluster_info(customer_id):
     try:
         #print customer_id
         db_session = scoped_session(session_factory)
-        customer_cluster_info = db_session.query(TblCluster.uid_customer_id,TblCluster.uid_cluster_id,TblCluster.uid_cluster_type_id,TblCluster.valid_cluster,TblCluster.ts_created_datetime,TblCluster.var_cluster_name)\
+        customer_cluster_info = db_session.query(TblCluster.uid_customer_id,TblCluster.uid_cluster_id,TblCluster.uid_cluster_type_id,TblCluster.valid_cluster,TblCluster.cluster_created_datetime,TblCluster.var_cluster_name)\
             .filter(TblCluster.uid_customer_id == customer_id).all()
         #print customer_cluster_info, "cciiiiiiiiiiiiiiiiiiiiiiiii"
-        if len(customer_cluster_info) == 0:
+
+        if customer_cluster_info == []:
             return jsonify(message="No clusters to be displayed")
         else:
             list_customer_cluster_info = []
             for cluster_info in customer_cluster_info:
+
                 if cluster_info[3] == True:
                     mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
                     database_conn = mongo_db_conn['local']
                     customer_id_metrics_list = list(database_conn[customer_id].find())
-                    # print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
+                    #print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
                     if customer_id_metrics_list == []:
                         available_storage = 'NA'
 
-                    # print customer_id_metrics_list[-1]['payload'][3],'payyyyyyyyyyyylllllll'
-                    # print customer_id_metrics_list[-1]['payload'][-2], 'paoooooooooyyyyylllllll'
+                    #print customer_id_metrics_list[-1]['payload'][3],'payyyyyyyyyyyylllllll'
+                    #print customer_id_metrics_list[-1]['payload'][-2], 'paoooooooooyyyyylllllll'
                     else:
                         available_storage = customer_id_metrics_list[-1]['payload'][-2]['available_storage']
-                        # print available_storage,'vallllll'
-                        # metrics_dict =  customer_id_metrics_list[-1]
-                        # for keys, values in metrics_dict['payload'][3].items():
+                    #print available_storage,'vallllll'
+                    # metrics_dict =  customer_id_metrics_list[-1]
+                    #for keys, values in metrics_dict['payload'][3].items():
                         # print keys,values , "valoooooooooooeeeeeees"
-                        #    if keys == 'available_storage':
-                        # print values, 'looooooooooooooooooooooooooooooooooooooooooo'
-                        #        available_storage = values
+                    #    if keys == 'available_storage':
+                            #print values, 'looooooooooooooooooooooooooooooooooooooooooo'
+                    #        available_storage = values
                 else:
                     available_storage = 0
-                # clustername = db_session.query(TblClusterType.char_name).\
+                #clustername = db_session.query(TblClusterType.char_name).\
                 #    filter(TblClusterType.uid_cluster_type_id == cluster_info[2]).all()
-                # clus_name = clustername[0][0].rstrip()
+                #clus_name = clustername[0][0].rstrip()
 
-                cus_node_info = db_session.query(TblNodeInformation.uid_node_id, TblNodeInformation.char_role). \
+                cus_node_info = db_session.query(TblNodeInformation.uid_node_id,TblNodeInformation.char_role).\
                     filter(TblNodeInformation.uid_cluster_id == cluster_info[1]).all()
 
                 node_info_list = []
@@ -616,25 +629,33 @@ def cluster_info(customer_id):
                 for cus in cus_node_info:
                     node_info_list.append({"node_id": cus[0], "char_role": cus[1]})
                 et = timezone('Asia/Kolkata')
-                # parse_time = parse(cluster_info[4])
+                #parse_time = parse(cluster_info[4])
                 now_time = datetime.datetime.now(et)
                 up_time = (now_time - cluster_info[4])
-                print up_time, type(up_time), 'stttttttttttttttttt'
+                print up_time,type(up_time) ,'stttttttttttttttttt'
 
                 def strfdelta(tdelta, fmt):
                     d = {"days": tdelta.days}
                     d["hours"], rem = divmod(tdelta.seconds, 3600)
                     d["minutes"], d["seconds"] = divmod(rem, 60)
                     return fmt.format(**d)
-
-                up_time_string = strfdelta(up_time, "{days}d,{hours}h:{minutes}m")
+                up_time_string = strfdelta(up_time,"{days}d,{hours}h:{minutes}m")
                 print up_time_string
+
+                hive_agent_id_info = db_session.query(TblVmCreation.uid_agent_id).\
+                    filter(and_(TblVmCreation.uid_cluster_id==cluster_info[1],TblVmCreation.var_role == 'hive',TblVmCreation.bool_edge == 'True')).all()
+                print hive_agent_id_info,'agent idddd'
+                # mapreduce_agent_id_info = db_session.query(TblVmCreation.uid_agent_id). \
+                #     filter(and_(TblVmCreation.uid_cluster_id == cluster_info[1], TblVmCreation.var_role == 'map reduce',
+                #                 TblVmCreation.bool_edge == 'True')).all()
+                # spark_agent_id_info = db_session.query(TblVmCreation.uid_agent_id). \
+                #     filter(and_(TblVmCreation.uid_cluster_id == cluster_info[1], TblVmCreation.var_role == 'spark',
+                #                 TblVmCreation.bool_edge == 'True')).all()
+
                 list_customer_cluster_info.append(
                     {"customer_id": cluster_info[0], "node_information": node_info_list, "cluster_id": cluster_info[1],
-                     "cluster_type_id": cluster_info[2], "clustername": cluster_info[5],
-                     "valid_cluster": cluster_info[3],
-                     "cluster_up_time": up_time_string, "created_datetime": cluster_info[4],
-                     "available_storage": available_storage})
+                     "cluster_type_id": cluster_info[2], "clustername": cluster_info[5],"hive_node_id":hive_agent_id_info[0][0], "valid_cluster": cluster_info[3],
+                     "cluster_up_time":up_time_string,"cluster_created_datetime":str(cluster_info[4]),"available_storage": available_storage})
 
             reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
 
@@ -648,6 +669,7 @@ def cluster_info(customer_id):
         my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
+
 
 @api.route("/api/status/<customer_id>/<cluster_id>", methods=['GET'])
 def status(customer_id,cluster_id):
