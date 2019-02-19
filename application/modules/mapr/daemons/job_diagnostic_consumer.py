@@ -2,26 +2,26 @@ from kafka import KafkaConsumer
 from application.config.config_file import kafka_bootstrap_server, kafka_api_version
 from sqlalchemy.orm import scoped_session
 from application import session_factory
-from application.models.models import TblCustomerJobRequest
+from application.models.models import TblCustomerJobRequest,TblMetaMrRequestStatus
 import json,os,sys
 from application.common.loggerfile import my_logger
+from flask import Blueprint,jsonify, request
+import requests
+
+jobdiagnostics = Blueprint('jobdiagnostics', __name__)
+@jobdiagnostics.route("/api/jobdiagnostics", methods=['POST'])
 
 def diagnosticsconsumer():
     try:
         db_session = scoped_session(session_factory)
-        print "in job diagnostics consumerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
-
-        consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server)
-        consumer.subscribe(pattern='job_diagnostics*')
-        print "after subscribesssssssssssssssssssssssssssss , diganoooooooooooo"
-        for message in consumer:
-            job_data = message.value
-            print job_data,"innnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
-            data = job_data.replace("'", '"')
-            json_loads_job_data = json.loads(data)
-            update_customer_job_request=db_session.query(TblCustomerJobRequest).filter(TblCustomerJobRequest.uid_customer_id==json_loads_job_data['customer_id'],TblCustomerJobRequest.uid_request_id==json_loads_job_data['request_id'])
-            update_customer_job_request.update({"var_request_status":json_loads_job_data})
-            db_session.commit()
+        data = request.json
+        state = str(data['app']['state'])
+        request_status_value = db_session.query(TblMetaMrRequestStatus.srl_id).\
+            filter(TblMetaMrRequestStatus.var_mr_request_status == state).all()
+        update_customer_job_request=db_session.query(TblCustomerJobRequest).\
+            filter(TblCustomerJobRequest.uid_customer_id==data['customer_id'],TblCustomerJobRequest.uid_request_id==data['request_id'])
+        update_customer_job_request.update({"var_job_diagnostics":json.dumps(data['app']),"int_request_status":int(request_status_value[0][0])})
+        db_session.commit()
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -31,4 +31,3 @@ def diagnosticsconsumer():
         my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
-
