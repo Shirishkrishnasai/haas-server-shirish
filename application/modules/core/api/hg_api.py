@@ -649,19 +649,7 @@ def cluster_info(customer_id):
                     up_time_string = strfdelta(up_time,"{days}d,{hours}h:{minutes}m")
                     print up_time_string
 
-                # hive_agent_id_info = db_session.query(TblVmCreation.uid_agent_id).\
-                #     filter(and_(TblVmCreation.uid_cluster_id==cluster_info[1],TblVmCreation.var_role == 'hive',TblVmCreation.bool_edge == 'True')).all()
-                # print hive_agent_id_info,'agent idddd'
-                # if hive_agent_id_info == []:
-                #     hive_agent_id = "null"
-                # else:
-                #     hive_agent_id = hive_agent_id_info[0][0]
-                # mapreduce_agent_id_info = db_session.query(TblVmCreation.uid_agent_id). \
-                #     filter(and_(TblVmCreation.uid_cluster_id == cluster_info[1], TblVmCreation.var_role == 'map reduce',
-                #                 TblVmCreation.bool_edge == 'True')).all()
-                # spark_agent_id_info = db_session.query(TblVmCreation.uid_agent_id). \
-                #     filter(and_(TblVmCreation.uid_cluster_id == cluster_info[1], TblVmCreation.var_role == 'spark',
-                #                 TblVmCreation.bool_edge == 'True')).all()
+
 
                 list_customer_cluster_info.append(
                     {"customer_id": cluster_info[0], "node_information": node_info_list, "cluster_id": cluster_info[1],
@@ -734,6 +722,28 @@ def edgenode():
         db_session.add(insert_customer)
         db_session.commit()
         return jsonify(request_id=request_id1, message='success')
+    except Exception as e:
+
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()
+
+@api.route("/api/edgenode/<cluster_id>/<role>", methods=['GET'])
+def edgenoderolebool(cluster_id,role):
+    try:
+        db_session = scoped_session(session_factory)
+
+        edge_node_info = db_session.query(TblVmCreation).\
+            filter(and_(TblVmCreation.uid_cluster_id==str(cluster_id),TblVmCreation.var_role == str(role),TblVmCreation.bool_edge == 'True')).all()
+        print edge_node_info,'agent idddd'
+        if edge_node_info != []:
+            return jsonify(bool_value=1)
+        else:
+            return jsonify(bool_value=0)
     except Exception as e:
 
         exc_type, exc_obj, exc_tb = sys.exc_info()
