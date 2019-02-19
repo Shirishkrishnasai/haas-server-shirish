@@ -5,6 +5,7 @@ from application import session_factory
 from application.common.loggerfile import my_logger
 from application.models.models import TblTask, TblMetaTaskStatus, TblMetaRequestStatus, TblCustomerRequest, TblCluster,TblUsers
 from sqlalchemy.orm import scoped_session
+from datetime import datetime
 taskstatus=Blueprint('taskstatus', __name__)
 @taskstatus.route("/taskstatus", methods=['POST'])
 def task_status_update():
@@ -41,29 +42,22 @@ def task_status_update():
         print tuple
         if all(x == completedstatus for x in tuple):
             print "im in if"
-            valid_cluster_status = db_session.query(TblCluster.valid_cluster).filter(
+            valid_cluster_status = db_session.query(TblCluster.valid_cluster,TblCluster.cluster_created_datetime).filter(
                 TblCluster.uid_cluster_id == clusterid)
-            valid_cluster_status.update({"valid_cluster": True})
+            date_time = datetime.now()
+            valid_cluster_status.update({"valid_cluster": True,"cluster_created_datetime":date_time})
             db_session.commit()
             requests = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == requests_id)
             requests.update({"int_request_status": completed})
             db_session.commit()
-            to_adress = db_session.query(TblUsers.var_user_name).filter(TblUsers.uid_customer_id == customerid)
-            toadress = to_adress[0][0]
-            subject="VM CREATION"
-            message="your VM is created and read to use"
-            print "sending mail to", toadress
-	    emailsender("sriramjasti1@gmailcom",toadress,subject,message,"jasti470@")
-	    print "mail sent"
-	    return jsonify(message="completed")
         else:
             print "im in else"
             requests = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == requests_id)
             requests.update({"int_request_status": running})
             db_session.commit()
-            return jsonify(message="running")
+        return jsonify("sucess")
    except Exception as e:
        print e.message
+       return jsonify("failed")
    finally:
       db_session.close()
-   return jsonify(message='done')
