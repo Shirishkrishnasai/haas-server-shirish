@@ -1,34 +1,28 @@
 from kafka import KafkaConsumer
-from application.config.config_file import kafka_bootstrap_server, kafka_api_version
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application.models.models import TblCustomerJobRequest,TblMetaMrRequestStatus
-import json,os,sys
+from flask import Blueprint,render_template,abort, Flask,jsonify,request
 from application.common.loggerfile import my_logger
+import sys,os,json
 
+
+jobstatusapi = Blueprint('jobstatusapi', __name__)
+@jobstatusapi.route("/job_status",methods=['POST'])
 
 def statusconsumer():
     try:
-        db_session = scoped_session(session_factory)
-        print "in status consumerrrrrrrrrrrrrrrrrrrrrr"
-        consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server)
-        consumer.subscribe(pattern='job_status*')
-        print "after subscribesssssssssssssssssssssssssssss"
-        for message in consumer:
+        session = scoped_session(session_factory)
 
-            job_data = message.value
-            print job_data,"innnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
-            data = job_data.replace("'", '"')
-            json_loads_job_data = json.loads(data)
-            print json_loads_job_data['customer_id']
-            print json_loads_job_data['application_id']
-            meta_request_status_query = db_session.query(TblMetaMrRequestStatus.srl_id).filter(TblMetaMrRequestStatus.var_mr_request_status == json_loads_job_data['status'])
+        job_status_data = request.json
+	for application_status in job_status_data:
+        	meta_request_status_query = session.query(TblMetaMrRequestStatus.srl_id).filter(TblMetaMrRequestStatus.var_mr_request_status == application_status['status'])
 
-            update_customer_job_request=db_session.query(TblCustomerJobRequest).filter(TblCustomerJobRequest.uid_customer_id==json_loads_job_data['customer_id'],TblCustomerJobRequest.var_application_id==json_loads_job_data['application_id'])
-            # print update_customer_job_request
-            update_customer_job_request.update({"int_request_status":meta_request_status_query[0][0]})
-            db_session.commit()
-            print 'in'
+	        update_customer_job_request=session.query(TblCustomerJobRequest).filter(TblCustomerJobRequest.uid_customer_id==application_status['customer_id'],TblCustomerJobRequest.var_application_id==application_status['application_id'])
+        	update_customer_job_request.update({"int_request_status":meta_request_status_query[0][0]})
+	        session.commit()
+
+
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -37,4 +31,4 @@ def statusconsumer():
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
     finally:
-        db_session.close()
+        session.close()

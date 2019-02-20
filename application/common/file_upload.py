@@ -67,7 +67,7 @@ def fileUpload():
                                                  file_name=filename,
                                                  stream=byte_stream,
                                                  count=no_of_bytes,
-                                                 progress_callback=fileProgress)
+                                                 progress_callback=fileProgress,content_type=application/java-archive)
             my_logger.info('file transfer is over')
             my_logger.info('file created in azure file storage')
             my_logger.info('now inserting values in database')
@@ -78,8 +78,8 @@ def fileUpload():
                 my_logger.info("passed argiment is agent_id")
                 agent_id_value = normal_dict['agent_id'][0]
 
-                file_insert_values = TblFileUpload(uid_upload_id=file_upload_id,
-                                                   uid_customer_id=customerid,
+                file_insert_values = TblFileUpload(uid_upload_id=str(file_upload_id),
+                                                   uid_customer_id=str(customerid),
                                                    var_share_name=share_values[0],
                                                    var_directory_name=share_values[1],
                                                    var_file_name=filename,
@@ -94,8 +94,8 @@ def fileUpload():
             elif normal_dict.has_key('user_name'):
                 my_logger.info("passed argument is user_name")
                 user_name_value = normal_dict['user_name'][0]
-                file_insert_values = TblFileUpload(uid_upload_id=file_upload_id,
-                                                   uid_customer_id=customerid,
+                file_insert_values = TblFileUpload(uid_upload_id=str(file_upload_id),
+                                                   uid_customer_id=str(customerid),
                                                    var_share_name=share_values[0],
                                                    var_directory_name=share_values[1],
                                                    var_file_name=filename,

@@ -794,6 +794,7 @@ class TblCustomerJobRequest(ItemBase,OutputMixin):
     ts_requested_time = Column(DateTime)
     int_request_status = Column(Integer,default=7)
     var_application_id=Column(String(100))
+    var_job_parameters=Column(Text)
     var_job_diagnostics=Column(Text)
     conf_mapred_job_tracker=Column(String(50))
     conf_mapreduce_framework_name = Column(String(50))
