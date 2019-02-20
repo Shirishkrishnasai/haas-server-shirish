@@ -583,12 +583,12 @@ def customer(cluster_id, role):
 
 @api.route('/api/cluster/<customer_id>', methods=['GET'])
 def cluster_info(customer_id):
-    try:
+    #try:
         #print customer_id
         db_session = scoped_session(session_factory)
         customer_cluster_info = db_session.query(TblCluster.uid_customer_id,TblCluster.uid_cluster_id,TblCluster.uid_cluster_type_id,TblCluster.valid_cluster,TblCluster.cluster_created_datetime,TblCluster.var_cluster_name)\
             .filter(TblCluster.uid_customer_id == customer_id).all()
-        #print customer_cluster_info, "cciiiiiiiiiiiiiiiiiiiiiiiii"
+        print customer_cluster_info, "cciiiiiiiiiiiiiiiiiiiiiiiii"
 
         if customer_cluster_info == []:
             return jsonify(message="No clusters to be displayed")
@@ -662,17 +662,18 @@ def cluster_info(customer_id):
                      "cluster_up_time":up_time_string,"cluster_created_datetime":str(cluster_info[4]),"available_storage": available_storage})
 
             reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
+            db_session.close()
 
             return jsonify(clusterinformation=reversed_list_customer_cluster_info)
-    except Exception as e:
-
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
-        db_session.close()
+    # except Exception as e:
+    #
+    #     exc_type, exc_obj, exc_tb = sys.exc_info()
+    #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #     my_logger.error(exc_type)
+    #     my_logger.error(fname)
+    #     my_logger.error(exc_tb.tb_lineno)
+    # finally:
+    #     db_session.close()
 
 
 @api.route("/api/status/<customer_id>/<cluster_id>", methods=['GET'])
@@ -724,5 +725,28 @@ def edgenode():
     except Exception as e:
 
         my_logger.debug(e)
+    finally:
+        db_session.close()
+
+
+@api.route("/api/edgenode/<cluster_id>/<role>", methods=['GET'])
+def edgenoderolebool(cluster_id,role):
+    try:
+        db_session = scoped_session(session_factory)
+
+        edge_node_info = db_session.query(TblVmCreation).\
+            filter(and_(TblVmCreation.uid_cluster_id==str(cluster_id),TblVmCreation.var_role == str(role),TblVmCreation.bool_edge == 'True')).all()
+        print edge_node_info,'agent idddd'
+        if edge_node_info != []:
+            return jsonify(bool_value=1)
+        else:
+            return jsonify(bool_value=0)
+    except Exception as e:
+
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()

@@ -30,3 +30,5 @@ def statusconsumer():
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
+    finally:
+        session.close()

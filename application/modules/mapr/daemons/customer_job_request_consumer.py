@@ -14,7 +14,7 @@ def jobinsertion():
         session = scoped_session(session_factory)
         jobdetails=request.json
 	
-	print jobdetails
+        print jobdetails
         job_information_dict = jobdetails
         print 'in'
         print job_information_dict['request_id']
@@ -23,7 +23,6 @@ def jobinsertion():
         print update_customer_job_request,"in"
         update_customer_job_request.update({"var_application_id":job_information_dict['application_id']})
         session.commit()
-        session.close()
         print 'completed'
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -32,3 +31,5 @@ def jobinsertion():
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
+    finally:
+        session.close()

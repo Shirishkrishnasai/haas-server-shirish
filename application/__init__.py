@@ -71,7 +71,7 @@ from application.modules.core.api.get_cluster_location import clusterlocation
 from application.modules.core.api.hg_file_browser import filebrowser
 
 from application.modules.mapr.api.hg_mr_job import mrapi
-#from application.modules.mapr.api.hg_mr_job import mrjobstatus
+from application.modules.mapr.api.hg_mr_job import mrjobstatus
 from application.modules.mapr.api.job_output_api import jobdetails
 from application.modules.mapr.api.job_list_api import joblist
 from application.modules.mapr.api.mapreduceapi import mapreduce
@@ -107,7 +107,7 @@ app.register_blueprint(clustersize, url_prefix='')
 app.register_blueprint(api, url_prefix='')
 app.register_blueprint(azfile, url_prefix='')
 app.register_blueprint(azapi, url_prefix='')
-#pp.register_blueprint(mrjobstatus, url_prefix='')
+app.register_blueprint(mrjobstatus, url_prefix='')
 app.register_blueprint(mrapi, url_prefix='')
 app.register_blueprint(filebrowser, url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
@@ -123,7 +123,6 @@ app.register_blueprint(mrapi, url_prefix='')
 app.register_blueprint(filebrowser, url_prefix='')
 app.register_blueprint(customerusers, url_prefix='')
 app.register_blueprint(jobdetails, url_prefix='')
-app.register_blueprint(joblist, url_prefix='')
 app.register_blueprint(highgearmanager, url_prefix='')
 app.register_blueprint(taskstatus, url_prefix='')
 app.register_blueprint(jobproducer, url_prefix='')

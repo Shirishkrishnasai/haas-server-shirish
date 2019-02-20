@@ -7,6 +7,7 @@ from sqlalchemy import exc
 from configparser import ConfigParser
 from msrestazure.azure_exceptions import CloudError
 import uuid
+import os,sys
 import lxml.etree as ET
 from flask import request, Blueprint,jsonify
 from sqlalchemy import and_
@@ -74,22 +75,27 @@ def configuration():
 @mrapi.route("/api/addmrjob", methods=['POST'])
 def hg_mrjob_client():
 
-    try:
+    #try:
+        db_session = scoped_session(session_factory)
 
         request_id = str(uuid.uuid1())
         date_time = datetime.datetime.now()
         posted_args = request.args
-        input_path = posted_args['input_file_path']
-        output_path = posted_args['output_file_path']
+        #input_path = posted_args['input_file_path']
+        #output_path = posted_args['output_file_path']
         customer_request = request.values.to_dict()
-        customer_id = uuid.UUID(customer_request['customer_id']).hex
+        print customer_request,"addmrjob5555555555555"
+        customer_id = uuid.UUID(customer_request["customer_id"]).hex
         cluster_id = uuid.UUID(customer_request['cluster_id']).hex
         user_name = customer_request['user_name']
         job_name = customer_request['job_name']
         job_description = customer_request['job_description']
         filename = request.files['files'].filename
+        job_parameters = customer_request['job_arguments']
+        print filename
         posted_file = request.files
         str_posted_file = posted_file['files'].read()
+        #print str_posted_file
         no_of_bytes=len(str_posted_file)
 
         # converting unicoded file to bytestream
@@ -106,10 +112,9 @@ def hg_mrjob_client():
         my_logger.info('file account credentials ok')
 
         # connecting to database to get sharename and directoryname against customerid
-        db_session = scoped_session(session_factory)
         share_values = db_session.query(TblMetaFileUpload.var_share_name, TblMetaFileUpload.var_directory_name).\
             filter(TblMetaFileUpload.uid_customer_id == customer_id).first()
-
+        print share_values
         file_service.create_file_from_stream(share_name=share_values[0],
                                              directory_name=share_values[1],
                                              file_name=filename,
@@ -134,10 +139,10 @@ def hg_mrjob_client():
         db_session.commit()
         my_logger.info('values inserted and now returning file file_upload_url')
         jar_uid = uuid.UUID(file_upload_id).hex
-        up = {'files': open(path, 'rb')}
-        params = {"user_name": user_name, "customer_id": customer_id}
-        r = requests.post(file_upload_url, files=up, params=params)
-        conf_uid = r.text
+        #up = {'files': open(path, 'rb')}
+        #params = {"user_name": user_name, "customer_id": customer_id}
+        #r = requests.post(file_upload_url, files=up, params=params)
+        #conf_uid = r.text
         data = TblCustomerJobRequest(uid_customer_id=str(customer_id),
                                      var_user_name=user_name,
                                      uid_request_id=str(request_id),
@@ -146,13 +151,14 @@ def hg_mrjob_client():
                                      uid_jar_upload_id=str(jar_uid),
                                      var_job_name=job_name,
                                      txt_job_description=job_description,
-                                     var_input_file_path=input_path,
-                                     var_output_file_path=output_path,
+                                   #  var_input_file_path=input_path,
+                                     #var_output_file_path=output_path,
+                                     var_job_parameters=job_parameters,
                                      conf_mapreduce_framework_name='yarn',
                                      conf_mapreduce_task_io_sort_mb=(customer_request['sortmb']),
                                      conf_mapreduce_task_io_sort_factor=(customer_request['sortfactor']),
                                      conf_output_compress=1,
-				     int_request_status=1,
+				                     int_request_status=1,
                                      conf_mapreduce_job_maps=(customer_request['total_map_tasks']),
                                      conf_mapreduce_job_reduces=(customer_request['reducer_tasks']),
                                      var_created_by='system',
@@ -163,19 +169,25 @@ def hg_mrjob_client():
                                      )
         db_session.add(data)
         db_session.commit()
-
         db_session.close()
+
         print "hello"
-        return jsonify(message=request_id)
-    except exc.SQLAlchemyError as e:
-        print e
-        my_logger.error(e)
-        return jsonify(e)
-    except Exception as e:
-        print e
-        my_logger.error(e)
-    finally:
-        my_logger.info("done")
+        return jsonify(requestid=request_id,status="success")
+    # except exc.SQLAlchemyError as e:
+    #     print e
+    #     my_logger.error(e)
+    #     return jsonify(e)
+    # except Exception as e:
+    #     exc_type, exc_obj, exc_tb = sys.exc_info()
+    #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #
+    #     my_logger.error(exc_type)
+    #     my_logger.error(fname)
+    #     my_logger.error(exc_tb.tb_lineno)
+    #
+    # finally:
+    #     db_session.close()
+    #     my_logger.info("done")
 
 
 def fileProgress(start, size):
