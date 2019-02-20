@@ -146,7 +146,7 @@ def site_map():
     print (links)
 
 
-hgSelectQueryUrlScheduler()
+#hgSelectQueryUrlScheduler()
 def runProcess():
     #edgenodeProvision('bd17dcb4-251b-11e9-8b29-000d3af26ae2')
     #selecturl_process = Process(target=hgSelectQueryUrlScheduler)
