@@ -146,13 +146,13 @@ def site_map():
     print (links)
 
 
-
-#hgSelectQueryUrlScheduler()
+hgSelectQueryUrlScheduler()
 def runProcess():
+    #edgenodeProvision('bd17dcb4-251b-11e9-8b29-000d3af26ae2')
     #selecturl_process = Process(target=hgSelectQueryUrlScheduler)
     #selecturl_process.start()
     # kafkataskconsumer_process = Process(target=kafkataskconsumer)
-    # kafkaconsumer_process = Process(target=kafkaconsumer)
+    kafkaconsumer_process = Process(target=kafkaconsumer)
     # hgmanager_process = Process(target=hgmanager)
     # hgsuper_process = Process(target=hgsuper)
     # hgsuper_process.start()
@@ -171,7 +171,7 @@ def runProcess():
     # customerjobreqestconsumer = Process(target=jobinsertion)
     # mrjobproducer_process.start()
     # customerjobreqestconsumer.start()
-    # kafkaconsumer_process.start()
+    kafkaconsumer_process.start()
     # hgmanager_process.start()
     print "method ended"
 

@@ -583,7 +583,7 @@ def customer(cluster_id, role):
 
 @api.route('/api/cluster/<customer_id>', methods=['GET'])
 def cluster_info(customer_id):
-    #try:
+    try:
         #print customer_id
         db_session = scoped_session(session_factory)
         customer_cluster_info = db_session.query(TblCluster.uid_customer_id,TblCluster.uid_cluster_id,TblCluster.uid_cluster_type_id,TblCluster.valid_cluster,TblCluster.cluster_created_datetime,TblCluster.var_cluster_name)\
@@ -596,7 +596,8 @@ def cluster_info(customer_id):
             list_customer_cluster_info = []
             for cluster_info in customer_cluster_info:
 
-                if cluster_info[3] == True:
+                if cluster_info[3] is True:
+                    valid_cluster = cluster_info[3]
                     mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
                     database_conn = mongo_db_conn['local']
                     customer_id_metrics_list = list(database_conn[customer_id].find())
@@ -616,6 +617,7 @@ def cluster_info(customer_id):
                             #print values, 'looooooooooooooooooooooooooooooooooooooooooo'
                     #        available_storage = values
                 else:
+                    valid_cluster = False
                     available_storage = 0
                 #clustername = db_session.query(TblClusterType.char_name).\
                 #    filter(TblClusterType.uid_cluster_type_id == cluster_info[2]).all()
@@ -630,50 +632,42 @@ def cluster_info(customer_id):
                     node_info_list.append({"node_id": cus[0], "char_role": cus[1]})
                 et = timezone('Asia/Kolkata')
                 #parse_time = parse(cluster_info[4])
-                now_time = datetime.datetime.now(et)
-                up_time = (now_time - cluster_info[4])
-                print up_time,type(up_time) ,'stttttttttttttttttt'
-
-                def strfdelta(tdelta, fmt):
-                    d = {"days": tdelta.days}
-                    d["hours"], rem = divmod(tdelta.seconds, 3600)
-                    d["minutes"], d["seconds"] = divmod(rem, 60)
-                    return fmt.format(**d)
-                up_time_string = strfdelta(up_time,"{days}d,{hours}h:{minutes}m")
-                print up_time_string
-
-                hive_agent_id_info = db_session.query(TblVmCreation.uid_agent_id).\
-                    filter(and_(TblVmCreation.uid_cluster_id==cluster_info[1],TblVmCreation.var_role == 'hive',TblVmCreation.bool_edge == 'True')).all()
-                print hive_agent_id_info,'agent idddd'
-                if hive_agent_id_info == []:
-                    hive_agent_id = "null"
+                if cluster_info[4] is None:
+                    cluster_created_datetime = "00-00-0000 00:00:00"
+                    up_time_string = "0d,0h:0m"
                 else:
-                    hive_agent_id = hive_agent_id_info[0][0]
-                # mapreduce_agent_id_info = db_session.query(TblVmCreation.uid_agent_id). \
-                #     filter(and_(TblVmCreation.uid_cluster_id == cluster_info[1], TblVmCreation.var_role == 'map reduce',
-                #                 TblVmCreation.bool_edge == 'True')).all()
-                # spark_agent_id_info = db_session.query(TblVmCreation.uid_agent_id). \
-                #     filter(and_(TblVmCreation.uid_cluster_id == cluster_info[1], TblVmCreation.var_role == 'spark',
-                #                 TblVmCreation.bool_edge == 'True')).all()
+                    cluster_created_datetime = cluster_info[4]
+                    now_time = datetime.datetime.now(et)
+                    up_time = (now_time - cluster_info[4])
+                    print up_time,type(up_time) ,'stttttttttttttttttt'
+
+                    def strfdelta(tdelta, fmt):
+                        d = {"days": tdelta.days}
+                        d["hours"], rem = divmod(tdelta.seconds, 3600)
+                        d["minutes"], d["seconds"] = divmod(rem, 60)
+                        return fmt.format(**d)
+                    up_time_string = strfdelta(up_time,"{days}d,{hours}h:{minutes}m")
+                    print up_time_string
+
+
 
                 list_customer_cluster_info.append(
                     {"customer_id": cluster_info[0], "node_information": node_info_list, "cluster_id": cluster_info[1],
-                     "cluster_type_id": cluster_info[2], "clustername": cluster_info[5],"hive_node_id":str(hive_agent_id), "valid_cluster": cluster_info[3],
-                     "cluster_up_time":up_time_string,"cluster_created_datetime":str(cluster_info[4]),"available_storage": available_storage})
+                     "cluster_type_id": cluster_info[2], "clustername": cluster_info[5],"valid_cluster": valid_cluster,
+                     "cluster_up_time":up_time_string,"cluster_created_datetime":str(cluster_created_datetime),"available_storage": available_storage})
 
             reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
-            db_session.close()
 
             return jsonify(clusterinformation=reversed_list_customer_cluster_info)
-    # except Exception as e:
-    #
-    #     exc_type, exc_obj, exc_tb = sys.exc_info()
-    #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    #     my_logger.error(exc_type)
-    #     my_logger.error(fname)
-    #     my_logger.error(exc_tb.tb_lineno)
-    # finally:
-    #     db_session.close()
+    except Exception as e:
+
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()
 
 
 @api.route("/api/status/<customer_id>/<cluster_id>", methods=['GET'])
@@ -694,9 +688,15 @@ def status(customer_id,cluster_id):
 	   # if stat== "RUNNING"
               return jsonify(status="Cluster configuration is in progress")
     except Exception as e:
-        my_logger.debug(e)
+
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
+
 
 @api.route("/api/addhivenode", methods=['POST'])
 def edgenode():
@@ -724,10 +724,13 @@ def edgenode():
         return jsonify(request_id=request_id1, message='success')
     except Exception as e:
 
-        my_logger.debug(e)
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
-
 
 @api.route("/api/edgenode/<cluster_id>/<role>", methods=['GET'])
 def edgenoderolebool(cluster_id,role):
@@ -750,3 +753,4 @@ def edgenoderolebool(cluster_id,role):
         my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
+
