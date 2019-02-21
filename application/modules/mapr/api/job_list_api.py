@@ -23,7 +23,7 @@ def job_list(customer_id,cluster_id):
             if each_job[2] is not None:
                 print "insideeeeeeee"
                 individual_job_diagnostics={}
-                meta_mr_status_query=db_session.query(TblMetaMrRequestStatus.var_mr_request_status).filter(TblMetaMrRequestStatus.srl_id==customer_job_request_query[0][1]).all()
+                meta_mr_status_query=db_session.query(TblMetaMrRequestStatus.var_mr_request_status).filter(TblMetaMrRequestStatus.srl_id==each_job[1]).all()
                 job_diagnostic=json.loads(each_job[2])
                 print job_diagnostic,'diooooooooooooo'
                 #print each_job[3],len(each_job),"eavcccchhh"

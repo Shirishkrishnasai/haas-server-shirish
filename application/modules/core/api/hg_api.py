@@ -103,11 +103,13 @@ def monitor():
 def hg_client():
     try:
         print 'hello client'
+        db_session = scoped_session(session_factory)
+
         # try:
         customer_request = request.json
         print customer_request
         feature_request = customer_request['features']
-        db_session = scoped_session(session_factory)
+        clustername = customer_request['features'][0]['payload']['cluster_name']
         requests = []
         cluster_id = None
         for customer_data in feature_request:
@@ -213,7 +215,8 @@ def hg_client():
                     #	return e.message
                     # finally:
                     #   db_session.close()
-        return jsonify(request_id=request_id[0], message='success')
+        print requests,'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'
+        return jsonify(provision_request_id=requests[0]['9'],configure_request_id =requests[1]['10'], cluster_name =clustername,message='success')
     except Exception as e:
 
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -509,11 +512,11 @@ def clusterStatus(request_id):
             print cluster_region
             if len(request_status_select_query_statement) == 0:
                 return jsonify(request_id=request_id, cluster_status=status, cluster_name=cluster_details[0][0],
-                               cluster_location=cluster_details[0][1])
+                               cluster_location=cluster_details[0][1],cluster_id = cluster_id)
             else:
                 status = request_status_select_query_statement[0][0]
                 return jsonify(request_id=request_id, cluster_status=status, cluster_name=cluster_details[0][0],
-                               cluster_location=cluster_details[0][1])
+                               cluster_location=cluster_details[0][1],cluster_id=cluster_id)
     except Exception as e:
 
                 exc_type, exc_obj, exc_tb = sys.exc_info()
