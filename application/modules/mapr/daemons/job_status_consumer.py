@@ -15,7 +15,7 @@ def statusconsumer():
         session = scoped_session(session_factory)
 
         job_status_data = request.json
-	for application_status in job_status_data:
+    	for application_status in job_status_data:
         	meta_request_status_query = session.query(TblMetaMrRequestStatus.srl_id).filter(TblMetaMrRequestStatus.var_mr_request_status == application_status['status'])
 
 	        update_customer_job_request=session.query(TblCustomerJobRequest).filter(TblCustomerJobRequest.uid_customer_id==application_status['customer_id'],TblCustomerJobRequest.var_application_id==application_status['application_id'])
