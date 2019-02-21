@@ -648,11 +648,21 @@ def cluster_info(customer_id):
                         return fmt.format(**d)
                     up_time_string = strfdelta(up_time,"{days}d,{hours}h:{minutes}m")
                     print up_time_string
+                cus_hivenode_info = db_session.query(TblNodeInformation.uid_node_id,TblNodeInformation.char_role).\
+                    filter(TblNodeInformation.uid_cluster_id == cluster_info[1],TblNodeInformation.char_role == 'hive').all()
+                if cus_hivenode_info == []:
+                    hive_node = 0
+                else:
+                    hive_node = 1
+                cus_sparknode_info = db_session.query(TblNodeInformation.uid_node_id,TblNodeInformation.char_role).\
+                    filter(TblNodeInformation.uid_cluster_id == cluster_info[1],TblNodeInformation.char_role == 'spark').all()
+                if cus_sparknode_info == []:
+                    spark_node = 0
+                else:
+                    spark_node = 1
 
 
-
-                list_customer_cluster_info.append(
-                    {"customer_id": cluster_info[0], "node_information": node_info_list, "cluster_id": cluster_info[1],
+                list_customer_cluster_info.append({"customer_id": cluster_info[0], "node_information": node_info_list, "hive_node":hive_node, "spark_node":spark_node, "cluster_id": cluster_info[1],
                      "cluster_type_id": cluster_info[2], "clustername": cluster_info[5],"valid_cluster": valid_cluster,
                      "cluster_up_time":up_time_string,"cluster_created_datetime":str(cluster_created_datetime),"available_storage": available_storage})
 
