@@ -95,6 +95,7 @@ from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 
 #from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
 #from application.modules.cluster.workers.configure_cluster import configure_cluster
+
 app.register_blueprint(jobstatusapi, url_prefix='')
 app.register_blueprint(mrjobupdate, url_prefix='')
 app.register_blueprint(hivequeryoutput, url_prefix='')
@@ -152,7 +153,7 @@ def runProcess():
     #selecturl_process = Process(target=hgSelectQueryUrlScheduler)
     #selecturl_process.start()
     # kafkataskconsumer_process = Process(target=kafkataskconsumer)
-    kafkaconsumer_process = Process(target=kafkaconsumer)
+    # kafkaconsumer_process = Process(target=kafkaconsumer)
     # hgmanager_process = Process(target=hgmanager)
     # hgsuper_process = Process(target=hgsuper)
     # hgsuper_process.start()
@@ -171,7 +172,7 @@ def runProcess():
     # customerjobreqestconsumer = Process(target=jobinsertion)
     # mrjobproducer_process.start()
     # customerjobreqestconsumer.start()
-    kafkaconsumer_process.start()
+    # kafkaconsumer_process.start()
     # hgmanager_process.start()
     print "method ended"
 
