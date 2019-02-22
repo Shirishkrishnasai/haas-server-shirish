@@ -141,7 +141,7 @@ cluster_task_type_5 = TblTaskType(char_task_type_id='F1_T5',
                                   )
 cluster_task_type_6 = TblTaskType(char_task_type_id='F1_T6',
                                   txt_description='ssh key scan',
-                                  txt_agent_worker_version_path='/opt/scripts/sshkeyscan.sh',
+                                  txt_agent_worker_version_path='/opt/scripts/sshkeyscan.ksh',
                                   txt_agent_worker_version='1.0',
                                   txt_dependency_task_id='F1_T1,F1_T3',
                                   int_vm_roles=1
