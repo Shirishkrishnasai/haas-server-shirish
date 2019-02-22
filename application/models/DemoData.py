@@ -213,6 +213,19 @@ hive_task_type_5 = TblTaskType(char_task_type_id='F12_T5',
                                txt_agent_worker_version='1.0',
                                int_vm_roles=3
                                )
+hive_task_type_6 = TblTaskType(char_task_type_id='F12_T6',
+                               txt_description='copy hiveip to namenode hosts',
+                               txt_agent_worker_version_path='/opt/agent/application/modules/workers/hostdns.py',
+                               txt_agent_worker_version='1.0',
+                               int_vm_roles=1
+                               )
+hive_task_type_7 = TblTaskType(char_task_type_id='F12_T7',
+                               txt_description='copy hiveip to datanode hosts',
+                               txt_agent_worker_version_path='/opt/agent/application/modules/workers/hostdns.py',
+                               txt_agent_worker_version='1.0',
+                               int_vm_roles=2
+                               )
+
 cluster_type_1 = TblClusterType(uid_cluster_type_id='f5826f72-d135-11e8-84db-3ca9f49ab2cc',
                                 char_name='azure')
 
@@ -510,10 +523,43 @@ tbl_meta_vm_size_18 = TblMetaVmSize(int_plan_id=3,
                                     int_size_id=3,
                                     var_role='datanode',
                                     var_vm_type='Standard_DS1_v2')
-tbl_meta_vm_size_18 = TblMetaVmSize(int_plan_id=1,
+tbl_meta_vm_size_19 = TblMetaVmSize(int_plan_id=1,
                                     int_size_id=1,
                                     var_role='hive',
                                     var_vm_type='Standard_DS1_v2')
+
+tbl_meta_vm_size_20 = TblMetaVmSize(int_plan_id=1,
+                                    int_size_id=2,
+                                    var_role='hive',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_21 = TblMetaVmSize(int_plan_id=1,
+                                    int_size_id=3,
+                                    var_role='hive',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_22 = TblMetaVmSize(int_plan_id=2,
+                                    int_size_id=1,
+                                    var_role='hive',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_23 = TblMetaVmSize(int_plan_id=2,
+                                    int_size_id=2,
+                                    var_role='hive',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_24 = TblMetaVmSize(int_plan_id=2,
+                                    int_size_id=3,
+                                    var_role='hive',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_25 = TblMetaVmSize(int_plan_id=3,
+                                    int_size_id=1,
+                                    var_role='hive',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_26 = TblMetaVmSize(int_plan_id=3,
+                                    int_size_id=2,
+                                    var_role='hive',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_27 = TblMetaVmSize(int_plan_id=3,
+                                    int_size_id=3,
+                                    var_role='hive',
+                                    var_vm_type='Standard_B2ms')
 
 tbl_meta_file_upload_1 = TblMetaFileUpload(uid_customer_id=Uid_customer_id,
                                            var_share_name='haasfiles',
@@ -602,6 +648,46 @@ tbl_meta_cloud_location_3 = TblMetaCloudLocation(var_cloud_type='azure',
 #                                                  var_location='West US 2')
 tbl_edgenode_1 = TblEdgenode(int_plan_id=1,
                              int_size_id=1,
+                             char_feature_id=11,
+                             var_role='hive',
+                             int_role_count=1)
+tbl_edgenode_2 = TblEdgenode(int_plan_id=1,
+                             int_size_id=2,
+                             char_feature_id=11,
+                             var_role='hive',
+                             int_role_count=1)
+tbl_edgenode_3 = TblEdgenode(int_plan_id=1,
+                             int_size_id=3,
+                             char_feature_id=11,
+                             var_role='hive',
+                             int_role_count=1)
+tbl_edgenode_4 = TblEdgenode(int_plan_id=2,
+                             int_size_id=1,
+                             char_feature_id=11,
+                             var_role='hive',
+                             int_role_count=1)
+tbl_edgenode_5 = TblEdgenode(int_plan_id=2,
+                             int_size_id=2,
+                             char_feature_id=11,
+                             var_role='hive',
+                             int_role_count=1)
+tbl_edgenode_6 = TblEdgenode(int_plan_id=2,
+                             int_size_id=3,
+                             char_feature_id=11,
+                             var_role='hive',
+                             int_role_count=1)
+tbl_edgenode_7 = TblEdgenode(int_plan_id=3,
+                             int_size_id=1,
+                             char_feature_id=11,
+                             var_role='hive',
+                             int_role_count=1)
+tbl_edgenode_8 = TblEdgenode(int_plan_id=3,
+                             int_size_id=2,
+                             char_feature_id=11,
+                             var_role='hive',
+                             int_role_count=1)
+tbl_edgenode_9 = TblEdgenode(int_plan_id=3,
+                             int_size_id=3,
                              char_feature_id=11,
                              var_role='hive',
                              int_role_count=1)
@@ -781,6 +867,8 @@ db_session.add(hive_task_type_2)
 db_session.add(hive_task_type_3)
 db_session.add(hive_task_type_4)
 db_session.add(hive_task_type_5)
+db_session.add(hive_task_type_6)
+db_session.add(hive_task_type_7)
 db_session.add(cluster_type_1)
 db_session.add(tbl_image_1)
 db_session.add(tbl_image_2)
@@ -849,6 +937,16 @@ db_session.add(tbl_meta_vm_size_15)
 db_session.add(tbl_meta_vm_size_16)
 db_session.add(tbl_meta_vm_size_17)
 db_session.add(tbl_meta_vm_size_18)
+db_session.add(tbl_meta_vm_size_19)
+db_session.add(tbl_meta_vm_size_20)
+db_session.add(tbl_meta_vm_size_21)
+db_session.add(tbl_meta_vm_size_22)
+db_session.add(tbl_meta_vm_size_23)
+db_session.add(tbl_meta_vm_size_24)
+db_session.add(tbl_meta_vm_size_25)
+db_session.add(tbl_meta_vm_size_26)
+db_session.add(tbl_meta_vm_size_27)
+
 db_session.add(tbl_meta_file_upload_1)
 db_session.add(tbl_hive_meta_status_1)
 db_session.add(tbl_hive_meta_status_2)
@@ -887,6 +985,16 @@ db_session.add(tbl_meta_cloud_location_3)
 # db_session.add(tbl_meta_cloud_location_26)
 # db_session.add(tbl_meta_cloud_location_27)
 db_session.add(tbl_edgenode_1)
+db_session.add(tbl_edgenode_2)
+db_session.add(tbl_edgenode_3)
+db_session.add(tbl_edgenode_4)
+db_session.add(tbl_edgenode_5)
+db_session.add(tbl_edgenode_6)
+db_session.add(tbl_edgenode_7)
+db_session.add(tbl_edgenode_8)
+db_session.add(tbl_edgenode_9)
+
+
 db_session.add(tbl_cluster_1)
 db_session.add(tbl_vm_creation_1)
 db_session.add(tbl_vm_creation_2)
