@@ -354,7 +354,7 @@ tbl_plan_cluster_size_config_1 = TblPlanClusterSizeConfig(int_plan_id=1,
 tbl_plan_cluster_size_config_2 = TblPlanClusterSizeConfig(int_plan_id=1,
                                                           int_size_id=1,
                                                           var_role='datanode',
-                                                          int_role_count=1)
+                                                          int_role_count=3)
 tbl_plan_cluster_size_config_3 = TblPlanClusterSizeConfig(int_plan_id=1,
                                                           int_size_id=2,
                                                           var_role='namenode',
@@ -362,7 +362,7 @@ tbl_plan_cluster_size_config_3 = TblPlanClusterSizeConfig(int_plan_id=1,
 tbl_plan_cluster_size_config_4 = TblPlanClusterSizeConfig(int_plan_id=1,
                                                           int_size_id=2,
                                                           var_role='datanode',
-                                                          int_role_count=2)
+                                                          int_role_count=3)
 tbl_plan_cluster_size_config_5 = TblPlanClusterSizeConfig(int_plan_id=1,
                                                           int_size_id=3,
                                                           var_role='namenode',
@@ -539,60 +539,67 @@ tbl_hive_meta_status_9 = TblHiveMetaStatus(srl_id=8,
                                            var_status='TIMEDOUT')
 
 tbl_meta_cloud_location_1 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                 var_location='Australia East')
-
+                                                  var_location='Central India')
 tbl_meta_cloud_location_2 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                 var_location='Australia Southeast')
-tbl_meta_cloud_location_3 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                 var_location='Brazil South')
-tbl_meta_cloud_location_4 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                 var_location='Canada Central')
-tbl_meta_cloud_location_5 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                 var_location='Canada East')
-tbl_meta_cloud_location_6 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                 var_location='Central India')
-tbl_meta_cloud_location_7 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                 var_location='Central US')
-tbl_meta_cloud_location_8 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                 var_location='East Asia')
-tbl_meta_cloud_location_9 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                 var_location='East US')
-tbl_meta_cloud_location_10 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='East US 2')
-tbl_meta_cloud_location_11 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='France Central')
-tbl_meta_cloud_location_12 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='Japan East')
-tbl_meta_cloud_location_13 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='Japan West')
-tbl_meta_cloud_location_14 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='Korea Central')
-tbl_meta_cloud_location_15 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='Korea South')
-tbl_meta_cloud_location_16 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='North Central US')
-tbl_meta_cloud_location_17 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='North Europe')
-tbl_meta_cloud_location_18 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='South Central US')
-tbl_meta_cloud_location_19 = TblMetaCloudLocation(var_cloud_type='azure',
                                                   var_location='South India')
-tbl_meta_cloud_location_20 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='Southeast Asia')
-tbl_meta_cloud_location_21 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='UK South')
-tbl_meta_cloud_location_22 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='UK West')
-tbl_meta_cloud_location_23 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='West Central US')
-tbl_meta_cloud_location_24 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='West Europe')
-tbl_meta_cloud_location_25 = TblMetaCloudLocation(var_cloud_type='azure',
+tbl_meta_cloud_location_3 = TblMetaCloudLocation(var_cloud_type='azure',
                                                   var_location='West India')
-tbl_meta_cloud_location_26 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='West US')
-tbl_meta_cloud_location_27 = TblMetaCloudLocation(var_cloud_type='azure',
-                                                  var_location='West US 2')
+
+# tbl_meta_cloud_location_1 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                  var_location='Australia East')
+#
+# tbl_meta_cloud_location_2 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                  var_location='Australia Southeast')
+# tbl_meta_cloud_location_3 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                  var_location='Brazil South')
+# tbl_meta_cloud_location_4 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                  var_location='Canada Central')
+# tbl_meta_cloud_location_5 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                  var_location='Canada East')
+# tbl_meta_cloud_location_6 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                  var_location='Central India')
+# tbl_meta_cloud_location_7 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                  var_location='Central US')
+# tbl_meta_cloud_location_8 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                  var_location='East Asia')
+# tbl_meta_cloud_location_9 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                  var_location='East US')
+# tbl_meta_cloud_location_10 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='East US 2')
+# tbl_meta_cloud_location_11 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='France Central')
+# tbl_meta_cloud_location_12 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='Japan East')
+# tbl_meta_cloud_location_13 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='Japan West')
+# tbl_meta_cloud_location_14 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='Korea Central')
+# tbl_meta_cloud_location_15 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='Korea South')
+# tbl_meta_cloud_location_16 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='North Central US')
+# tbl_meta_cloud_location_17 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='North Europe')
+# tbl_meta_cloud_location_18 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='South Central US')
+# tbl_meta_cloud_location_19 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='South India')
+# tbl_meta_cloud_location_20 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='Southeast Asia')
+# tbl_meta_cloud_location_21 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='UK South')
+# tbl_meta_cloud_location_22 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='UK West')
+# tbl_meta_cloud_location_23 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='West Central US')
+# tbl_meta_cloud_location_24 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='West Europe')
+# tbl_meta_cloud_location_25 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='West India')
+# tbl_meta_cloud_location_26 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                   var_location='West US')
+# tbl_meta_cloud_location_27 = TblMetaCloudLocation(var_cloud_type='azure',
+#                                                  var_location='West US 2')
 tbl_edgenode_1 = TblEdgenode(int_plan_id=1,
                              int_size_id=1,
                              char_feature_id=11,
@@ -855,30 +862,30 @@ db_session.add(tbl_hive_meta_status_9)
 db_session.add(tbl_meta_cloud_location_1)
 db_session.add(tbl_meta_cloud_location_2)
 db_session.add(tbl_meta_cloud_location_3)
-db_session.add(tbl_meta_cloud_location_4)
-db_session.add(tbl_meta_cloud_location_5)
-db_session.add(tbl_meta_cloud_location_6)
-db_session.add(tbl_meta_cloud_location_7)
-db_session.add(tbl_meta_cloud_location_8)
-db_session.add(tbl_meta_cloud_location_9)
-db_session.add(tbl_meta_cloud_location_10)
-db_session.add(tbl_meta_cloud_location_11)
-db_session.add(tbl_meta_cloud_location_12)
-db_session.add(tbl_meta_cloud_location_13)
-db_session.add(tbl_meta_cloud_location_14)
-db_session.add(tbl_meta_cloud_location_15)
-db_session.add(tbl_meta_cloud_location_16)
-db_session.add(tbl_meta_cloud_location_17)
-db_session.add(tbl_meta_cloud_location_18)
-db_session.add(tbl_meta_cloud_location_19)
-db_session.add(tbl_meta_cloud_location_20)
-db_session.add(tbl_meta_cloud_location_21)
-db_session.add(tbl_meta_cloud_location_22)
-db_session.add(tbl_meta_cloud_location_23)
-db_session.add(tbl_meta_cloud_location_24)
-db_session.add(tbl_meta_cloud_location_25)
-db_session.add(tbl_meta_cloud_location_26)
-db_session.add(tbl_meta_cloud_location_27)
+# db_session.add(tbl_meta_cloud_location_4)
+# db_session.add(tbl_meta_cloud_location_5)
+# db_session.add(tbl_meta_cloud_location_6)
+# db_session.add(tbl_meta_cloud_location_7)
+# db_session.add(tbl_meta_cloud_location_8)
+# db_session.add(tbl_meta_cloud_location_9)
+# db_session.add(tbl_meta_cloud_location_10)
+# db_session.add(tbl_meta_cloud_location_11)
+# db_session.add(tbl_meta_cloud_location_12)
+# db_session.add(tbl_meta_cloud_location_13)
+# db_session.add(tbl_meta_cloud_location_14)
+# db_session.add(tbl_meta_cloud_location_15)
+# db_session.add(tbl_meta_cloud_location_16)
+# db_session.add(tbl_meta_cloud_location_17)
+# db_session.add(tbl_meta_cloud_location_18)
+# db_session.add(tbl_meta_cloud_location_19)
+# db_session.add(tbl_meta_cloud_location_20)
+# db_session.add(tbl_meta_cloud_location_21)
+# db_session.add(tbl_meta_cloud_location_22)
+# db_session.add(tbl_meta_cloud_location_23)
+# db_session.add(tbl_meta_cloud_location_24)
+# db_session.add(tbl_meta_cloud_location_25)
+# db_session.add(tbl_meta_cloud_location_26)
+# db_session.add(tbl_meta_cloud_location_27)
 db_session.add(tbl_edgenode_1)
 db_session.add(tbl_cluster_1)
 db_session.add(tbl_vm_creation_1)
