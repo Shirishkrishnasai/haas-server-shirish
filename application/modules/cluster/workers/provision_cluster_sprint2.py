@@ -14,36 +14,34 @@ from application.common.loggerfile import my_logger
 
 def installcluster(request_id):
     try:
-        print "in cluster provision worker ............there you go .......... tik-tok"
-        #print sys.argv
-        #print sys.argv[1]
-        #request_id = sys.argv[1]
+        my_logger.info("in cluster provision worker ............there you go .......... tik-tok")
+                #request_id = sys.argv[1]
         db_session = scoped_session(session_factory)
         customer_data = db_session.query(TblCustomerRequest.txt_payload_id, TblCustomerRequest.uid_customer_id,\
                         TblCustomerRequest.char_feature_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
-        print customer_data
+        my_logger.info(customer_data)
         payloadid = customer_data[0][0]
         customer_id = customer_data[0][1]
         feature_id = customer_data[0][2]
-        print  "connected to database and got customer data"
+        my_logger.info("connected to database and got customer data")
         mongo_connection = pymongo.MongoClient(mongo_conn_string)
         database_connection = mongo_connection['haas']
         collection_connection = database_connection['highgear']
         build_cluster_information = collection_connection.find_one({"_id": ObjectId(payloadid)})
-        print  build_cluster_information, "this is mongo collection information"
+        my_logger.info(build_cluster_information)
         cloudtype = build_cluster_information["cloud_type"]
         clustername=build_cluster_information["cluster_name"]
         clusterlocation = build_cluster_information["cluster_location"]
         location= db_session.query(TblMetaCloudLocation.var_location).filter(TblMetaCloudLocation.srl_id == clusterlocation).first()
         location = str(location[0])
-        print "clusterlocationclusterlocation", clusterlocation
-        print "clusterlocationclusterlocation",location
+        my_logger.info(clusterlocation)
+        my_logger.info(location)
         size_id=build_cluster_information["size_id"]
 
         plan_info = db_session.query(TblCustomer.int_plan_id).filter(TblCustomer.uid_customer_id == customer_id).all()
-        print "planinfoplaninfo",plan_info
+        my_logger.info(plan_info)
         plan_id = plan_info[0][0]
-        print plan_id
+        my_logger.info(plan_id)
         cluster_id = str(uuid.uuid1())
         cfg = ConfigParser()
         cfg.read('application/config/azure_config.ini')
@@ -55,7 +53,7 @@ def installcluster(request_id):
         file_service.create_share(cluster_id)
         file_service.create_directory(cluster_id, 'system')
         file_service.create_directory(cluster_id, 'mapreduce')
-        print "doneeee"
+        my_logger.info("doneeee")
         db_session.close()
         #time.sleep(60)
         db_session = scoped_session(session_factory)
@@ -83,9 +81,9 @@ def installcluster(request_id):
                 vm_creation_list.append(plan_id)
 
                 vm_creation_info.append(vm_creation_list)
-        print vm_creation_info
+        my_logger.info(vm_creation_info)
         vm_information = vmcreation(vm_creation_info)
-        print vm_information
+        my_logger.info(vm_information)
         metatablestatus = db_session.query(TblMetaRequestStatus.var_request_status, TblMetaRequestStatus.srl_id).all()
         table_status_values = dict(metatablestatus)
         completed_request_status_value = table_status_values['COMPLETED']
@@ -112,10 +110,6 @@ def installcluster(request_id):
         db_session.add(cluster_insertion)
         db_session.commit()
 
-
-        #status_list = db_session.query(TblMetaRequestStatus.srl_id).filter(
-         #  TblMetaRequestStatus.var_request_status == 'COMPLETED').all()
-        #print status_list, 'sttaaaaaaattttt'
         customer_request_update = db_session.query(TblCustomerRequest).filter(
             TblCustomerRequest.txt_dependency_request_id == request_id)
         customer_request_update.update({"uid_cluster_id": cluster_id})
@@ -148,6 +142,6 @@ if __name__ == '__main__':
 
             installcluster(request_id)
         else:
-            print "args not passed"
+            my_logger.info("args not passed")
 
 

@@ -43,7 +43,7 @@ def kafkaproducer_old(message):
     try:
         producer = KafkaProducer(bootstrap_servers=kafka_bootstrap_server, api_version=kafka_api_version)
         db_session = scoped_session(session_factory)
-        print message
+        my_logger.info(message)
         for cluster_customer_details in message:
 
             customerid = cluster_customer_details["customer_id"]
@@ -53,23 +53,23 @@ def kafkaproducer_old(message):
                 TblKafkaPublisher.uid_customer_id == customerid, TblKafkaPublisher.uid_cluster_id == clusterid).all()
 
             # for i in kafka_publisher_query_statement:
-            #      print i.as_dict()
+            #      my_logger.info(i.as_dict())
             #      #kafka_topic_id_info = i.to_dict()
 
             kafka_topic_id_info = [i.as_dict() for i in kafka_publisher_query_statement]
-            #           print kafka_topic_id_info,"kafka topic idddddddddddddssssssssssssssss"
+            #           my_logger.info(kafka_topic_id_info,"kafka topic idddddddddddddssssssssssssssss")
             my_logger.info(kafka_topic_id_info)
             my_logger.info("Runnnnn........................")
             for kafka_topic_string in kafka_topic_id_info:
                 my_logger.debug("In for loop")
-                print(kafka_topic_string)
+                my_logger.info(kafka_topic_string)
                 # kafka_topic = json.loads(kafka_topic_string)
                 kafka_topic = kafka_topic_string
-                my_logger.debug("", kafka_topic)
+                my_logger.debug(kafka_topic)
                 kafka_topic_query_statement = db_session.query(TblKafkaTopic).filter(
                     TblKafkaTopic.uid_topic_id == kafka_topic["uid_topic_id"]).all()
                 kafka_topic_name_string = [i.as_dict() for i in kafka_topic_query_statement]
-                # print kafka_topic_name_string
+                # my_logger.info(kafka_topic_name_string)
 
                 kafka_topic_name_info = kafka_topic_name_string[0]
                 my_logger.info(kafka_topic_name_info)

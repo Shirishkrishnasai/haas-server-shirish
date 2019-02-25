@@ -1,4 +1,6 @@
 import pymongo
+from flask import jsonify
+from application.common.loggerfile import my_logger
 
 mongo_conn_string = "mongodb://192.168.100.108:27017"
 
@@ -46,13 +48,13 @@ data = {
 def metricSubscriber(data):
     try:
         customerid = data['customer_id']
-        print customerid
+        my_logger.info(customerid)
         mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
         database_conn = mongo_db_conn['local']
         db_collection = database_conn[customerid]
 
         result = db_collection.insert_one(data)
-        print result
+        my_logger.info(result)
     # query_statement= database_conn.find(dat
     # object_id=query_statement[0]["_id"]
     # print object_id

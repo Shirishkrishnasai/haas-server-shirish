@@ -17,7 +17,6 @@ def _kafkataskconsumer():
         # consumer.poll(1000)
         try:
             message = consumer.poll(timeout_ms=1000, max_records=1)
-            # print json.dumps(message)
             if message != {}:
                 # for message in consumer:
                 topicMesages = message.values()
@@ -47,7 +46,7 @@ def _kafkataskconsumer():
             my_logger.error(fname)
             my_logger.error(exc_tb.tb_lineno)
             my_logger.error("Unable to porcess Mesage")
-        print "Task Stats consumer ended..."
+        my_logger.info("Task Stats consumer ended...")
         time.sleep(2)
 
 def kafkataskconsumer():

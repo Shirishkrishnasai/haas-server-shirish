@@ -18,12 +18,12 @@ def fileUpload():
     try:
 
         posted_args = request.args
-        print posted_args
+        my_logger.info(posted_args)
         copied_args = posted_args.copy()
-        print copied_args
+        my_logger.info(copied_args)
         normal_dict = dict(copied_args)
         my_logger.debug(normal_dict)
-        print normal_dict
+        my_logger.info(normal_dict)
         customerid = normal_dict['customer_id'][0]
 
         # getting filename and file
@@ -32,14 +32,14 @@ def fileUpload():
 
         # converts posted file to string
         str_posted_file = posted_file['files'].read()
-        # print str_posted_file
+        # my_logger.info(str_posted_file)
 
         # converting file string to unicode
         utf_posted_file = str_posted_file.encode('base64')
 
         # getting no of bytes to give value for count
         no_of_bytes = len(utf_posted_file)
-        print no_of_bytes
+        my_logger.info(no_of_bytes)
 
         # converting unicoded file to bytestream
         byte_stream = io.BytesIO(utf_posted_file)
@@ -61,13 +61,14 @@ def fileUpload():
         my_logger.debug(share_values)
         try:
 
-            print byte_stream
+            my_logger.info(byte_stream)
             file_service.create_file_from_stream(share_name=share_values[0],
                                                  directory_name=share_values[1],
                                                  file_name=filename,
                                                  stream=byte_stream,
                                                  count=no_of_bytes,
-                                                 progress_callback=fileProgress,content_type=application/java-archive)
+                                                 progress_callback=fileProgress,
+                                                 content_type=application/java-archive)
             my_logger.info('file transfer is over')
             my_logger.info('file created in azure file storage')
             my_logger.info('now inserting values in database')
@@ -126,12 +127,12 @@ def fileUploadBytes():
     try:
 
         posted_args = request.args
-        print posted_args
+        my_logger.info(posted_args)
         copied_args = posted_args.copy()
-        print copied_args
+        my_logger.info(copied_args)
         normal_dict = dict(copied_args)
         my_logger.debug(normal_dict)
-        print normal_dict
+        my_logger.info(normal_dict)
         customerid = normal_dict['customer_id'][0]
 
         # getting filename and file
@@ -144,9 +145,9 @@ def fileUploadBytes():
         # converting file string to bytes
         byte_array = bytes(str_posted_file)
         sizy = len(byte_array)
-        print "yeah----------yeah------------yeahhhhhhhhhhhhhhhhh", sizy
+        my_logger.info(sizy)
 
-        print 'hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii', type(byte_array)
+        my_logger.info(type(byte_array))
         # reads config file to get accountname and key
         cfg = ConfigParser()
         cfg.read('application/config/azure_config.ini')
@@ -162,9 +163,9 @@ def fileUploadBytes():
         share_values = db_session.query(TblMetaFileUpload.var_share_name, TblMetaFileUpload.var_directory_name). \
             filter(TblMetaFileUpload.uid_customer_id == customerid).first()
         my_logger.debug(share_values)
-        # print byte_array
+        # my_logger.info(byte_array)
         try:
-            # print byte_array
+            # my_logger.info(byte_array
             # for i in range(sizy):
 
             file_service.create_file_from_bytes(share_name=share_values[0],
@@ -258,6 +259,6 @@ def createDirectory():
     directory_creation = file_service.create_directory(share_name=share_name, directory_name=clusterid / clusterid,
                                                        metadata=None, fail_on_exist=True, timeout=None)
     if directory_creation:
-        print "directory created"
+        my_logger.info("directory created")
     else:
-        print "directory nottttttt created, try again"
+        my_logger.info("directory nottttttt created, try again")

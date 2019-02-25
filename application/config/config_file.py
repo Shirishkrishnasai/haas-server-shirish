@@ -21,7 +21,6 @@ file_upload_url="http://104.211.222.41:5000/fileupload"
 path="/opt/hadoop/etc/hadoop/mapred-site.xml"
 
 
-#postgres_conn = 'postgres://postgres:password@104.211.222.41/haas_demo2'
 conn_string = "host='104.211.222.41' user='postgres' password='password' dbname='haas_demo3'"
 postgres_conn = 'postgres://postgres:password@104.211.222.41/haas_demo3'
 

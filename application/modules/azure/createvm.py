@@ -11,6 +11,7 @@ from azure.mgmt.network import NetworkManagementClient
 from msrestazure.azure_exceptions import CloudError
 from application.models.models import TblSubnet,TblVmInformation,TblVmCreation,TblImage,TblCustomer,TblPlanClusterSizeConfig,TblMetaVmSize
 from application.config.config_file import application_id, customer_client_id, secret_code, tenant_id
+from application.common.loggerfile import my_logger
 
 USERNAME = 'sample-user'
 PASSWORD = 'Sample@123'
@@ -29,13 +30,13 @@ def get_credentials():
 def vmcreation(required_data_list):
     failed_data_list=[]
 
-    print "CAlling VmCreation"
+    my_logger.info("CAlling VmCreation")
     db_session = scoped_session(session_factory)
     credentials, subscription_id = get_credentials()
     compute_client = ComputeManagementClient(credentials, subscription_id)
     network_client = NetworkManagementClient(credentials, subscription_id)
 
-    print len(required_data_list)
+    my_logger.info(len(required_data_list))
 
 
     for data in required_data_list:
@@ -57,12 +58,13 @@ def vmcreation(required_data_list):
             LOCATION = data[4]
             size_id=data[5]
             plan_id = data[6]
-            print customerid,role,'i am role',"-----------"
+            my_logger.info(customerid)
+            my_logger.info(role)
 
 
 
-            print plan_id
-            print size_id
+            my_logger.info(plan_id)
+            my_logger.info(size_id)
 
 
             subnet_info = db_session.query(TblSubnet.txt_subnet_id , TblSubnet.var_virtual_network_name, \
@@ -71,14 +73,14 @@ def vmcreation(required_data_list):
             subnet_id = subnet_info[0][0]
             GROUP_NAME = subnet_info[0][2]
             vnet_name = subnet_info[0][1]
-            print subnet_id,'i am subnet'
+            my_logger.info(subnet_id)
 
             image_info = db_session.query(TblImage.txt_image_id).filter(TblImage.var_service_name == role).all()
-            print "heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",role
+            my_logger.info(role)
 
-            print image_info
+            my_logger.info(image_info)
             image_id=image_info[0][0]
-            print image_id
+            my_logger.info(image_id)
 
 
 
@@ -88,9 +90,9 @@ def vmcreation(required_data_list):
 
 
             vm_size_info=db_session.query(TblMetaVmSize.var_vm_type).filter(and_(TblMetaVmSize.int_plan_id == plan_id ,TblMetaVmSize.int_size_id == size_id ,TblMetaVmSize.var_role==role))
-            print vm_size_info
+            my_logger.info(vm_size_info)
             vm_size=vm_size_info[0][0]
-            print vm_size
+            my_logger.info(vm_size)
 
             vm_information = {}
             vm_information['name'] = 'vm-' + str(int(round(time.time() * 1000)))
@@ -116,36 +118,38 @@ def vmcreation(required_data_list):
                 nic = create_nic(network_client, subnet_id, GROUP_NAME, NIC_NAME, LOCATION, IP_CONFIG_NAME)
 
             # Create Linux VM
-            print('\nCreating Linux Virtual Machine')
+            my_logger.info('\nCreating Linux Virtual Machine')
             vm_parameters = create_vm_parameters(encoded, nic.id, OS_DISK_NAME, LOCATION,image_id,vm_size)
             async_vm_creation = compute_client.virtual_machines.create_or_update(
                 GROUP_NAME, VM_NAME, vm_parameters)
 
             vm_result = async_vm_creation.wait(0)
 
-            print vm_result,async_vm_creation
+            my_logger.info(vm_result)
+            my_logger.info(async_vm_creation)
+            
             time.sleep(5)
 
 
             # Get the virtual machine by name
-            print('\nGet Virtual Machine by Name')
+            my_logger.info('\nGet Virtual Machine by Name')
             virtual_machine = compute_client.virtual_machines.get(
                 GROUP_NAME,
                 VM_NAME
 
             )
-            print virtual_machine
-            print virtual_machine.os_profile,'os_profffffffffffffffilllle'
+            my_logger.info(virtual_machine)
+            my_logger.info(virtual_machine.os_profile)
 
             time.sleep(5)
             private_ip = network_client.network_interfaces.get(GROUP_NAME, NIC_NAME).ip_configurations[0].private_ip_address
-            print private_ip
+            my_logger.info(private_ip)
             time.sleep(5)
             vm_information['vm_ip'] = private_ip
             vm_information['name'] = virtual_machine.name
             vm_information['vm_id'] = virtual_machine.vm_id
             vm_information['role'] = role
-            print vm_information,'hiii'
+            my_logger.info(vm_information)
 
             vm_information_insert=TblVmInformation(uid_vm_id = virtual_machine.vm_id,
                                                     uid_customer_id =customerid,
@@ -188,19 +192,19 @@ def vmcreation(required_data_list):
 
         except CloudError as ce:
             failed_data_list.append(data)
-            print('A VM operation failed:')
-            print(ce.__str__())
+            my_logger.info('A VM operation failed:')
+            my_logger.info((ce.__str__()))
         except Exception as e:
 
-            print e.__str__()
+            my_logger.info(e.__str__())
 
         else:
-            print('All example operations completed successfully!')
+            my_logger.info('All example operations completed successfully!')
 
         finally:
             if len(failed_data_list)>=1:
                 vmcreation(failed_data_list)
-            print('\nfinal')
+            my_logger.info('\nfinal')
             db_session.close()
 
 
@@ -223,16 +227,11 @@ def create_nic_namenode(network_client, subnet_id, GROUP_NAME, IP_NAME, LOCATION
     )
     public_ip = async_public_ip_creation.result()
     public_ip_id = public_ip.id
-    print
-    public_ip
+    my_logger.info(public_ip)
 
     # Create NIC
-    print('\nCreate NIC with ')
-    print(
-        "Nic Name:", NIC_NAME, "Location:", LOCATION, "ipconfigName:", IP_CONFIG_NAME, "SubnetId", subnet_id,
-        "publc ipid",
-        public_ip_id)
-
+    my_logger.info('\nCreate NIC with ')
+    
     async_nic_creation = network_client.network_interfaces.create_or_update(
         GROUP_NAME,
         NIC_NAME,
@@ -252,12 +251,12 @@ def create_nic_namenode(network_client, subnet_id, GROUP_NAME, IP_NAME, LOCATION
          ]
          }
     )
-    print  async_nic_creation
+    my_logger.info( async_nic_creation)
     return async_nic_creation.result()
 
 
 def create_nic(network_client, subnet_id, GROUP_NAME, NIC_NAME, LOCATION, IP_CONFIG_NAME):
-    print('\nCreate NIC',GROUP_NAME,NIC_NAME,LOCATION,IP_CONFIG_NAME)
+    my_logger.info('\nCreate NIC',GROUP_NAME,NIC_NAME,LOCATION,IP_CONFIG_NAME)
     async_nic_creation = network_client.network_interfaces.create_or_update(
         GROUP_NAME,
         NIC_NAME,
@@ -274,14 +273,14 @@ def create_nic(network_client, subnet_id, GROUP_NAME, NIC_NAME, LOCATION, IP_CON
          ]
          }
     )
-    print async_nic_creation
+    my_logger.info(async_nic_creation)
     return async_nic_creation.result(0)
    # return async_nic_creation.result()
 
 
 def create_vm_parameters(encoded, nic_id, OS_DISK_NAME, LOCATION,image_id,vm_size):
 
-    print image_id,'in  parameters'
+    my_logger.info(image_id)
     return {
         'location': LOCATION,
         'os_profile': {
@@ -314,9 +313,9 @@ def create_vm_parameters(encoded, nic_id, OS_DISK_NAME, LOCATION,image_id,vm_siz
         }
 
     }
-    print 'out of parameters'
+    my_logger.info('out of parameters')
 # for i in range(0,5):
-#print __file__,__name__
+#my_logger.info(__file__,__name__
 #if __name__=="__main__"   :
     #vmcreation([["9a1ada8b-c888-11e8-bace-000c29b9b7fd","9a1ada8b-c888-11e8-bace-000c29b9b7fa","namenode","9a1ada8b-c888-11e8-bace-000c29b9b7fc","south india",1],["9a1ada8b-c888-11e8-bace-000c29b9b7fd","9a1ada8b-c888-11e8-bace-000c29b9b7fa","datanode","9a1ada8b-c888-11e8-bace-000c29b9b7fc","south india",1]])
 

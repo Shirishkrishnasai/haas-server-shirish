@@ -13,11 +13,11 @@ jobproducer = Blueprint('jobproducer', __name__)
 
 def mrjobproducer():
         try:
-            print 'in'
+            my_logger.info('in')
             db_session = scoped_session(session_factory)
             meta_request_status_query=db_session.query(TblMetaMrRequestStatus.srl_id).filter(TblMetaMrRequestStatus.var_mr_request_status == 'CREATED').all()
             customer_job_request_query = db_session.query(TblCustomerJobRequest.uid_request_id,TblCustomerJobRequest.uid_customer_id,TblCustomerJobRequest.uid_cluster_id,TblCustomerJobRequest.txt_job_description,TblCustomerJobRequest.uid_jar_upload_id,TblCustomerJobRequest.var_job_parameters).filter(TblCustomerJobRequest.int_request_status == meta_request_status_query[0][0],TblCustomerJobRequest.bool_assigned == 'f').all()
-            print customer_job_request_query
+            my_logger.info(customer_job_request_query)
             list_mrjob=[]
             for req_data in customer_job_request_query:
                 request_id=req_data[0]

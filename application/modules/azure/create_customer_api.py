@@ -34,15 +34,15 @@ def customercreation():
         mail_nickname = customer_content['second_name']
         customer_content = request.json
         locate = customer_content['location']
-        print customer_content
+        my_logger.info(customer_content)
         location = db_session.query(TblMetaCloudLocation.var_location).filter(TblMetaCloudLocation.srl_id == locate).all()
         location = location[0][0]
         GROUP_NAME = str(uuid.uuid1())
         customer_id = GROUP_NAME
         customer_email = customer_content['email']
         user_name = db_session.query(TblUsers.var_user_name).filter(TblUsers.var_user_name==customer_email).all()
-        # print user_name[0]
-        print user_name
+        # my_logger.info(user_name[0])
+        my_logger.info(user_name)
         if user_name != []:
             return jsonify(message="Mail id already exist")
         else :

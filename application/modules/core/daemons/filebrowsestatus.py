@@ -35,7 +35,7 @@ def filebrowsestatus():
             database_conn = mongo_db_conn['haas']
             db_collection = database_conn['filebrowsingstatus']
             result = db_collection.insert_one(filestatus)
-            print 'done with mongo'
+            my_logger.info('done with mongo')
     except pymongo.errors.ConnectionFailure, e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]

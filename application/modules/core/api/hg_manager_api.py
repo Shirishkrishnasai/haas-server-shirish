@@ -23,7 +23,7 @@ def hgmanager(agent_id):
             #for agent_registration in agent_verification_result:
             agent_tasks_data = []
             if agent_registration[0] == True:
-                print "agent verification done"
+                my_logger.info("agent verification done")
                 created_tasks = db_session.query(TblTask.uid_task_id, TblTask.char_task_type_id,
                                                  TblTask.txt_dependent_task_id, TblTask.txt_agent_worker_version,
                                                  TblTask.txt_agent_worker_version_path, TblTask.txt_payload_id,
@@ -32,14 +32,14 @@ def hgmanager(agent_id):
                 agent_customer_cluster_details = db_session.query(TblAgent.uid_customer_id,
                                                                   TblAgent.uid_cluster_id).filter(
                     TblAgent.uid_agent_id == agent_registration[1]).all()
-                print created_tasks,"createed"
+                my_logger.info(created_tasks)
                 if created_tasks == [] :
                     return jsonify("null")
                 else :
-                    print "hg manager fetched tasks and agent information"
+                    my_logger.info("hg manager fetched tasks and agent information")
                     for each_tuple in created_tasks:
                         dependency_tasks = each_tuple[2]
-                        print dependency_tasks
+                        my_logger.info(dependency_tasks)
                         if dependency_tasks == None:
                             taskdata = {}
                             task_id = each_tuple[0]
@@ -56,7 +56,7 @@ def hgmanager(agent_id):
                             taskdata['payload_id'] = payload_str
                             taskdata['task_status'] = each_tuple[6]
                             agent_tasks_data.append(taskdata)
-                            # print agent_tasks_data,'no dependencies'
+                            # my_logger.info(agent_tasks_data,'no dependencies'
                             update_taskstatus_statement = db_session.query(TblTask).filter(TblTask.uid_task_id == task_id)
                             update_taskstatus_statement.update({"int_task_status": update_task_status_value})
                             db_session.commit()
@@ -77,12 +77,12 @@ def hgmanager(agent_id):
                             taskdata['payload_id'] = payload_str
                             taskdata['task_status'] = each_tuple[6]
                             completedtasks = []
-                            print payload_str
+                            my_logger.info(payload_str)
                             for each_id in list_of_dependency_tasks:
                                 dependency_task_id = each_id.replace('"', '')
                                 dependency_task_status = db_session.query(TblTask.int_task_status).filter(
                                     TblTask.uid_task_id == dependency_task_id).all()
-				print dependency_task_status
+				my_logger.info(dependency_task_status)
                                 dependency_task_status_value = dependency_task_status[0]
                                 if dependency_task_status_value[0] == completed_task_status_value:
                                     completedtasks.append(dependency_task_status)
@@ -95,18 +95,18 @@ def hgmanager(agent_id):
                                 db_session.commit()
                     if agent_tasks_data == []:
 			#db_session.close()
-                        print("nodata")
+                        my_logger.info("nodata")
                         return jsonify("null")
                     else:
 			#db_session.close()
-                        print agent_tasks_data, "agent data"
+                        my_logger.info(agent_tasks_data)
                        # kafkaproducer(message=agent_tasks_data)
                         return jsonify(agent_tasks_data)
 
-                        #print "hgmanager producedddddddddddddddddddd"
+                        #my_logger.info("hgmanager producedddddddddddddddddddd"
             else:
 		
-                print 'hgmanager else'
+                my_logger.info('hgmanager else')
                 return jsonify("null")
 
         except Exception as e:
