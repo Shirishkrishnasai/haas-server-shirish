@@ -47,9 +47,9 @@ def edgenodeProvision(request_id):
         vm_creation_list.append(size_id)
         vm_creation_list.append(plan_id)
         vm_creation_info.append(vm_creation_list)
-        print vm_creation_list
+        my_logger.info(vm_creation_list)
         my_logger.info("calling createvm method")
-        print "calling vm_creation"
+        my_logger.info("calling vm_creation")
         vm_information = vmcreation(vm_creation_info)#u should call another function probably
         my_logger.debug(vm_information)
         metatablestatus = db_session.query(TblMetaRequestStatus.var_request_status, TblMetaRequestStatus.srl_id).all()
@@ -71,7 +71,7 @@ def edgenodeProvision(request_id):
         file_service.create_directory(cluster_id, 'system')
         file_service.create_directory(cluster_id, 'hive')
         file_service.create_directory(cluster_id, 'spark')
-        print "doneeee"
+        my_logger.info("doneeee")
 
     # except Exception as e:
     #     exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -90,7 +90,7 @@ if __name__ == '__main__':
             request_id = sys.argv[1]
             edgenodeProvision(request_id)
         else:
-            print "args not passed"
+            my_logger.info("args not passed")
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]

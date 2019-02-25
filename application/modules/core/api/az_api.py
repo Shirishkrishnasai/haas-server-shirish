@@ -17,11 +17,12 @@ from application.models.models import TblUsers, TblNodeInformation, TblCustomer,
 from flask import jsonify, request, Blueprint
 # import ldap.modlist
 from sqlalchemy.orm import scoped_session
+from application.common.loggerfile import my_logger
 
 # import ldap.modlist as modList
 azapi = Blueprint('azapi', __name__)
 
-my_logger = app.logger
+#my_logger = app.logger
 """
 Getting list of customers from LDAP
 """
@@ -168,7 +169,7 @@ def userAuthenticate():
 	
         data['token'] = token
         data['customer_id'] = customer_id
-	print data, "userrrrrrrrrrrrrrrrrrrr relatedddddddddddddddddddddddddd daaaaaaaaaaaaaaaaaaaaaaaaaattttttttttttttttttttttaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	my_logger.info(data)
         return jsonify(data=data)
 
     except ldap.INVALID_CREDENTIALS:
@@ -337,13 +338,12 @@ def cluster_metrics(cusid, cluid):
     to_time_params = request.args.get('to')
     metric = request.args.get('metric')
     if from_time_params and to_time_params:
-        print 'hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii from cluster metrics api'
+        my_logger.info('hiiiiiiiiiii from cluster metrics api')
         from_time_params_str = str(from_time_params)
         to_time_params_str = str(to_time_params)
         req_data = collection.find(
             {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
-        print req_data
-        # print to_time_params_str,from_time_params_str
+        my_logger.info(req_data)
         minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
     else:
         date_time = datetime.datetime.now()
@@ -352,27 +352,20 @@ def cluster_metrics(cusid, cluid):
         to_time_params_str = str(int(round(time.mktime(date_time.timetuple()))) * 1000)
         req_data = collection.find(
             {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
-        # print to_time_params_str, from_time_params_str
         minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
 
     metrics_data = list(req_data)
-    # print minutes
     agentlist_info = []
 
     for data in metrics_data:
-        # print data.get('time'), data.get("_id")
         agentlist_info.append(data.get("agent_id"))
 
     set_agentlist = set(agentlist_info)
     agentlist = list(set_agentlist)
-    # print agentlist
 
     # req_data=[]
     re = list(metrics_data)
     re = [change(v, minutes) for v in re]
-    # print "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    # for data in re:
-    #    print data.get("time"), data.get("_id")
 
     """
     reduceByMetricForCluster for Cluster level metrics
@@ -412,7 +405,6 @@ def cluster_metrics(cusid, cluid):
 
 def cpu_reduce(cpu1, cpu2):
     cpu3 = {}
-    # print cpu1,cpu2
     cpu3["time"] = cpu1.get("time")
     cpu3['metric_value'] = float(cpu1["metric_value"]) + float(cpu2["metric_value"])
     cpu3['metric_name'] = cpu1.get("metric_name")
@@ -449,7 +441,7 @@ def storage_reduce(s1, s2):
     s3['available_storage'] = float(s1["available_storage"]) + float(s2["available_storage"])
     s3['metric_name'] = s1.get("metric_name")
     s3['measured_in'] = s1.get("measured_in")
-    print s3
+    my_logger.info(s3)
 
     return s3
 
@@ -468,7 +460,7 @@ def disk_reduce(d1, d2):
 def reduceByMetric(value, metricName, agent_id):
     metric_dict = {}
     payload = value.get("payload")
-    # print payload
+    # my_logger.info(payload)
 
     for index, data in enumerate(payload):
         if (str(data.get("metric_name")) == metricName and str(value.get("agent_id")) == agent_id):
@@ -484,10 +476,8 @@ def reduceByMetric(value, metricName, agent_id):
 def reduceByMetricForCluster(value, metricName):
     metric_dict = {}
     payload = value.get("payload");
-    # print payload
+    # my_logger.info(payload)
     for index, data in enumerate(payload):
-        # print data,index
-        # print str(data.get("mertic_name")),metricName
         if (str(data.get("metric_name")) == metricName):
             metric_dict['time'] = value.get("time")
             metric_dict['agent_id'] = value.get("agent_id")
@@ -498,11 +488,9 @@ def reduceByMetricForCluster(value, metricName):
 
 
 def change(value, minutes):
-    # print value
     v = {}
 
     for timemetric in minutes:
-        # print "For time",int(value.get('time'))
         if timemetric[0] < int(value.get('time')) <= timemetric[1]:
             v['time'] = timemetric[0]
         else:
@@ -515,16 +503,13 @@ def change(value, minutes):
 def divideMilliSeconds(fromtime, totime):
     fromtime = int(fromtime)
     totime = int(totime)
-    # print fromtime,type(fromtime),totime
     totime = int(totime)
 
     minutes = []
     # type(fromtime)
     from_time = (fromtime / 1000 / 60)
     to_time = (totime / 1000 / 60) + 1
-    # print "for times",from_time,to_time
     for i in range(from_time, to_time):
-        # print "in minutes",i*60
         minutes.append([i * 1000 * 60, (i + 1) * 1000 * 60])
     return minutes
 
@@ -539,31 +524,31 @@ def divideMilliSeconds(fromtime, totime):
 #         customer_id) + "'"
 #     cur.execute(customer_cluster_query_stmnt)
 #     customer_cluster_info = cur.fetchall()
-#     print customer_cluster_info, "cciiiiiiiiiiiiiiiiiiiiiiiii"
+#     my_logger.info(customer_cluster_info, "cciiiiiiiiiiiiiiiiiiiiiiiii"
 #     mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
 #     database_conn = mongo_db_conn['local']
 #
 #     customer_id_metrics_list = list(database_conn[customer_id].find())
-#     print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
+#     my_logger.info(customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
 #     db_collection_list = []
 #     if customer_id_metrics_list == []:
 #
 #         available_storage = 0
 #     else:
 #         for db_collection in customer_id_metrics_list:
-#             print db_collection,type(db_collection),'dbdbdbdbbdbdbdbd'
-#             # print db_collection,type(db_collection),'typeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeedbbbb'
+#             my_logger.info(db_collection,type(db_collection),'dbdbdbdbbdbdbdbd'
+#             # my_logger.info(db_collection,type(db_collection),'typeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeedbbbb'
 #             db_collection_list.append(db_collection)
 #
 #         dicto = db_collection_list[-1]
-#         print dicto,'loooooooooooooool'
+#         my_logger.info(dicto,'loooooooooooooool'
 #         for keys, values in dicto['payload'][3].items():
-#             print keys,values , "valoooooooooooeeeeeees"
-#             # print keys,values,'kakakakak'
+#             my_logger.info(keys,values , "valoooooooooooeeeeeees"
+#             # my_logger.info(keys,values,'kakakakak'
 #             if keys == 'available_storage':
-#                 print values, 'looooooooooooooooooooooooooooooooooooooooooo'
+#                 my_logger.info(values, 'looooooooooooooooooooooooooooooooooooooooooo'
 #                 available_storage = values
-#         print available_storage, 'avaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+#         my_logger.info(available_storage, 'avaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 #
 #     if customer_cluster_info == []:
 #         return jsonify(clusterinformation=[])
@@ -608,18 +593,17 @@ def clustermembers(customer_id, cluster_id):
         db_session = scoped_session(session_factory)
         customer_id = customer_id
         cluster_id = cluster_id
-        print customer_id
-        print cluster_id
+        my_logger.info(customer_id)
+        my_logger.info(cluster_id)
         # Query cluster members from tbl_node_information
 
         cluster_info_query_statement = db_session.query(TblNodeInformation.char_role,TblNodeInformation.uid_node_id,TblNodeInformation.uid_vm_id). \
             filter(TblNodeInformation.uid_customer_id == customer_id,
                    TblNodeInformation.uid_cluster_id == cluster_id).all()
-        print cluster_info_query_statement
+        my_logger.info(cluster_info_query_statement)
         tup=[]
         for clust in cluster_info_query_statement:
             dict={}
-            #print clust[2],'vmidddddddddddd'
             #vm_name = db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_vm_id == clust[2]).first()
             dict["role"]=clust[0]
             dict["node_id"]=clust[1]
@@ -637,18 +621,18 @@ def azureFileStorageCredentials(customer_id):
     try:
         db_session = scoped_session(session_factory)
         azure_file_storage_credentials_statement = db_session.query(TblAzureFileStorageCredentials).all()
-        print azure_file_storage_credentials_statement,'azureeeee'
+        my_logger.info(azure_file_storage_credentials_statement)
         values_list = []
         keys_list = []
         for val in azure_file_storage_credentials_statement:
             values_dict = dict(val)
-            print values_dict,'valllllllllll'
+            my_logger.info(values_dict)
             azure_account_name = values_dict['account_name']
             keys_list.append(values_dict['account_primary_key'])
             keys_list.append(values_dict['account_secondary_key'])
             # azure_file_storage_credentials_statement_result  = zip(*val)[0]
             return jsonify(account_name=azure_account_name, key=str(random.choice(keys_list)))
     except Exception as e:
-        print e.message
+        my_logger.info(e.message)
     finally:
              db_session.close()

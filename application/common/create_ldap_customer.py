@@ -4,6 +4,7 @@ from application import db
 from application.config.config_file import ldap_connection, ldap_connection_dn, ldap_connection_password
 from application.models.models import TblCustomer, TblUsers
 from flask import jsonify
+from application.common.loggerfile import my_logger
 
 
 def azureldapcustomer(customer_id, display_name, customer_gid_id, user_principal_name, mail_nickname, password):
@@ -39,7 +40,7 @@ def azureldapcustomer(customer_id, display_name, customer_gid_id, user_principal
         group_attr['cn'] = str(display_name)
         group_attr['description'] = 'ini group untuk semua dosen dokter'
         group_attr['gidNumber'] = str(gid_id)
-        print group_attr
+        my_logger.info( group_attr)
         group_creation = modlist.addModlist(group_attr)
         connect.add_s(dn1, group_creation)
         update_customer_query = db.session.query(TblCustomer).filter(TblCustomer.uid_customer_id == customer_id)

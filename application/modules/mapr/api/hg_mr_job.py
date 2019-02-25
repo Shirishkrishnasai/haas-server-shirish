@@ -84,7 +84,7 @@ def hg_mrjob_client():
         #input_path = posted_args['input_file_path']
         #output_path = posted_args['output_file_path']
         customer_request = request.values.to_dict()
-        print customer_request,"addmrjob5555555555555"
+        my_logger.info(customer_request)
         customer_id = uuid.UUID(customer_request["customer_id"]).hex
         cluster_id = uuid.UUID(customer_request['cluster_id']).hex
         user_name = customer_request['user_name']
@@ -92,10 +92,10 @@ def hg_mrjob_client():
         job_description = customer_request['job_description']
         filename = request.files['files'].filename
         job_parameters = customer_request['job_arguments']
-        print filename
+        my_logger.info(filename)
         posted_file = request.files
         str_posted_file = posted_file['files'].read()
-        #print str_posted_file
+        #my_logger.info(str_posted_file
         no_of_bytes=len(str_posted_file)
 
         # converting unicoded file to bytestream
@@ -114,7 +114,7 @@ def hg_mrjob_client():
         # connecting to database to get sharename and directoryname against customerid
         share_values = db_session.query(TblMetaFileUpload.var_share_name, TblMetaFileUpload.var_directory_name).\
             filter(TblMetaFileUpload.uid_customer_id == customer_id).first()
-        print share_values
+        my_logger.info(share_values)
         file_service.create_file_from_stream(share_name=share_values[0],
                                              directory_name=share_values[1],
                                              file_name=filename,
@@ -171,10 +171,10 @@ def hg_mrjob_client():
         db_session.commit()
         db_session.close()
 
-        print "hello"
+        my_logger.info("hello")
         return jsonify(requestid=request_id,status="success")
     # except exc.SQLAlchemyError as e:
-    #     print e
+    #     my_logger.info(e)
     #     my_logger.error(e)
     #     return jsonify(e)
     # except Exception as e:
@@ -196,11 +196,11 @@ def fileProgress(start, size):
 mrjobstatus=Blueprint('mrjobstatus',__name__)
 @mrjobstatus.route("/api/mrjobstatus/<mr_job_id>",methods=['GET'])
 def mrJobStatus(mr_job_id):
-    print "inside"
+    my_logger.info("inside")
     session = scoped_session(session_factory)
     result_dict = {}
     customer_job_request_id_list = session.query(TblCustomerJobRequest.int_request_status).filter(TblCustomerJobRequest.uid_request_id == mr_job_id).all()
-    print customer_job_request_id_list
+    my_logger.info(customer_job_request_id_list)
     if customer_job_request_id_list == []:
         return jsonify(message="no jobs found for the request id")
     else:

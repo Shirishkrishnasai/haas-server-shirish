@@ -19,7 +19,7 @@ def selectQueryUrl():
     #while True:
         try:
             # reads config file to get accountname and key
-            print "heyyyyyyyyyyyyyyyyyyyyyyyyyy"
+            my_logger.info("heyyyyyyyyyyyyyyyyyyyyyyyyyy")
             cfg = ConfigParser()
             cfg.read('application/config/azure_config.ini')
             account_name = cfg.get('file_storage', 'account_name')
@@ -27,23 +27,23 @@ def selectQueryUrl():
 
             # passing accountname and key to function
             file_service = FileService(account_name=account_name, account_key=account_key)
-            print('file account credentials ok')
-            print "in hive select query url creating file"
+            my_logger.info('file account credentials ok')
+            my_logger.info("in hive select query url creating file")
 
             db_session = scoped_session(session_factory)
             hive_request_ids = db_session.query(TblHiveRequest.uid_cluster_id,
                                                 TblHiveRequest.uid_hive_request_id).filter\
                 (and_(TblHiveRequest.bool_select_query=='t',TblHiveRequest.bool_url_created=='f')).all()
-            print hive_request_ids
+            my_logger.info(hive_request_ids)
 
         #conditions select query and bool url created
             for each_tuple in hive_request_ids:
                 direcs = list(file_service.list_directories_and_files(share_name=each_tuple[0],
                                                                  directory_name='hive'))
-                print direcs
+                my_logger.info(direcs)
 
                 for dire in direcs:
-                    print dire.name
+                    my_logger.info(dire.name)
 
                 # creating expiry date for access signature and converting to str as expiry sparam shouldnt contain tzinfo
                 expiry_date = str(datetime.now().date() + timedelta(days=3))
@@ -53,16 +53,16 @@ def selectQueryUrl():
                                                                                       file_name=each_tuple[1],
                                                                                       permission=FilePermissions.READ,
                                                                                       expiry=expiry_date)
-                print('access signature is generated')
-                print('now creating fileurl to access')
+                my_logger.info('access signature is generated')
+                my_logger.info('now creating fileurl to access')
                 # getting file url
                 file_url = file_service.make_file_url(share_name=each_tuple[0],
                                                       directory_name='hive',
                                                       file_name=each_tuple[1],
                                                       protocol='https',
                                                       sas_token=access_signature)
-                print('file url generated')
-                print('inserting values into file upload table')
+                my_logger.info('file url generated')
+                my_logger.info('inserting values into file upload table')
                 hive_request_tbl_url_update = db_session.query(TblHiveRequest.txt_url_value).filter(TblHiveRequest.uid_hive_request_id==each_tuple[1])
                 hive_request_tbl_url_update.update({"txt_url_value":str(file_url),
                                                     "bool_url_created":1})
@@ -80,6 +80,6 @@ def hgSelectQueryUrlScheduler():
     scheduler = BackgroundScheduler()
     scheduler.add_job(selectQueryUrl,'cron',minute='*/1')
     scheduler.start()
-    print("in hgselectqueryurl")
-    print "in select query urllllllllllllllllllllllllllllllllllllllllllllllllllllllllll"
+    my_logger.info("in hgselectqueryurl")
+    my_logger.info("in select query urllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
 

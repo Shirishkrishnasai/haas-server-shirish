@@ -56,7 +56,7 @@ def configure_hive(request_id):
         task_dependencytask_workerpaths_dict_list = []
         for each_listy in tasks_list:
             task_dependencytask_workerpaths_dict_list.append({each_listy[0]:[each_listy[1],each_listy[2],each_listy[3],each_listy[4],each_listy[5]]})
-        #print task_dependencytask_workerpaths_dict_list
+        #my_logger.info(task_dependencytask_workerpaths_dict_list)
         task_depttask_dict ={}
         for depttask in task_dependencytask_workerpaths_dict_list:
             for keys,values in depttask.items():
@@ -76,7 +76,7 @@ def configure_hive(request_id):
                 for tk,dv in task_depttask_dict.items():
                     if tk==keykey:
                         listy.append(dv[1])
-        print task_dependencytask_workerpaths_dict_list
+        my_logger.info(task_dependencytask_workerpaths_dict_list)
 
 
 
@@ -153,7 +153,7 @@ def configure_hive(request_id):
         database_connection.hiveconfig.insert_one({"namenode_ip": host_file})
         # querying the same for object id to insert into tasks table(payloadid)
         namenodeip_query = database_connection.hiveconfig.find_one({"namenode_ip": host_file})
-        # print namenodeip_query, 'checccccccccccckkkkkkkkkkkkkkkkkkkkk'
+        # my_logger.info(namenodeip_query, 'checccccccccccckkkkkkkkkkkkkkkkkkkkk'
         # getting the same objectid to insert into tasks table
         namenodeip_query_objectid = str(namenodeip_query["_id"])
 ############################################# hive host payload generaion over ##############################################################
@@ -220,8 +220,7 @@ def configure_hive(request_id):
                     session.add(tasks_tbl_inserts)
                     session.commit()
 
-        my_logger.info(
-             "done for hive config worker to generate tasks..............now check tasks table........................................")
+        my_logger.info("done for hive config worker to generate tasks..............now check tasks table........................................")
 #
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -240,7 +239,7 @@ if __name__ == '__main__':
         request_id = sys.argv[1]
         configure_hive(request_id)
     else:
-        print "args not passed"
+        my_logger.info("args not passed")
     #except Exception as e:
      #   exc_type, exc_obj, exc_tb = sys.exc_info()
 #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]

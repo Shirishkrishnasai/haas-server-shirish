@@ -8,14 +8,14 @@ from application.common.loggerfile import  my_logger
 def metricSubscriber(data):
     try:
         customerid = data['customer_id']
-        # print customerid,data
+        # my_logger.info(customerid,data)
         mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
         database_conn = mongo_db_conn['local']
         db_collection = database_conn[customerid]
-        print database_conn
+        my_logger.info(database_conn)
         result = db_collection.insert_one(data)
-        print customerid
-        print "data inserted"
+        my_logger.info(customerid)
+        my_logger.info("data inserted")
     except pymongo.errors.ConnectionFailure, e:
         my_logger.error(e)
     except Exception as e:

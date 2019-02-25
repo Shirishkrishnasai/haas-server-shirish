@@ -45,7 +45,6 @@ def azureldapcustomer(customer_id, display_name, customer_gid_id, user_principal
         group_attr['cn'] = str(display_name)
         group_attr['description'] = 'ini group untuk semua dosen dokter'
         group_attr['gidNumber'] = str(gid_id)
-        print group_attr
         group_creation = modlist.addModlist(group_attr)
         connect.add_s(dn1, group_creation)
         update_customer_query = db_session.query(TblCustomer).filter(TblCustomer.uid_customer_id == customer_id)

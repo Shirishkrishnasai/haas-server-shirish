@@ -14,14 +14,14 @@ def task_status_update():
         task_status_information = request.json
         taskid = task_status_information["payload"]["task_id"]
         taskstatus = task_status_information["payload"]["status"]
-        print taskstatus ,'staaaaaaaaaaaatttttttttttttuuuuuuuuuuuuussssssssssssssssssssssssss'
+        my_logger.info(taskstatus)
         customerid = task_status_information["customer_id"]
         clusterid = task_status_information["cluster_id"]
         meta_task_status_dict = dict(db_session.query(TblMetaTaskStatus.var_task_status,
                                                  TblMetaTaskStatus.srl_id).all())
 
         taskstatusupdate = db_session.query(TblTask).filter(TblTask.uid_task_id == taskid)
-        print meta_task_status_dict[taskstatus],'iiiiiiiiiiiiiiiiinnnnnnnnnnnnnnnnntttttttttttttttttttttttttttttt'
+        my_logger.info(meta_task_status_dict[taskstatus])
         taskstatusupdate.update({"int_task_status": meta_task_status_dict[taskstatus]})
         
         db_session.commit()
@@ -44,7 +44,7 @@ def task_status_update():
             db_session.commit()
         return jsonify("sucess")
    except Exception as e:
-       print e.message
+       my_logger.info(e.message)
        return jsonify("failed")
    finally:
       db_session.close()

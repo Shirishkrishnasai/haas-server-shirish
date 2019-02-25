@@ -102,12 +102,12 @@ def monitor():
 @api.route("/api/addcluster", methods=['POST'])
 def hg_client():
     try:
-        print 'hello client'
+        my_logger.info('hello client')
         db_session = scoped_session(session_factory)
 
         # try:
         customer_request = request.json
-        print customer_request
+        my_logger.info(customer_request)
         feature_request = customer_request['features']
         clustername = customer_request['features'][0]['payload']['cluster_name']
         requests = []
@@ -116,19 +116,19 @@ def hg_client():
             feature_request_id = {}
             request_id = str(uuid.uuid1())
             feature_id = customer_data['feature_id']
-            print feature_id, 'featureiddd'
+            my_logger.info(feature_id)
 
             # creating request id against feature id
             feature_request_id[feature_id] = request_id
-            print feature_request_id, 'featt_req_id'
+            my_logger.info(feature_request_id)
             requests.append(feature_request_id)
 
-        print requests
+        my_logger.info(requests)
         for customer_data in feature_request:
             feature_id = customer_data['feature_id']
-            print feature_id
+            my_logger.info(feature_id)
             if customer_data.has_key('payload'):
-                print "in azure"
+                my_logger.info("in azure")
 
                 payload = customer_data['payload']
                 if payload.has_key('cluster_id'):
@@ -136,8 +136,8 @@ def hg_client():
                     insert = TblCluster(uid_cluster_id=cluster_id)
                     db_session.add(insert)
                     db_session.commit()
-                print cluster_id, "kjbdvdhjbdhfgduidfh"
-                print payload
+                my_logger.info(cluster_id)
+                my_logger.info(payload)
                 mongo_connection = pymongo.MongoClient(mongo_conn_string)
                 database_connection = mongo_connection["haas"]
                 collection_connection = database_connection["highgear"]
@@ -147,17 +147,17 @@ def hg_client():
                 feature_dependency = db_session.query(TblFeature.txt_dependency_feature_id).filter(
                     TblFeature.char_feature_id == feature_id).first()
                 dependents = feature_dependency[0]
-                print dependents, 'dependents'
+                my_logger.info(dependents)
                 request_id_list = [d.get(str(feature_id)) for d in requests]
-                print request_id_list, 'listi'
+                my_logger.info(request_id_list)
                 dependency_request_id_list = [d.get(str(dependents)) for d in requests]
                 request_id = [x for x in request_id_list if x != None]
-                print 'rrrrrrrrrrrrrrrrrr', request_id
+                my_logger.info(request_id)
                 dependency_request_id = [x for x in dependency_request_id_list if x != None]
-                print dependency_request_id, 'dddddddddd'
+                my_logger.info(dependency_request_id)
 
                 if dependents == None:
-                    print 'in dependents payload'
+                    my_logger.info('in dependents payload')
                     insert_customer = TblCustomerRequest(txt_payload_id=cluster_info_payloadid,
                                                          uid_request_id=request_id[0],
                                                          uid_customer_id=customer_request['customer_id'],
@@ -165,10 +165,10 @@ def hg_client():
                                                          uid_cluster_id=cluster_id)
                     db_session.add(insert_customer)
                     db_session.commit()
-                    print 'finish'
+                    my_logger.info('finish')
 
                 else:
-                    print 'hi i am in dependents else'
+                    my_logger.info('hi i am in dependents else')
                     insert_customer = TblCustomerRequest(txt_payload_id=cluster_info_payloadid,
                                                          uid_request_id=request_id[0],
                                                          uid_customer_id=customer_request['customer_id'],
@@ -182,14 +182,14 @@ def hg_client():
                 feature_dependency = db_session.query(TblFeature.txt_dependency_feature_id).filter(
                     TblFeature.char_feature_id == feature_id).first()
                 dependents = feature_dependency[0]
-                print dependents, 'without payload dependents'
+                my_logger.info(dependents)
                 request_id_list = [d.get(str(feature_id)) for d in requests]
                 dependency_request_id_list = [d.get(str(dependents)) for d in requests]
                 request_id = [x for x in request_id_list if x != None]
-                print 'rrrrrrr', request_id
+                my_logger.info(request_id)
                 dependency_request_id = [x for x in dependency_request_id_list if x != None]
                 if dependents == None:
-                    print "in else"
+                    my_logger.info("in else")
                     insert_customer = TblCustomerRequest(uid_request_id=request_id[0],
                                                          uid_customer_id=customer_request['customer_id'],
                                                          char_feature_id=feature_id,
@@ -198,10 +198,10 @@ def hg_client():
                     db_session.commit()
 
                 else:
-                    print "in non payload else"
-                    print feature_id, 'fffffffffff'
-                    print requests
-                    print [d.get(str(feature_id)) for d in requests]
+                    my_logger.info("in non payload else")
+                    my_logger.info(feature_id)
+                    my_logger.info(requests)
+                    my_logger.info([d.get(str(feature_id)) for d in requests])
                     insert_customer = TblCustomerRequest(uid_request_id=request_id[0],
                                                          uid_customer_id=customer_request['customer_id'],
                                                          txt_dependency_request_id=dependency_request_id[0],
@@ -215,7 +215,7 @@ def hg_client():
                     #	return e.message
                     # finally:
                     #   db_session.close()
-        print requests,'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'
+        my_logger.info(requests)
         return jsonify(provision_request_id=requests[0]['9'],configure_request_id =requests[1]['10'], cluster_name =clustername,message='success')
     except Exception as e:
 
@@ -335,7 +335,7 @@ def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
 
         db_session = scoped_session(session_factory)
         hive_request_id = uuid.uuid1()
-        print hive_request_id,'hive requestssss'
+        my_logger.info(hive_request_id)
         query_string = "show databases"
         hive_request_database_values = TblHiveRequest(uid_hive_request_id=str(hive_request_id),
                                                     uid_customer_id=customer_id,
@@ -359,12 +359,14 @@ def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
 
             hive_databases_result = db_session.query(TblHiveRequest.hive_query_output). \
                 filter(TblHiveRequest.uid_hive_request_id == str(hive_request_id)).all()
-            print hive_databases_result, type(hive_databases_result), 'hiveeeeeeeeeee'
+            my_logger.info(hive_databases_result)
+            my_logger.info(type(hive_databases_result))
             if hive_databases_result[0][0] is not None:
 
 
                 databases = eval(hive_databases_result[0][0])
-                print databases, type(databases), 'databases'
+                my_logger.info(databases)
+                my_logger.info(type(databases))
                 databases_output = databases[str('output')]
                 result_databases = []
                 for databases_lists in databases_output:
@@ -382,12 +384,12 @@ def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
 @api.route('/api/hiveselectqueryresult/<request_id>', methods=['GET'])
 def hiveSelectQueryResult(request_id):
     try:
-        print "haaaaaiiiiieieeeeee"
+        my_logger.info("haaaaaiiiiieieeeeee")
         db_session = scoped_session(session_factory)
 
         hive_select_query_statement = db_session.query(TblHiveRequest.txt_url_value).filter(
             TblHiveRequest.uid_hive_request_id == request_id, TblHiveRequest.bool_url_created == True).first()
-        print hive_select_query_statement
+        my_logger.info(hive_select_query_statement)
 
         return jsonify(url=hive_select_query_statement[0])
     except Exception as e:
@@ -406,21 +408,18 @@ def hivestatus(request):
         db_session = scoped_session(session_factory)
         result = db_session.query(TblHiveRequest.hive_query_output).filter(
             TblHiveRequest.uid_hive_request_id == request).first()
-        #print result, type(result)
         if result[0] == None:
             db_session.close()
 
             return jsonify(message="query under execution..please wait")
         else:
             result = eval(result[0])
-            #print result, type(result),"11111111111111111111111"
             tup= {}
             for key, value in result.iteritems():
                 dict = {}
                 dict[str(key)]=str(value)
 
                 tup.update({key:value})
-                #print tup,"helloooooooooooooo"
             db_session.close()
 
             return jsonify(tup)
@@ -431,16 +430,15 @@ def customerPlan():
         db_session = scoped_session(session_factory)
 
         plan_select_query_statement = db_session.query(TblPlan.int_plan_id, TblPlan.var_plan_type).all()
-        print plan_select_query_statement
+        my_logger.info(plan_select_query_statement)
         result_list = []
 
         for tups in plan_select_query_statement:
             plan_dicts = {}
             plan_dicts['id'] = tups[0]
             plan_dicts['plan_name'] = str(tups[1])
-            # print plan_dicts,'dulllllllllllll'
             result_list.append(plan_dicts)
-        print     result_list
+        my_logger.info(result_list)
         return jsonify(cluster_plans=result_list)
 
     except Exception as e:
@@ -460,17 +458,15 @@ def clusterSize():
         db_session = scoped_session(session_factory)
 
         size_select_query_statement = db_session.query(TblSize.int_size_id, TblSize.var_size_type).all()
-        print size_select_query_statement
+        my_logger.info(size_select_query_statement)
         result_list = []
 
         for tups in size_select_query_statement:
-            # print tups,'tuppppppppppppppp'
             size_dicts = {}
             size_dicts['id'] = tups[0]
             size_dicts['size'] = str(tups[1])
-            # print plan_dicts,'dulllllllllllll'
             result_list.append(size_dicts)
-        print result_list
+        my_logger.info(result_list)
         return jsonify(cluster_size=result_list)
     except Exception as e:
 
@@ -497,8 +493,8 @@ def clusterStatus(request_id):
         else:
             cluster_id = status_select_query_statement[0][1]
             request_status = status_select_query_statement[0][0]
-            print cluster_id, "hi"
-            print request_status, "hello"
+            my_logger.info(cluster_id)
+            my_logger.info(request_status)
             request_status_select_query_statement = db_session.query(TblMetaRequestStatus.var_request_status).filter(
                 TblMetaRequestStatus.srl_id == request_status).all()
             cluster_details = db_session.query(TblCluster.var_cluster_name, TblCluster.char_cluster_region).filter(
@@ -508,8 +504,8 @@ def clusterStatus(request_id):
                 return jsonify(message="cluster_Id not avilable", request_id=request_id)
             cluster_name = cluster_details[0][0]
             cluster_region = cluster_details[0][1]
-            print cluster_name
-            print cluster_region
+            my_logger.info(cluster_name)
+            my_logger.info(cluster_region)
             if len(request_status_select_query_statement) == 0:
                 return jsonify(request_id=request_id, cluster_status=status, cluster_name=cluster_details[0][0],
                                cluster_location=cluster_details[0][1],cluster_id = cluster_id)
@@ -542,7 +538,8 @@ def customerLocation():
                 dict_location[cluster_location].append(cluster_location[1])
             else:
                 dict_location[cluster_location] = (cluster_location[1])
-        print dict_location, type(dict_location)
+        my_logger.info(dict_location)
+        my_logger.info(type(dict_location))
         tuplist = []
         for tups in sorted(dict_location):
             dic = {}
@@ -564,13 +561,14 @@ def customerLocation():
 @api.route("/api/<cluster_id>/<role>", methods=['GET'])
 def customer(cluster_id, role):
     #try:
-        print "hello "
-        print cluster_id
-        print role
+        my_logger.info("hello ")
+        my_logger.info(cluster_id)
+        my_logger.info(role)
         db_session = scoped_session(session_factory)
         required_data = db_session.query(TblVmCreation.uid_agent_id).filter(TblVmCreation.uid_cluster_id == cluster_id,
                                                                             TblVmCreation.var_role == role).first()
-        print required_data, type(required_data)
+        my_logger.info(required_data)
+        my_logger.info(type(required_data))
 	db_session.close()
 
         return jsonify(agent_id=required_data[0])
@@ -587,11 +585,10 @@ def customer(cluster_id, role):
 @api.route('/api/cluster/<customer_id>', methods=['GET'])
 def cluster_info(customer_id):
     try:
-        #print customer_id
         db_session = scoped_session(session_factory)
         customer_cluster_info = db_session.query(TblCluster.uid_customer_id,TblCluster.uid_cluster_id,TblCluster.uid_cluster_type_id,TblCluster.valid_cluster,TblCluster.cluster_created_datetime,TblCluster.var_cluster_name)\
             .filter(TblCluster.uid_customer_id == customer_id).all()
-        print customer_cluster_info, "cciiiiiiiiiiiiiiiiiiiiiiiii"
+        my_logger.info(customer_cluster_info)
 
         if customer_cluster_info == []:
             return jsonify(message="No clusters to be displayed")
@@ -604,20 +601,14 @@ def cluster_info(customer_id):
                     mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
                     database_conn = mongo_db_conn['local']
                     customer_id_metrics_list = list(database_conn[customer_id].find())
-                    #print customer_id_metrics_list,type(customer_id_metrics_list),'cusososoosos'
                     if customer_id_metrics_list == []:
                         available_storage = 'NA'
 
-                    #print customer_id_metrics_list[-1]['payload'][3],'payyyyyyyyyyyylllllll'
-                    #print customer_id_metrics_list[-1]['payload'][-2], 'paoooooooooyyyyylllllll'
                     else:
                         available_storage = customer_id_metrics_list[-1]['payload'][-2]['available_storage']
-                    #print available_storage,'vallllll'
                     # metrics_dict =  customer_id_metrics_list[-1]
                     #for keys, values in metrics_dict['payload'][3].items():
-                        # print keys,values , "valoooooooooooeeeeeees"
                     #    if keys == 'available_storage':
-                            #print values, 'looooooooooooooooooooooooooooooooooooooooooo'
                     #        available_storage = values
                 else:
                     valid_cluster = False
@@ -642,7 +633,8 @@ def cluster_info(customer_id):
                     cluster_created_datetime = cluster_info[4]
                     now_time = datetime.datetime.now(et)
                     up_time = (now_time - cluster_info[4])
-                    print up_time,type(up_time) ,'stttttttttttttttttt'
+                    my_logger.info(up_time)
+                    my_logger.info(type(up_time))
 
                     def strfdelta(tdelta, fmt):
                         d = {"days": tdelta.days}
@@ -650,7 +642,7 @@ def cluster_info(customer_id):
                         d["minutes"], d["seconds"] = divmod(rem, 60)
                         return fmt.format(**d)
                     up_time_string = strfdelta(up_time,"{days}d,{hours}h:{minutes}m")
-                    print up_time_string
+                    my_logger.info(up_time_string)
                 cus_hivenode_info = db_session.query(TblNodeInformation.uid_node_id,TblNodeInformation.char_role).\
                     filter(TblNodeInformation.uid_cluster_id == cluster_info[1],TblNodeInformation.char_role == 'hive').all()
                 if cus_hivenode_info == []:
@@ -688,7 +680,7 @@ def status(customer_id,cluster_id):
     try:
         db_session = scoped_session(session_factory)
         valid_cluster= db_session.query(TblCluster.valid_cluster).filter(TblCluster.uid_cluster_id == cluster_id,TblCluster.uid_customer_id == customer_id).first()
-        print valid_cluster,"validcluster"
+        my_logger.info(valid_cluster)
         if valid_cluster[0]== True :
             db_session.close()
             return jsonify(status="Completed")
@@ -720,7 +712,8 @@ def edgenode():
         cluster_id = customer_request['cluster_id']
         request_id1 = str(uuid.uuid1())
         request_id2 = str(uuid.uuid1())
-        print request_id1,request_id2
+        my_logger.info(request_id1)
+        my_logger.info(request_id2)
         insert_customer = TblCustomerRequest(uid_request_id=request_id1,
                                                         uid_customer_id=customer_id,
                                                         char_feature_id=11,
@@ -752,7 +745,7 @@ def edgenoderolebool(cluster_id,role):
 
         edge_node_info = db_session.query(TblVmCreation).\
             filter(and_(TblVmCreation.uid_cluster_id==str(cluster_id),TblVmCreation.var_role == str(role),TblVmCreation.bool_edge == 'True')).all()
-        print edge_node_info,'agent idddd'
+        my_logger.info(edge_node_info)
         if edge_node_info != []:
             return jsonify(bool_value=1)
         else:
