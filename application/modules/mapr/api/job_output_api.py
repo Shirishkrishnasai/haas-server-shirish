@@ -16,6 +16,6 @@ def requestresponse(request_id):
         job_output_dict['job']['request_status']=customer_job_request_query[0][1]
         return jsonify(job_output_dict['job'])
     except Exception as e:
-		return e.message
+        return e.message
     finally:
         db_session.close()

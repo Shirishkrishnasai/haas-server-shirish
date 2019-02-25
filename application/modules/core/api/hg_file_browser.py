@@ -2,12 +2,12 @@ import time
 import pymongo
 import json
 from kafka import KafkaProducer
-from flask import request,Blueprint,jsonify
+from flask import Blueprint,jsonify
 from sqlalchemy import exc
 from application.models.models import TblAgent,TblNodeInformation
 from sqlalchemy.orm import scoped_session
 from application import session_factory
-from application.config.config_file import kafka_bootstrap_server,kafka_api_version
+from application.config.config_file import kafka_bootstrap_server
 from application import mongo_conn_string
 from application.common.loggerfile import my_logger
 filebrowser=Blueprint('filebrowser',__name__)

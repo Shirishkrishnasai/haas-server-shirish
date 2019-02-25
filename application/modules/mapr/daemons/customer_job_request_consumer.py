@@ -1,7 +1,7 @@
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application.models.models import TblCustomerJobRequest
-import json,os,sys
+import os,sys
 from application.common.loggerfile import my_logger
 from flask import Blueprint,request
 

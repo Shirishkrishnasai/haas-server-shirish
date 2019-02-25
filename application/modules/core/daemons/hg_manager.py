@@ -1,7 +1,5 @@
 from sqlalchemy.orm import scoped_session
 from application import session_factory
-from apscheduler.schedulers.background import BackgroundScheduler
-from application import app, conn_string, db
 from application.models.models import TblMetaTaskStatus, TblAgent, TblTask
 from application.common.kafka_producer import kafkaproducer
 from application.common.loggerfile import my_logger

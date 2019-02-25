@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, Blueprint
+from flask import jsonify,  Blueprint
 from application.models.models import TblUsers
 from sqlalchemy.orm import scoped_session
 from application import session_factory

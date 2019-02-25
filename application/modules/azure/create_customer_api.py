@@ -8,8 +8,7 @@ from sqlalchemy import func
 from flask import request, jsonify, Blueprint
 from azure.mgmt.network import NetworkManagementClient
 from azure.common.credentials import ServicePrincipalCredentials
-from application.config.config_file import application_id, customer_client_id, secret_code, tenant_id, subscription_id, \
-    resource
+from application.config.config_file import application_id, customer_client_id, secret_code, tenant_id, subscription_id,
 from application.modules.azure.create_ldap_customer import azureldapcustomer
 from azure.mgmt.resource import ResourceManagementClient
 from application.models.models import TblCustomer, TblCustomerAzureResourceGroup, TblVirtualNetwork, TblAzureAppGateway, \
@@ -17,7 +16,6 @@ from application.models.models import TblCustomer, TblCustomerAzureResourceGroup
 from application.common.loggerfile import my_logger
 from azure.mgmt.network.models import NetworkSecurityGroup
 from azure.mgmt.network.models import SecurityRule, SecurityRuleProtocol, SecurityRuleAccess, SecurityRuleDirection
-from sqlalchemy.dialects.postgresql import psycopg2
 from sqlalchemy.orm import scoped_session
 
 customers = Blueprint('customers', __name__)

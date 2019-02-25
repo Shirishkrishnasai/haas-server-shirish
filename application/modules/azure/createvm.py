@@ -10,7 +10,7 @@ from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.network import NetworkManagementClient
 from msrestazure.azure_exceptions import CloudError
 from application.models.models import TblSubnet,TblVmInformation,TblVmCreation,TblImage,TblCustomer,TblPlanClusterSizeConfig,TblMetaVmSize
-from application.config.config_file import application_id, customer_client_id, secret_code, tenant_id
+from application.config.config_file import  customer_client_id, secret_code, tenant_id
 
 USERNAME = 'sample-user'
 PASSWORD = 'Sample@123'

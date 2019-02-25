@@ -1,28 +1,17 @@
-import yaml
-import re
 from pytz import timezone
-import psycopg2,sys,os,json
-import io
-from azure.storage.file import FileService, FilePermissions
-from application.models.models import TblMetaFileUpload, TblFileUpload, TblMetaHdfsUpload, TblClusterType
-from configparser import ConfigParser
-from msrestazure.azure_exceptions import CloudError
+import psycopg2,sys,os
 import pymongo
 import uuid
 import datetime
-# from datetime import datetime
 import time
-from flask import Flask, jsonify, request, Request, Blueprint
-from application import app,  conn_string, mongo_conn_string, session_factory
+from flask import jsonify, request,  Blueprint
+from application import conn_string, mongo_conn_string
 from application.common.loggerfile import my_logger
-from application.config.config_file import schema_statement, request_status, kafka_bootstrap_server
 from application.models.models import TblCustomerRequest, TblAgentConfig, TblAgent, TblNodeInformation, \
     TblMetaCloudLocation, TblHiveMetaStatus, TblHiveRequest, TblFeature, TblPlan, TblSize, TblMetaRequestStatus, \
     TblCluster, TblVmCreation,TblMetaTaskStatus,TblTask,TblUsers
 from sqlalchemy.orm import scoped_session
 from application import session_factory
-from kafka import KafkaProducer
-from kafka import KafkaConsumer
 from sqlalchemy import and_
 
 api = Blueprint('api', __name__)
@@ -98,6 +87,8 @@ def monitor():
     except Exception:
         return jsonify(error='value error', message='not in json format')
 
+    finally:
+        session.close()
 
 @api.route("/api/addcluster", methods=['POST'])
 def hg_client():
@@ -278,7 +269,7 @@ def register():
 
 @api.route('/api/hivequery', methods=['POST'])
 def hg_hive_client():
-    #try:
+    try:
         # posted data
         data = request.json
         my_logger.info(data)
@@ -319,14 +310,14 @@ def hg_hive_client():
         my_logger.info("committing to database and closing session done")
         return jsonify(hive_request_id=hive_request_id_value, select_query=select_query_bool_value, role = 'hive')
 
-    #except Exception as e:
-     #   exc_type, exc_obj, exc_tb = sys.exc_info()
-      #  fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-       # my_logger.error(exc_type)
-        #my_logger.error(fname)
-       # my_logger.error(exc_tb.tb_lineno)
-    #finally:
-     #   db_session.close()
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()
 
 
 @api.route('/api/hivedatabase/<customer_id>/<cluster_id>/<agent_id>', methods=['GET'])
@@ -563,7 +554,7 @@ def customerLocation():
 
 @api.route("/api/<cluster_id>/<role>", methods=['GET'])
 def customer(cluster_id, role):
-    #try:
+    try:
         print "hello "
         print cluster_id
         print role
@@ -571,20 +562,20 @@ def customer(cluster_id, role):
         required_data = db_session.query(TblVmCreation.uid_agent_id).filter(TblVmCreation.uid_cluster_id == cluster_id,
                                                                             TblVmCreation.var_role == role).first()
         print required_data, type(required_data)
-	db_session.close()
+        db_session.close()
 
         return jsonify(agent_id=required_data[0])
-    #except Exception as e:
+    except Exception as e:
 
-   #     exc_type, exc_obj, exc_tb = sys.exc_info()
-    #    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-     #   my_logger.error(exc_type)
-      #  my_logger.error(fname)
-       # my_logger.error(exc_tb.tb_lineno)
-    #finally:
-     #   db_session.close()
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()
+@api.route("/api/cluster/<customer_id>", methods=['GET'])
 
-@api.route('/api/cluster/<customer_id>', methods=['GET'])
 def cluster_info(customer_id):
     try:
         #print customer_id

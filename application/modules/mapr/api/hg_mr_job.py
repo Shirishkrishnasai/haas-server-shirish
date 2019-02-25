@@ -1,24 +1,15 @@
-import uuid
-import requests
 import datetime
 import io
 from azure.storage.file import FileService
 from sqlalchemy import exc
 from configparser import ConfigParser
-from msrestazure.azure_exceptions import CloudError
 import uuid
-import os,sys
-import lxml.etree as ET
 from flask import request, Blueprint,jsonify
 from sqlalchemy import and_
-from application.config.config_file import file_upload_url, path
 from application.models.models import TblCustomerJobRequest, TblMetaFileUpload, TblFileUpload,TblMetaCloudType,TblMetaVmSize,TblPlanClusterSizeConfig ,TblMetaMrRequestStatus
 from application.common.loggerfile import my_logger
 from sqlalchemy.orm import scoped_session
 from application import session_factory
-from werkzeug.datastructures import ImmutableMultiDict
-import json
-import hashlib
 mrapi = Blueprint('mrapi', __name__)
 
 
@@ -75,7 +66,7 @@ def configuration():
 @mrapi.route("/api/addmrjob", methods=['POST'])
 def hg_mrjob_client():
 
-    #try:
+    try:
         db_session = scoped_session(session_factory)
 
         request_id = str(uuid.uuid1())
@@ -169,7 +160,6 @@ def hg_mrjob_client():
                                      )
         db_session.add(data)
         db_session.commit()
-        db_session.close()
 
         print "hello"
         return jsonify(requestid=request_id,status="success")
@@ -177,17 +167,17 @@ def hg_mrjob_client():
     #     print e
     #     my_logger.error(e)
     #     return jsonify(e)
-    # except Exception as e:
-    #     exc_type, exc_obj, exc_tb = sys.exc_info()
-    #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    except Exception as e:
+         exc_type, exc_obj, exc_tb = sys.exc_info()
+         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+         my_logger.error(exc_type)
+         my_logger.error(fname)
+         my_logger.error(exc_tb.tb_lineno)
     #
-    #     my_logger.error(exc_type)
-    #     my_logger.error(fname)
-    #     my_logger.error(exc_tb.tb_lineno)
-    #
-    # finally:
-    #     db_session.close()
-    #     my_logger.info("done")
+    finally:
+         db_session.close()
+         my_logger.info("done")
 
 
 def fileProgress(start, size):
@@ -208,3 +198,4 @@ def mrJobStatus(mr_job_id):
             filter(TblMetaMrRequestStatus.srl_id == customer_job_request_id_list[0][0]).all()
         result_dict[mr_job_id] = mr_request_id_list[0][0]
         return jsonify(result_dict)
+    session.close()

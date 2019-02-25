@@ -148,5 +148,6 @@ def create_subnet(customer_id):
    cur.execute(statement2 % (customer_id,cluster_id,ip,SUBNET_NAME,subnet_id))
    print "execution"
    conn.commit()
+   cur.close()
    return subnet_id
 

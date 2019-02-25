@@ -1,12 +1,9 @@
-from kafka import KafkaConsumer
-from application.config.config_file import kafka_bootstrap_server, kafka_api_version
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application.models.models import TblCustomerJobRequest,TblMetaMrRequestStatus
 import json,os,sys
 from application.common.loggerfile import my_logger
-from flask import Blueprint,jsonify, request
-import requests
+from flask import Blueprint, request
 
 jobdiagnostics = Blueprint('jobdiagnostics', __name__)
 @jobdiagnostics.route("/api/jobdiagnostics", methods=['POST'])

@@ -1,5 +1,4 @@
 import datetime
-import json
 import random
 import time
 from functools import partial
@@ -10,21 +9,21 @@ import jwt
 import ldap
 import psycopg2
 import pymongo
-from sqlalchemy.orm import scoped_session
 from application import app, mongo_conn_string, conn_string, session_factory
 from application.config.config_file import ldap_connection, ldap_connection_dn, ldap_connection_password
-from application.models.models import TblUsers, TblNodeInformation, TblCustomer, TblAzureFileStorageCredentials,TblVmCreation
+from application.models.models import TblUsers, TblNodeInformation, TblCustomer, TblAzureFileStorageCredentials, \
+    TblVmCreation
 from flask import jsonify, request, Blueprint
-# import ldap.modlist
 from sqlalchemy.orm import scoped_session
 
-# import ldap.modlist as modList
 azapi = Blueprint('azapi', __name__)
 
 my_logger = app.logger
 """
 Getting list of customers from LDAP
 """
+
+
 @azapi.route("/api/customer/<customer_id>", methods=['GET'])
 def getCustomerUsers(customer_id):
     try:
@@ -52,12 +51,13 @@ def getCustomerUsers(customer_id):
     except Exception as e:
         return e.message
     finally:
-        db_session.close
+        db_session.close()
 
 
 """
 Create Customer user in LDAP
 """
+
 
 @azapi.route('/api/customer/user/ldap', methods=['POST'])
 def createUserLdap():
@@ -143,7 +143,7 @@ Authenticating user
 @azapi.route('/api/customer/user/auth', methods=['POST'])
 def userAuthenticate():
     try:
-        db_session=scoped_session(session_factory)
+        db_session = scoped_session(session_factory)
         content = request.json
         my_logger.debug(content)
         mail = content['email']
@@ -165,10 +165,10 @@ def userAuthenticate():
         token = jwt.encode(payload, secret_key, algorithm)
         data = {}
         data['user_name'] = mail
-	
+
         data['token'] = token
         data['customer_id'] = customer_id
-	print data, "userrrrrrrrrrrrrrrrrrrr relatedddddddddddddddddddddddddd daaaaaaaaaaaaaaaaaaaaaaaaaattttttttttttttttttttttaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        print data, "userrrrrrrrrrrrrrrrrrrr relatedddddddddddddddddddddddddd daaaaaaaaaaaaaaaaaaaaaaaaaattttttttttttttttttttttaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         return jsonify(data=data)
 
     except ldap.INVALID_CREDENTIALS:
@@ -237,6 +237,8 @@ def removeUser():
 """
 Get cluster Metrics
 """
+
+
 @azapi.route('/api/customer/<cusid>/<cluid>', methods=['GET'])
 def cluster(cusid, cluid):
     try:
@@ -328,6 +330,8 @@ def cluster(cusid, cluid):
 """
 Get Metrics by node in cluster
 """
+
+
 @azapi.route('/api/customer/metrics/<cusid>/<cluid>', methods=['GET'])
 def cluster_metrics(cusid, cluid):
     mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
@@ -612,37 +616,40 @@ def clustermembers(customer_id, cluster_id):
         print cluster_id
         # Query cluster members from tbl_node_information
 
-        cluster_info_query_statement = db_session.query(TblNodeInformation.char_role,TblNodeInformation.uid_node_id,TblNodeInformation.uid_vm_id). \
+        cluster_info_query_statement = db_session.query(TblNodeInformation.char_role, TblNodeInformation.uid_node_id,
+                                                        TblNodeInformation.uid_vm_id). \
             filter(TblNodeInformation.uid_customer_id == customer_id,
                    TblNodeInformation.uid_cluster_id == cluster_id).all()
         print cluster_info_query_statement
-        tup=[]
+        tup = []
         for clust in cluster_info_query_statement:
-            dict={}
-            #print clust[2],'vmidddddddddddd'
-            #vm_name = db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_vm_id == clust[2]).first()
-            dict["role"]=clust[0]
-            dict["node_id"]=clust[1]
-            #dict["vm_name"]=vm_name[0]
-            dict["vm_id"]=clust[2]
+            dict = {}
+            # print clust[2],'vmidddddddddddd'
+            # vm_name = db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_vm_id == clust[2]).first()
+            dict["role"] = clust[0]
+            dict["node_id"] = clust[1]
+            # dict["vm_name"]=vm_name[0]
+            dict["vm_id"] = clust[2]
             tup.append(dict)
         return jsonify(cluster_members=tup)
     except Exception as e:
         return e.message
     finally:
         db_session.close()
+
+
 @azapi.route("/api/azure_credentials/<customer_id>", methods=['GET'])
 def azureFileStorageCredentials(customer_id):
-	# customer_request=request.json
+    # customer_request=request.json
     try:
         db_session = scoped_session(session_factory)
         azure_file_storage_credentials_statement = db_session.query(TblAzureFileStorageCredentials).all()
-        print azure_file_storage_credentials_statement,'azureeeee'
+        print azure_file_storage_credentials_statement, 'azureeeee'
         values_list = []
         keys_list = []
         for val in azure_file_storage_credentials_statement:
             values_dict = dict(val)
-            print values_dict,'valllllllllll'
+            print values_dict, 'valllllllllll'
             azure_account_name = values_dict['account_name']
             keys_list.append(values_dict['account_primary_key'])
             keys_list.append(values_dict['account_secondary_key'])
@@ -651,4 +658,4 @@ def azureFileStorageCredentials(customer_id):
     except Exception as e:
         print e.message
     finally:
-             db_session.close()
+        db_session.close()

@@ -1,10 +1,9 @@
-import time,sys,os
+import time
 
 from application.common.metrics_updation import metricSubscriber
 from application.config.config_file import kafka_bootstrap_server, kafka_api_version
 from flask import json
 from kafka import KafkaConsumer
-from application.common.loggerfile import my_logger
 
 
 def kafkaconsumer():

@@ -3,8 +3,7 @@ import ldap
 import ldap.modlist as modlist
 from application.config.config_file import ldap_connection, ldap_connection_dn, ldap_connection_password
 from application.models.models import TblCustomer, TblUsers
-from application import app, session_factory
-from flask import jsonify
+from application import  session_factory
 from sqlalchemy.orm import scoped_session
 
 

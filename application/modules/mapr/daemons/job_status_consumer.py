@@ -1,10 +1,9 @@
-from kafka import KafkaConsumer
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application.models.models import TblCustomerJobRequest,TblMetaMrRequestStatus
-from flask import Blueprint,render_template,abort, Flask,jsonify,request
+from flask import Blueprint,request
 from application.common.loggerfile import my_logger
-import sys,os,json
+import sys,os
 
 
 jobstatusapi = Blueprint('jobstatusapi', __name__)
