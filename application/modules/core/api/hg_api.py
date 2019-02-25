@@ -10,7 +10,6 @@ from msrestazure.azure_exceptions import CloudError
 import pymongo
 import uuid
 import datetime
-# from datetime import datetime
 import time
 from flask import Flask, jsonify, request, Request, Blueprint
 from application import app,  conn_string, mongo_conn_string, session_factory
@@ -560,7 +559,7 @@ def customerLocation():
 
 @api.route("/api/<cluster_id>/<role>", methods=['GET'])
 def customer(cluster_id, role):
-    #try:
+    try:
         my_logger.info("hello ")
         my_logger.info(cluster_id)
         my_logger.info(role)
@@ -569,18 +568,17 @@ def customer(cluster_id, role):
                                                                             TblVmCreation.var_role == role).first()
         my_logger.info(required_data)
         my_logger.info(type(required_data))
-	db_session.close()
 
         return jsonify(agent_id=required_data[0])
-    #except Exception as e:
+    except Exception as e:
 
-   #     exc_type, exc_obj, exc_tb = sys.exc_info()
-    #    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-     #   my_logger.error(exc_type)
-      #  my_logger.error(fname)
-       # my_logger.error(exc_tb.tb_lineno)
-    #finally:
-     #   db_session.close()
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()
 
 @api.route('/api/cluster/<customer_id>', methods=['GET'])
 def cluster_info(customer_id):

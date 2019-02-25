@@ -15,7 +15,7 @@ from application.modules.azure.createvm import vmcreation
 
 
 def edgenodeProvision(request_id):
-    #try:
+    try:
 
         db_session = scoped_session(session_factory)
         customer_data = db_session.query(TblCustomerRequest.uid_customer_id,
@@ -73,15 +73,15 @@ def edgenodeProvision(request_id):
         file_service.create_directory(cluster_id, 'spark')
         my_logger.info("doneeee")
 
-    # except Exception as e:
-    #     exc_type, exc_obj, exc_tb = sys.exc_info()
-    #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    #     my_logger.error(str(e))
-    #     my_logger.error(exc_type)
-    #     my_logger.error(fname)
-    #     my_logger.error(exc_tb.tb_lineno)
-    # finally:
-    #     db_session.close()
+     except Exception as e:
+         exc_type, exc_obj, exc_tb = sys.exc_info()
+         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+         my_logger.error(str(e))
+         my_logger.error(exc_type)
+         my_logger.error(fname)
+         my_logger.error(exc_tb.tb_lineno)
+     finally:
+         db_session.close()
 
 if __name__ == '__main__':
     try:

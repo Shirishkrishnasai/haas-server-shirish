@@ -15,7 +15,6 @@ from application import app, mongo_conn_string, conn_string, session_factory
 from application.config.config_file import ldap_connection, ldap_connection_dn, ldap_connection_password
 from application.models.models import TblUsers, TblNodeInformation, TblCustomer, TblAzureFileStorageCredentials,TblVmCreation
 from flask import jsonify, request, Blueprint
-# import ldap.modlist
 from sqlalchemy.orm import scoped_session
 from application.common.loggerfile import my_logger
 
@@ -53,7 +52,7 @@ def getCustomerUsers(customer_id):
     except Exception as e:
         return e.message
     finally:
-        db_session.close
+        db_session.close()
 
 
 """

@@ -169,25 +169,23 @@ def hg_mrjob_client():
                                      )
         db_session.add(data)
         db_session.commit()
-        db_session.close()
 
         my_logger.info("hello")
         return jsonify(requestid=request_id,status="success")
-    # except exc.SQLAlchemyError as e:
-    #     my_logger.info(e)
-    #     my_logger.error(e)
-    #     return jsonify(e)
-    # except Exception as e:
-    #     exc_type, exc_obj, exc_tb = sys.exc_info()
-    #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    #
-    #     my_logger.error(exc_type)
-    #     my_logger.error(fname)
-    #     my_logger.error(exc_tb.tb_lineno)
-    #
-    # finally:
-    #     db_session.close()
-    #     my_logger.info("done")
+    except exc.SQLAlchemyError as e:
+        my_logger.info(e)
+        my_logger.error(e)
+        return jsonify(e)
+    except Exception as e:
+         exc_type, exc_obj, exc_tb = sys.exc_info()
+         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+         my_logger.error(exc_type)
+         my_logger.error(fname)
+         my_logger.error(exc_tb.tb_lineno)
+    finally:
+         db_session.close()
+         my_logger.info("done")
 
 
 def fileProgress(start, size):
@@ -207,4 +205,5 @@ def mrJobStatus(mr_job_id):
         mr_request_id_list = session.query(TblMetaMrRequestStatus.var_mr_request_status).\
             filter(TblMetaMrRequestStatus.srl_id == customer_job_request_id_list[0][0]).all()
         result_dict[mr_job_id] = mr_request_id_list[0][0]
+
         return jsonify(result_dict)
