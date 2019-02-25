@@ -82,7 +82,7 @@ def hgmanager(agent_id):
                                 dependency_task_id = each_id.replace('"', '')
                                 dependency_task_status = db_session.query(TblTask.int_task_status).filter(
                                     TblTask.uid_task_id == dependency_task_id).all()
-				my_logger.info(dependency_task_status)
+                                my_logger.info(dependency_task_status)
                                 dependency_task_status_value = dependency_task_status[0]
                                 if dependency_task_status_value[0] == completed_task_status_value:
                                     completedtasks.append(dependency_task_status)

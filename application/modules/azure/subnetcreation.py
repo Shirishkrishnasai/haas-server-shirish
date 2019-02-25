@@ -150,5 +150,6 @@ def create_subnet(customer_id):
    cur.execute(statement2 % (customer_id,cluster_id,ip,SUBNET_NAME,subnet_id))
    my_logger.info("zexecution")
    conn.commit()
+   cur.close()
    return subnet_id
 
