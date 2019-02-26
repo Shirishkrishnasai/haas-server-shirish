@@ -22,7 +22,7 @@ def fileUpload():
         copied_args = posted_args.copy()
         my_logger.info(copied_args)
         normal_dict = dict(copied_args)
-        my_logger.debug(normal_dict)
+        my_logger.info(normal_dict)
         my_logger.info(normal_dict)
         customerid = normal_dict['customer_id'][0]
 
@@ -58,7 +58,7 @@ def fileUpload():
         db_session = scoped_session(session_factory)
         share_values = db_session.query(TblMetaFileUpload.var_share_name, TblMetaFileUpload.var_directory_name). \
             filter(TblMetaFileUpload.uid_customer_id == customerid).first()
-        my_logger.debug(share_values)
+        my_logger.info(share_values)
         try:
 
             my_logger.info(byte_stream)
@@ -68,7 +68,7 @@ def fileUpload():
                                                  stream=byte_stream,
                                                  count=no_of_bytes,
                                                  progress_callback=fileProgress,
-                                                 content_type=application/java-archive)
+                                                 content_settings=application/java-archive)
             my_logger.info('file transfer is over')
             my_logger.info('file created in azure file storage')
             my_logger.info('now inserting values in database')
@@ -109,17 +109,17 @@ def fileUpload():
         except Exception as e:
             my_logger.error(e)
     except CloudError as e:
-        my_logger.debug("Got Cloud Error")
+        my_logger.info("Got Cloud Error")
         my_logger.error(e)
     except Exception as e:
-        my_logger.debug("Got Exception")
+        my_logger.info("Got Exception")
         my_logger.error(e)
     finally:
-        my_logger.debug("its finally block and its over")
+        my_logger.info("its finally block and its over")
         db_session.close()
 
 def fileProgress(start, size):
-    my_logger.debug("%d %d", start, size)
+    my_logger.info("%d %d", start, size)
 
 
 @azfile.route("/fileuploadbytes", methods=['POST'])
@@ -131,7 +131,7 @@ def fileUploadBytes():
         copied_args = posted_args.copy()
         my_logger.info(copied_args)
         normal_dict = dict(copied_args)
-        my_logger.debug(normal_dict)
+        my_logger.info(normal_dict)
         my_logger.info(normal_dict)
         customerid = normal_dict['customer_id'][0]
 
@@ -162,7 +162,7 @@ def fileUploadBytes():
         db_session = scoped_session(session_factory)
         share_values = db_session.query(TblMetaFileUpload.var_share_name, TblMetaFileUpload.var_directory_name). \
             filter(TblMetaFileUpload.uid_customer_id == customerid).first()
-        my_logger.debug(share_values)
+        my_logger.info(share_values)
         # my_logger.info(byte_array)
         try:
             # my_logger.info(byte_array
@@ -217,18 +217,18 @@ def fileUploadBytes():
         except Exception as e:
              my_logger.error(e)
     except CloudError as e:
-        my_logger.debug("Got Cloud Error")
+        my_logger.info("Got Cloud Error")
         my_logger.error(e)
     except Exception as e:
-        my_logger.debug("Got Exception")
+        my_logger.info("Got Exception")
         my_logger.error(e)
     finally:
-        my_logger.debug("its finally block and its over")
+        my_logger.info("its finally block and its over")
         db_session.close()
 
 
 def fileProgress(start, size):
-    my_logger.debug("%d%d", start, size)
+    my_logger.info("%d%d", start, size)
 
 
 @azfile.route("/createdirectory", methods=['POST'])
@@ -254,7 +254,7 @@ def createDirectory():
     # share_values = db_session.query(TblMetaFileUpload.var_share_name, TblMetaFileUpload.var_directory_name). \
     #   filter(TblMetaFileUpload.uid_customer_id == customerid).first()
     # share_name = db_session.query(TblMetaFileUpload.var_share_name).filter(TblMetaFileUpload.uid_customer_id == customerid).first()
-    # my_logger.debug(share_name)
+    # my_logger.info(share_name)
     share_name = 'haasfiles'
     directory_creation = file_service.create_directory(share_name=share_name, directory_name=clusterid / clusterid,
                                                        metadata=None, fail_on_exist=True, timeout=None)

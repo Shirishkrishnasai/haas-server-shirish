@@ -34,7 +34,9 @@ def configure_hive(request_id):
                                                      TblTaskType.int_vm_roles).filter(TblTaskType.char_task_type_id.in_(task_types_list)).all()
         node_roles_query_dict = dict(session.query(TblMetaNodeRoles.srl_id,
                                          TblMetaNodeRoles.vm_roles).all())
+
 ###################################################### tasks generation #######################################################################
+
         dependenttasks_workerpaths = []
         for each_tuplee in dependenttasks_workerpaths_0:
             each_tuplee = list(each_tuplee)
@@ -82,6 +84,7 @@ def configure_hive(request_id):
 
 
 ##############################################################end of tasks generation #########################################################
+
         agentid_ip_vmid = session.query(TblVmCreation.uid_agent_id,
                                          TblVmCreation.var_ip,
                                          TblVmCreation.uid_vm_id).filter(TblVmCreation.uid_customer_id == customer_id,
@@ -120,6 +123,7 @@ def configure_hive(request_id):
         session.commit()
 
 ################################################## for hive host file ############################################################
+
         host_file = ''
 
         namenode_datanode_hive = session.query(TblVmCreation.var_ip,
@@ -128,6 +132,7 @@ def configure_hive(request_id):
                                                TblVmCreation.uid_agent_id).filter(TblVmCreation.uid_cluster_id == cluster_id).all()
         for each_node in namenode_datanode_hive:
             host_file = host_file + each_node[0] + ' ' + each_node[1] + '\n'
+
 ################################################### hive host file generation over ###############################################
 
 
@@ -135,11 +140,11 @@ def configure_hive(request_id):
 #
 #         datanode_agentid = [nn[3] for nn in namenode_datanode_hive if nn[2] == 'datanode']
 ###################################################### for name node and datanode host file ##############################################
+
         hive_ip_name = [hiveip[0] + ' ' + hiveip[1] + '\n' for hiveip in namenode_datanode_hive if hiveip[2] == 'hive'][0]
 
         host_content = {"file_name": "host.txt", "content": hive_ip_name}
-#
-#
+
         mongo_connection = pymongo.MongoClient(mongo_conn_string)
         database_connection = mongo_connection['haas']
 

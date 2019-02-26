@@ -18,7 +18,7 @@ def filebrowsing(customerid,clusterid,filename):
 
                 timestamp=str(int(round(time.time() * 1000)))
                 my_logger.info(timestamp)
-                my_logger.debug(filename)
+                my_logger.info(filename)
                 db_session = scoped_session(session_factory)
                 namenode_data = db_session.query(TblAgent.uid_agent_id, TblAgent.private_ips).filter(
                     TblAgent.uid_node_id == TblNodeInformation.uid_node_id) \
@@ -26,7 +26,7 @@ def filebrowsing(customerid,clusterid,filename):
                 private_ip = namenode_data[1]
                 agent_id = namenode_data[0]
 
-                my_logger.debug(private_ip)
+                my_logger.info(private_ip)
                 producer = KafkaProducer(bootstrap_servers=kafka_bootstrap_server)
                 kafkatopic = "filebrowsing_" + customerid + "_" + clusterid
                 kafkatopic = kafkatopic.decode('utf-8')
@@ -37,12 +37,11 @@ def filebrowsing(customerid,clusterid,filename):
                 filebrowser_data["filename"] = str(filename)
                 filebrowser_data["namenode_ip"] = str(private_ip)
                 filebrowser_data["timestamp"] = str(timestamp)
-                my_logger.debug(filebrowser_data)
-                #my_logger.info(filebrowser_data,'dataaa'
+                my_logger.info(filebrowser_data)
 
                 producer.send(kafkatopic, str(filebrowser_data))
                 producer.flush()
-                my_logger.debug('flussshhhh')
+                my_logger.info('flussshhhh')
                 my_logger.info('flush')
                 mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
                 my_logger.info("mango")
@@ -61,7 +60,7 @@ def filebrowsing(customerid,clusterid,filename):
         except exc.SQLAlchemyError as e:
                 return jsonify(e.message)
         except pymongo.errors.ConnectionFailure, e:
-               my_logger.debug(e)
+               my_logger.info(e)
                return jsonify(message='unable to connect mongo')
         except Exception as e:
                return jsonify(e.message)

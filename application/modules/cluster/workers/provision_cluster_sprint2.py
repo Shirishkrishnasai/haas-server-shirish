@@ -121,9 +121,6 @@ def installcluster(request_id):
         db_session.commit()
         db_session.close()
 
-        #
-
-    # installcluster('4a82d464-0aa0-11e9-ba4c-3ca9f49ab2cc')
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -138,8 +135,8 @@ if __name__ == '__main__':
 
         if len(sys.argv)>=1:
             request_id = sys.argv[1]
-            my_logger.info("Callign with id "+request_id)
-
+            my_logger.info("Calling with id ")
+            my_logger.info(request_id)
             installcluster(request_id)
         else:
             my_logger.info("args not passed")

@@ -106,17 +106,12 @@ def azure_upload_host_slave(cluster_id):
 
     hostname_ip_details = db.session.query(TblVmCreation.var_ip,TblVmCreation.var_name,TblVmCreation.var_role).filter(TblVmCreation.uid_cluster_id == cluster_id).all()
     my_logger.info(hostname_ip_details)
-    # hostfile = open('hostfile','w')
-    # slavefile = open('slavefile', 'w')
+
     hostlist = []
     slavelist = []
     for tups in hostname_ip_details:
         my_logger.info(tups)
-    #     hostfile.write(str(tups[0])+'   '+str(tups[1])+'\n')
-    #     if str(tups[2]).lower() == 'datanode':
-    #         slavefile.write(str(tups[0])+'   '+str(tups[1])+'\n')
-    # hostfile.close()
-    # slavefile.close()
+
         host_file =  str(tups[0]) + '   ' + str(tups[1])
         hostlist.append(host_file)
         if str(tups[2]).lower() == 'datanode':
@@ -159,10 +154,6 @@ def azure_upload_host_slave(cluster_id):
                                          stream=byte_stream_host,
                                          count=no_of_bytes_host,
                                          progress_callback=fileprogress)
-
-
-
-#azure_upload_host_slave('c02c6724-0e89-11e9-bb3d-3ca9f49ab2cc')
 
 def fileprogress(start, size):
     my_logger.debug("%d%d", start, size)

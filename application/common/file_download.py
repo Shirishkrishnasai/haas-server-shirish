@@ -31,7 +31,7 @@ def fileDownload(uploadid):
                                        TblFileUpload.var_directory_name,
                                        TblFileUpload.var_file_name).filter(
             TblFileUpload.uid_upload_id == uploadid).first()
-        my_logger.debug(file_values)
+        my_logger.info(file_values)
         try:
 
             # creating expiry date for access signature and converting to str as expiry sparam shouldnt contain tzinfo
@@ -57,7 +57,7 @@ def fileDownload(uploadid):
             posted_args = request.args
             copied_args = posted_args.copy()
             normal_dict = dict(copied_args)
-            my_logger.debug(normal_dict)
+            my_logger.info(normal_dict)
 
             if normal_dict.has_key('agent_id'):
                 my_logger.info("passed argument is agent_id")
@@ -95,13 +95,13 @@ def fileDownload(uploadid):
 
 
     except CloudError as e:
-        my_logger.debug("Got Cloud Error")
+        my_logger.info("Got Cloud Error")
         my_logger.error(e)
     except Exception as e:
-        my_logger.debug("Got Exception")
+        my_logger.info("Got Exception")
         my_logger.error(e)
     finally:
-        my_logger.debug("its finally block and its over")
+        my_logger.info("its finally block and its over")
         db_session.close()
 
 def fileProgress(start, size):

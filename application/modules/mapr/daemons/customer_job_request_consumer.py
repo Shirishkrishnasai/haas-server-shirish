@@ -13,7 +13,6 @@ def jobinsertion():
         my_logger.info('insert application id')
         session = scoped_session(session_factory)
         jobdetails=request.json
-	
         my_logger.info(jobdetails)
         job_information_dict = jobdetails
         my_logger.info('in')

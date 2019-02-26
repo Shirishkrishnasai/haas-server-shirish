@@ -18,7 +18,6 @@ def configure_cluster(request_id):
     try:
 
         my_logger.info("in cluster configure worker")
-        #request_id = sys.argv[1]
         session = scoped_session(session_factory)
 
         # querying data from customer request table
@@ -31,7 +30,6 @@ def configure_cluster(request_id):
         customer_id = customer_data[0][1]
         feature_id = customer_data[0][2]
         cluster_id = customer_data[0][3]
-        #cluster_id = 'ae945516-09bc-11e9-b4fe-000c29da5704'
         agent_data = session.query(TblAgent.uid_agent_id,TblAgent.bool_registered).\
             filter(TblAgent.uid_cluster_id == cluster_id).all()
         my_logger.info(agent_data)
@@ -140,7 +138,7 @@ def configure_cluster(request_id):
 
                 # generate host string
 
-                host_dns_string += cluster_nodes_information[3] +' '+ cluster_nodes_information[5]+'\n'
+                host_dns_string += cluster_nodes_information[3] + ' ' + cluster_nodes_information[5]+'\n'
 
                 # generate slaves string
 

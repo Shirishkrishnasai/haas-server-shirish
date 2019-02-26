@@ -8,7 +8,6 @@ cluster_members=Blueprint('cluster_members', __name__)
 @cluster_members.route("/api/cluster_members/<customer_id>/<cluster_id>",methods=['GET'])
 
 def clustermemers(customer_id,cluster_id):
-    #customer_request=request.json
     try:
         customer_id=customer_id
         cluster_id=cluster_id

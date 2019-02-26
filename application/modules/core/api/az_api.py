@@ -21,7 +21,6 @@ from application.common.loggerfile import my_logger
 # import ldap.modlist as modList
 azapi = Blueprint('azapi', __name__)
 
-#my_logger = app.logger
 """
 Getting list of customers from LDAP
 """
@@ -32,7 +31,7 @@ def getCustomerUsers(customer_id):
         select_customer_dn = db_session.query(TblCustomer.txt_customer_dn).filter(
             TblCustomer.uid_customer_id == customer_id).all()
         customer_dn = select_customer_dn[0][0]
-        my_logger.debug(customer_dn)
+        my_logger.info(customer_dn)
         ldap_conn = ldap.initialize(ldap_connection)
         ldap_conn.simple_bind_s(ldap_connection_dn, ldap_connection_password)
         searchScope = ldap.SCOPE_SUBTREE
@@ -45,7 +44,7 @@ def getCustomerUsers(customer_id):
             users_dict['user_name'] = user_name[0]
             users_dict['active'] = "true"
             users_list.append(users_dict)
-            my_logger.debug(users_list)
+            my_logger.info(users_list)
         return jsonify(users_list)
     except ldap.LDAPError as e:
         return jsonify(str(e))
@@ -64,7 +63,7 @@ def createUserLdap():
     try:
         db_session = scoped_session(session_factory)
         content = request.json
-        my_logger.debug(content)
+        my_logger.info(content)
         display_name = content['first_name'] + content['second_name']
         sn = content['second_name']
         password = content['password']
@@ -76,13 +75,13 @@ def createUserLdap():
         select_customer_dn = db_session.query(TblCustomer.txt_customer_dn).filter(
             TblCustomer.uid_customer_id == customer_id).all()
         customer_dn = select_customer_dn[0][0]
-        my_logger.debug(customer_dn)
+        my_logger.info(customer_dn)
         customer_gid_query = db_session.query(TblCustomer.int_gid_id).filter(
             TblCustomer.uid_customer_id == customer_id).all()
         customer_gid_id = customer_gid_query[0][0]
-        my_logger.debug(customer_gid_id)
+        my_logger.info(customer_gid_id)
 
-        my_logger.debug(customer_dn)
+        my_logger.info(customer_dn)
         dn = "cn=" + cn + "," + customer_dn
 
         modlist = {
@@ -98,7 +97,7 @@ def createUserLdap():
         }
         # addModList transforms your dictionary into a list that is conform to ldap input.
         addinguser = connect.add_s(dn, ldap.modlist.addModlist(modlist))
-        my_logger.debug(addinguser)
+        my_logger.info(addinguser)
         if addinguser:
             data = TblUsers(uid_customer_id=customer_id,
                             var_user_name=uid,
@@ -113,21 +112,21 @@ def createUserLdap():
                 TblUsers.srl_id.desc()).all()
 
             get_data = [rows.to_json() for rows in select_user_dn]
-            my_logger.debug(get_data)
+            my_logger.info(get_data)
             return jsonify(message="user is added", userdata=get_data)
         else:
             return jsonify(message="user is not added")
     except ldap.INVALID_CREDENTIALS:
         return jsonify(message="Your username or password is incorrect.")
     except ldap.LDAPError as e:
-        my_logger.debug(e)
+        my_logger.info(e)
         return jsonify(message=e)
         connect.unbind_s()
     except psycopg2.DatabaseError, e:
-        my_logger.debug(e.pgerror)
+        my_logger.info(e.pgerror)
         return jsonify(message='database error')
     except psycopg2.OperationalError, e:
-        my_logger.debug(e.pgerror)
+        my_logger.info(e.pgerror)
         return jsonify(message='Operational error')
     except Exception:
         return jsonify(message='not in json format')
@@ -145,12 +144,12 @@ def userAuthenticate():
     try:
         db_session=scoped_session(session_factory)
         content = request.json
-        my_logger.debug(content)
+        my_logger.info(content)
         mail = content['email']
         password = content['password']
         select_user_dn = db_session.query(TblUsers.uid_customer_id).filter(TblUsers.var_user_name == mail).all()
         customer_id = select_user_dn[0][0]
-        my_logger.debug(customer_id)
+        my_logger.info(customer_id)
 
         payload = {'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, minutes=30),
                    'uid': mail,
@@ -160,7 +159,7 @@ def userAuthenticate():
         connect = ldap.initialize(ldap_connection)
         select_user_dn = db_session.query(TblUsers.txt_dn).filter(TblUsers.var_user_name == mail).all()
         dn = select_user_dn[0][0]
-        my_logger.debug(dn)
+        my_logger.info(dn)
         connect.bind_s(dn, password)
         token = jwt.encode(payload, secret_key, algorithm)
         data = {}
@@ -174,14 +173,14 @@ def userAuthenticate():
     except ldap.INVALID_CREDENTIALS:
         return jsonify(message="Your username or password is incorrect.")
     except ldap.LDAPError as e:
-        my_logger.debug(e)
+        my_logger.info(e)
         return jsonify(message=e)
         connect.unbind_s()
     except psycopg2.DatabaseError, e:
-        my_logger.debug(e.pgerror)
+        my_logger.info(e.pgerror)
         return jsonify(message='database error')
     except psycopg2.OperationalError, e:
-        my_logger.debug(e.pgerror)
+        my_logger.info(e.pgerror)
         return jsonify(message='Operational error')
     except Exception:
         return jsonify(message='Server is not responding... please try again')
@@ -203,11 +202,11 @@ def removeUser():
         select_user_dn = db_session.query(TblUsers.txt_dn).filter(TblUsers.var_user_name == uid).all()
         # get_data = [rows.to_json() for rows in select_user_dn]
         dn = select_user_dn[0][0]
-        my_logger.debug(dn)
+        my_logger.info(dn)
         connect = ldap.initialize(ldap_connection)
         connect.simple_bind_s(ldap_connection_dn, ldap_connection_password)
         del_user = connect.delete_s(dn)
-        my_logger.debug(del_user)
+        my_logger.info(del_user)
         if del_user:
             object = db_session.query(TblUsers).filter(TblUsers.var_user_name == uid)
             object.update({"bool_active": 0})
@@ -219,14 +218,14 @@ def removeUser():
     except ldap.INVALID_CREDENTIALS:
         return "Your username or password is incorrect."
     except ldap.LDAPError as e:
-        my_logger.debug(e)
+        my_logger.info(e)
         return jsonify(message=e)
         connect.unbind_s()
     except psycopg2.DatabaseError, e:
-        my_logger.debug(e.pgerror)
+        my_logger.info(e.pgerror)
         return jsonify(message='database error')
     except psycopg2.OperationalError, e:
-        my_logger.debug(e.pgerror)
+        my_logger.info(e.pgerror)
         return jsonify(message='Operational error')
     except Exception:
         return jsonify(message='not in json format')
@@ -253,7 +252,7 @@ def cluster(cusid, cluid):
         payload_list = []
         for data in req_data:
             payload_list.append(data['payload'])
-        my_logger.debug(payload_list)
+        my_logger.info(payload_list)
         ram_data = {}
         cpu_data = {}
         storage_data = {}
@@ -272,28 +271,28 @@ def cluster(cusid, cluid):
                 if metrics['metric_name'] == 'ram':
                     ram.append(metrics['metric_value'])
                     ram_data['measured_in'] = metrics['measured_in']
-                    my_logger.debug(ram)
+                    my_logger.info(ram)
 
                 elif metrics['metric_name'] == 'cpu':
                     cpu.append(metrics['metric_value'])
                     cpu_data['measured_in'] = metrics['measured_in']
-                    my_logger.debug(cpu)
+                    my_logger.info(cpu)
 
                 elif metrics['metric_name'] == 'network':
                     network_in.append(metrics['data_in'])
                     network_out.append(metrics['data_out'])
                     network_data['measured_in'] = metrics['measured_in']
-                    my_logger.debug(network_in, network_out)
+                    my_logger.info(network_in, network_out)
                 elif metrics['metric_name'] == 'storage':
                     storage.append(metrics['available_storage'])
                     storage_data['measured_in'] = metrics['measured_in']
-                    my_logger.debug(storage)
+                    my_logger.info(storage)
 
                 else:
                     disk_read.append(metrics['disk_read'])
                     disk_write.append(metrics['disk_write'])
                     disk_data['measured_in'] = metrics['measured_in']
-                    my_logger.debug(disk_read, disk_write)
+                    my_logger.info(disk_read, disk_write)
         ram_data['ram_value'] = sum(ram)
         network_data['network_data_in'] = sum(network_in)
         storage_data['storage_value'] = sum(storage)
@@ -381,11 +380,11 @@ def cluster_metrics(cusid, cluid):
     diskMetrics = [reduce(disk_reduce, group) for _, group in groupby(disk, lambda v: v.get('time'))]
     networkMetrics = [reduce(network_reduce, group) for _, group in groupby(network, lambda v: v.get('time'))]
     storageMetrics = [reduce(storage_reduce, group) for _, group in groupby(storage, lambda v: v.get('time'))]
-    my_logger.debug(cpuMetrics)
-    my_logger.debug(storageMetrics)
-    my_logger.debug(networkMetrics)
-    my_logger.debug(diskMetrics)
-    my_logger.debug(ramMetrics)
+    my_logger.info(cpuMetrics)
+    my_logger.info(storageMetrics)
+    my_logger.info(networkMetrics)
+    my_logger.info(diskMetrics)
+    my_logger.info(ramMetrics)
 
     if metric == 'cpu':
         return jsonify(cpuMetrics)
@@ -634,4 +633,4 @@ def azureFileStorageCredentials(customer_id):
     except Exception as e:
         my_logger.info(e.message)
     finally:
-             db_session.close()
+        db_session.close()
