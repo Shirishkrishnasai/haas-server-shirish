@@ -18,7 +18,6 @@ def job_list(customer_id,cluster_id):
         my_logger.info(customer_job_request_query)
         for each_job in customer_job_request_query:
             #my_logger.info(each_job,'eksksksks'
-            #my_logger.info(each_job[2]
             #if any(x is None for x in each_job[2]) is False:
             if each_job[2] is not None:
                 my_logger.info("insideeeeeeee")
@@ -26,8 +25,6 @@ def job_list(customer_id,cluster_id):
                 meta_mr_status_query=db_session.query(TblMetaMrRequestStatus.var_mr_request_status).filter(TblMetaMrRequestStatus.srl_id==each_job[1]).all()
                 job_diagnostic=json.loads(each_job[2])
                 my_logger.info(job_diagnostic)
-                #my_logger.info(each_job[3],len(each_job),"eavcccchhh"
-              #  my_logger.info(job_diagnostic['jobs']['job']
                 individual_job_diagnostics['application_id']=each_job[0]
                 individual_job_diagnostics['job_status']=meta_mr_status_query[0][0]
                 individual_job_diagnostics['startedTime']=job_diagnostic['startedTime']
@@ -35,9 +32,6 @@ def job_list(customer_id,cluster_id):
                 individual_job_diagnostics['mr_job_id'] = each_job[3]
                 individual_job_diagnostics['description'] = each_job[4]
                 individual_job_diagnostics['job_name'] = each_job[5]
-                #my_logger.info(individual_job_diagnostics['mr_job_id'],"lollll"
-                #my_logger.info(type(individual_job_diagnostics['job_start_time']),"oneeeeeeeeeee"
-                #my_logger.info(type(individual_job_diagnostics['job_end_time']),"twooooooooooo"
                 job_list.append(individual_job_diagnostics)
                 my_logger.info(job_list)
         return jsonify(jobs=job_list)

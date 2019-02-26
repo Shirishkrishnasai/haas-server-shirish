@@ -52,20 +52,15 @@ def kafkaproducer_old(message):
             kafka_publisher_query_statement = db_session.query(TblKafkaPublisher).filter(
                 TblKafkaPublisher.uid_customer_id == customerid, TblKafkaPublisher.uid_cluster_id == clusterid).all()
 
-            # for i in kafka_publisher_query_statement:
-            #      my_logger.info(i.as_dict())
-            #      #kafka_topic_id_info = i.to_dict()
-
             kafka_topic_id_info = [i.as_dict() for i in kafka_publisher_query_statement]
             #           my_logger.info(kafka_topic_id_info,"kafka topic idddddddddddddssssssssssssssss")
             my_logger.info(kafka_topic_id_info)
             my_logger.info("Runnnnn........................")
             for kafka_topic_string in kafka_topic_id_info:
-                my_logger.debug("In for loop")
+                my_logger.info("In for loop")
                 my_logger.info(kafka_topic_string)
-                # kafka_topic = json.loads(kafka_topic_string)
                 kafka_topic = kafka_topic_string
-                my_logger.debug(kafka_topic)
+                my_logger.info(kafka_topic)
                 kafka_topic_query_statement = db_session.query(TblKafkaTopic).filter(
                     TblKafkaTopic.uid_topic_id == kafka_topic["uid_topic_id"]).all()
                 kafka_topic_name_string = [i.as_dict() for i in kafka_topic_query_statement]
@@ -76,14 +71,13 @@ def kafkaproducer_old(message):
                 my_logger.info("  Id of Kafka topic")
                 if kafka_topic_name_info["var_topic_type"] == "tasks":
                     my_logger.info("in tasks")
-                    # topicid=json.loads(kafka_topic_id_info[0])
 
                     # Retrieving topic name
 
                     kafka_topic_name = kafka_topic_name_info["var_topic_name"]
                     kafkatopic = kafka_topic_name.decode('utf-8')
-                    my_logger.debug(kafkatopic)
-                    my_logger.debug(cluster_customer_details)
+                    my_logger.info(kafkatopic)
+                    my_logger.info(cluster_customer_details)
                     cluster_info_string = json.dumps(cluster_customer_details)
                     producer.send(kafkatopic, cluster_info_string)
                     my_logger.info("sending message to kafka topic")

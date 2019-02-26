@@ -5,7 +5,7 @@ from sqlalchemy.orm import scoped_session
 
 
 def taskstatusconsumer(task_status_information):
-    # Updatind task status in database
+    # Updating task status in database
     db_session = scoped_session(session_factory)
     try:
 

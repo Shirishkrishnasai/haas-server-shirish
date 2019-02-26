@@ -78,7 +78,7 @@ from application.modules.mapr.api.mapreduceapi import mapreduce
 from application.modules.mapr.api.job_diagnostics_api import jobdiagnostics
 from application.modules.core.api.hg_manager_api import highgearmanager
 from application.modules.core.api.task_status_updation import taskstatus
-from application.modules.core.daemons.kafka_job_producer import  jobproducer
+from application.modules.core.daemons.kafka_job_producer import jobproducer
 from application.modules.core.daemons.filebrowsestatus import filebrowsestatus
 from application.modules.core.daemons.hg_manager import hgmanagerscheduler, hgmanager
 from application.modules.hive.daemons.hive_database_result_consumer import hiveDatabaseResult

@@ -20,7 +20,6 @@ def hgmanager(agent_id):
             agent_registration = db_session.query(TblAgent.bool_registered,
                                                   TblAgent.uid_agent_id).filter(TblAgent.uid_agent_id == agent_id).first()
             # Geting agents from database
-            #for agent_registration in agent_verification_result:
             agent_tasks_data = []
             if agent_registration[0] == True:
                 my_logger.info("agent verification done")
@@ -94,18 +93,12 @@ def hgmanager(agent_id):
                                 update_assigned_statement.update({"int_task_status": update_task_status_value})
                                 db_session.commit()
                     if agent_tasks_data == []:
-			#db_session.close()
                         my_logger.info("nodata")
                         return jsonify("null")
                     else:
-			#db_session.close()
                         my_logger.info(agent_tasks_data)
-                       # kafkaproducer(message=agent_tasks_data)
                         return jsonify(agent_tasks_data)
-
-                        #my_logger.info("hgmanager producedddddddddddddddddddd"
             else:
-		
                 my_logger.info('hgmanager else')
                 return jsonify("null")
 
