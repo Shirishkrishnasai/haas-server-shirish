@@ -193,21 +193,21 @@ hive_task_type_1 = TblTaskType(char_task_type_id='F12_T1',
                                )
 hive_task_type_2 = TblTaskType(char_task_type_id='F12_T2',
                                txt_description='hive-configuration',
-                               txt_agent_worker_version_path='/opt/scripts/hive.sh',
+                               txt_agent_worker_version_path='/opt/scripts/hive-installation.ksh',
                                txt_agent_worker_version='1.0',
                                txt_dependency_task_id='F12_T1',
                                int_vm_roles=3
                                )
 hive_task_type_3 = TblTaskType(char_task_type_id='F12_T3',
-                               txt_description='mysql-installation',
-                               txt_agent_worker_version_path='/opt/scripts/mysql.sh',
+                               txt_description='mysql-hive-installation',
+                               txt_agent_worker_version_path='/opt/scripts/mysql-hive-installation.sh',
                                txt_agent_worker_version='1.0',
                                txt_dependency_task_id='F12_T2',
                                int_vm_roles=3
                                )
 hive_task_type_4 = TblTaskType(char_task_type_id='F12_T4',
                                txt_description='start-hiveServer2',
-                               txt_agent_worker_version_path='/opt/scripts/start-hiveserver2.sh',
+                               txt_agent_worker_version_path='/opt/scripts/start-hiveserver2.ksh',
                                txt_agent_worker_version='1.0',
                                txt_dependency_task_id='F12_T3',
                                int_vm_roles=3
@@ -230,7 +230,6 @@ hive_task_type_7 = TblTaskType(char_task_type_id='F12_T7',
                                txt_agent_worker_version='1.0',
                                int_vm_roles=2
                                )
-
 cluster_type_1 = TblClusterType(uid_cluster_type_id='f5826f72-d135-11e8-84db-3ca9f49ab2cc',
                                 char_name='azure')
 
@@ -828,6 +827,8 @@ db_session.add(tbl_feature_type_hive_typeid_2)
 db_session.add(tbl_feature_type_hive_typeid_3)
 db_session.add(tbl_feature_type_hive_typeid_4)
 db_session.add(tbl_feature_type_hive_typeid_5)
+db_session.add(tbl_feature_type_hive_typeid_6)
+db_session.add(tbl_feature_type_hive_typeid_7)
 db_session.add(node_role_1)
 db_session.add(node_role_2)
 db_session.add(node_role_3)

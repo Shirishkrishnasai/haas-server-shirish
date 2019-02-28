@@ -1,4 +1,4 @@
-import smtplib
+import smtplib,sys,os
 from application.common.email_generation import emailsender
 from flask import Flask, jsonify, request, Request, Blueprint
 from application import session_factory
@@ -14,16 +14,16 @@ def task_status_update():
         task_status_information = request.json
         taskid = task_status_information["payload"]["task_id"]
         taskstatus = task_status_information["payload"]["status"]
-        my_logger.info(taskstatus)
+        print taskstatus ,'staaaaaaaaaaaatttttttttttttuuuuuuuuuuuuussssssssssssssssssssssssss'
         customerid = task_status_information["customer_id"]
         clusterid = task_status_information["cluster_id"]
         meta_task_status_dict = dict(db_session.query(TblMetaTaskStatus.var_task_status,
                                                  TblMetaTaskStatus.srl_id).all())
 
         taskstatusupdate = db_session.query(TblTask).filter(TblTask.uid_task_id == taskid)
-        my_logger.info(meta_task_status_dict[taskstatus])
+        print meta_task_status_dict[taskstatus],'iiiiiiiiiiiiiiiiinnnnnnnnnnnnnnnnntttttttttttttttttttttttttttttt'
         taskstatusupdate.update({"int_task_status": meta_task_status_dict[taskstatus]})
-        
+
         db_session.commit()
         request1 = db_session.query(TblTask.uid_request_id).filter(TblTask.uid_task_id == taskid).first()
         requests_id = request1[0]
@@ -35,17 +35,26 @@ def task_status_update():
             date_time = datetime.now()
             valid_cluster_status.update({"valid_cluster": True,"cluster_created_datetime":date_time})
             db_session.commit()
-            requests = db_session.query(TblCustomerRequest.int_request_status).filter(TblCustomerRequest.uid_request_id == requests_id).first()
+            requests = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == requests_id)
             requests.update({"int_request_status": meta_task_status_dict['COMPLETED']})
             db_session.commit()
         else:
-            requests = db_session.query(TblCustomerRequest.int_request_status).filter(TblCustomerRequest.uid_request_id == requests_id)
+            requests = db_session.query(TblCustomerRequest).filter(TblCustomerRequest.uid_request_id == requests_id)
             requests.update({"int_request_status": meta_task_status_dict['RUNNING']})
             db_session.commit()
-        return jsonify("sucess")
+        print taskstatus
+        return jsonify(message="success", taskid=taskid)
+        # if taskstatus== "completed":
+        #     return jsonify(message="success",taskid=taskid)
    except Exception as e:
-       my_logger.info(e.message)
-       return jsonify("failed")
+
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+        return jsonify(message="failed")
    finally:
       db_session.close()
+
 
