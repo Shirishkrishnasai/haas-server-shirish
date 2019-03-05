@@ -571,7 +571,7 @@ def customer(cluster_id, role):
 
 @api.route('/api/cluster/<customer_id>', methods=['GET'])
 def cluster_info(customer_id):
-    try:
+    #try:
         db_session = scoped_session(session_factory)
         customer_cluster_info = db_session.query(TblCluster.uid_customer_id,TblCluster.uid_cluster_id,TblCluster.uid_cluster_type_id,TblCluster.valid_cluster,TblCluster.cluster_created_datetime,TblCluster.var_cluster_name)\
             .filter(TblCluster.uid_customer_id == customer_id).all()
@@ -592,7 +592,9 @@ def cluster_info(customer_id):
                         available_storage = 'NA'
 
                     else:
-                        available_storage = customer_id_metrics_list[-1]['payload'][-2]['available_storage']
+			available_storage = 'NA'
+                        #available_storage = customer_id_metrics_list[-1]['payload'][-2]['available_storage']
+
                     # metrics_dict =  customer_id_metrics_list[-1]
                     #for keys, values in metrics_dict['payload'][3].items():
                     #    if keys == 'available_storage':
@@ -647,15 +649,15 @@ def cluster_info(customer_id):
             reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
 
             return jsonify(clusterinformation=reversed_list_customer_cluster_info)
-    except Exception as e:
+    #except Exception as e:
 
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
-        db_session.close()
+     #   exc_type, exc_obj, exc_tb = sys.exc_info()
+      #  fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+       # my_logger.error(exc_type)
+        #my_logger.error(fname)
+        #my_logger.error(exc_tb.tb_lineno)
+    #finally:
+     #   db_session.close()
 
 
 @api.route("/api/status/<customer_id>/<cluster_id>", methods=['GET'])

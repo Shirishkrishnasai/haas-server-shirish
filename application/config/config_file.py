@@ -21,9 +21,9 @@ file_upload_url="http://104.211.222.41:5000/fileupload"
 path="/opt/hadoop/etc/hadoop/mapred-site.xml"
 
 
-conn_string = "host='104.211.222.41' user='postgres' password='password' dbname='tejasri'"
-postgres_conn = 'postgres://postgres:password@104.211.222.41/tejasri'
+conn_string = "host='104.211.222.41' user='postgres' password='password' dbname='mar4'"
+postgres_conn = 'postgres://postgres:password@104.211.222.41/mar4'
 
-SQLALCHEMY_DATABASE_URI = 'postgres://postgres:password@104.211.222.41/tejasri'
+SQLALCHEMY_DATABASE_URI = 'postgres://postgres:password@104.211.222.41/mar4'
 mongo_conn_string="mongodb://104.211.222.41:27017"
 sqlite_string= "/opt/agent/haas"

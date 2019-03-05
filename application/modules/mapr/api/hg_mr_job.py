@@ -26,7 +26,6 @@ mrapi = Blueprint('mrapi', __name__)
 def configuration():
     try:
 
-
         data = request.json
         filesize = data["filesize"]
         plan_id = data["plan_id"]
@@ -77,7 +76,6 @@ def hg_mrjob_client():
 
     try:
         db_session = scoped_session(session_factory)
-
         request_id = str(uuid.uuid1())
         date_time = datetime.datetime.now()
         posted_args = request.args

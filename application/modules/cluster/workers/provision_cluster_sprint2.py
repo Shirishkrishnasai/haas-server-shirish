@@ -49,8 +49,10 @@ def installcluster(request_id):
         account_key = cfg.get('file_storage', 'key')
 
         file_service = FileService(account_name=account_name, account_key=account_key)
+        file_service.create_share(share_name=cluster_id,quota=100)
 
-        file_service.create_share(cluster_id)
+
+        #file_service.create_share(cluster_id)
         file_service.create_directory(cluster_id, 'system')
         file_service.create_directory(cluster_id, 'mapreduce')
         my_logger.info("doneeee")

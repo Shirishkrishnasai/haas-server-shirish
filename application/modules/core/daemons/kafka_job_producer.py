@@ -26,7 +26,7 @@ def mrjobproducer():
                 job_description=req_data[3]
                 uid_jar_upload_id=req_data[4]
                 job_parameters=req_data[5]
-                nodeinformation=db_session.query(TblNodeInformation.uid_node_id).filter(TblNodeInformation.char_role=="resourcemanager",TblNodeInformation.uid_cluster_id==clusterid).first()
+                nodeinformation=db_session.query(TblNodeInformation.uid_node_id).filter(TblNodeInformation.char_role=="namenode",TblNodeInformation.uid_cluster_id==clusterid).first()
                 resourcemanager_data=db_session.query(TblAgent.uid_agent_id,TblAgent.private_ips).filter(TblAgent.uid_node_id==nodeinformation[0])
                 file_information=db_session.query(TblFileUpload.var_file_name).filter(TblFileUpload.uid_upload_id==uid_jar_upload_id)
                 filename=file_information[0][0]
