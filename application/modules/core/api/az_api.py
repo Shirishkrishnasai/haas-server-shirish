@@ -231,286 +231,519 @@ def removeUser():
         return jsonify(message='not in json format')
     finally:
         db_session.close()
+    """
+    Get cluster Metrics
+    """
 
-
-"""
-Get cluster Metrics
-"""
-@azapi.route('/api/customer/<cusid>/<cluid>', methods=['GET'])
-def cluster(cusid, cluid):
-    try:
+    @azapi.route('/api/customer/<cusid>/<cluid>/<vm_id>', methods=['GET'])
+    def cluster(cusid, cluid, vm_id):
+        # try:
+        db_session = scoped_session(session_factory)
         mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
         database_conn = mongo_db_conn['local']
         collection = database_conn[cusid]
         from_time_params = request.args.get('from')
-        from_time_params_str = str(from_time_params)
         to_time_params = request.args.get('to')
-        to_time_params_str = str(to_time_params)
         metric = request.args.get('metric')
-        req_data = collection.find(
-            {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
-        payload_list = []
-        for data in req_data:
-            payload_list.append(data['payload'])
-        my_logger.info(payload_list)
-        ram_data = {}
-        cpu_data = {}
-        storage_data = {}
-        disk_data = {}
-        network_data = {}
+        vm_name = db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_cluster_id == cluid,
+                                                                  TblVmCreation.uid_vm_id == vm_id).first()
+        print vm_name
+        if from_time_params and to_time_params:
+            print 'hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii from cluster metrics api'
+            from_time_params_str = str(from_time_params)
+            to_time_params_str = str(to_time_params)
+            req_data = collection.find(
+                {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
+            print req_data
+            minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
+        else:
+            date_time = datetime.datetime.now()
+            from_time_params = (int(round(time.mktime(date_time.timetuple()))) * 1000) - (5 * 1000 * 60)
+            from_time_params_str = str(from_time_params)
+            print from_time_params_str
+            to_time_params_str = str(int(round(time.mktime(date_time.timetuple()))) * 1000)
+            print to_time_params_str
+            req_data = collection.find(
+                {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
+            minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
+            print req_data, "req_data"
         ram = []
         cpu = []
-        network_in = []
-        network_out = []
-        disk_read = []
-        disk_write = []
         storage = []
-        for payload in payload_list:
-            for metrics in payload:
-
-                if metrics['metric_name'] == 'ram':
-                    ram.append(metrics['metric_value'])
-                    ram_data['measured_in'] = metrics['measured_in']
-                    my_logger.info(ram)
-
-                elif metrics['metric_name'] == 'cpu':
-                    cpu.append(metrics['metric_value'])
-                    cpu_data['measured_in'] = metrics['measured_in']
-                    my_logger.info(cpu)
-
-                elif metrics['metric_name'] == 'network':
-                    network_in.append(metrics['data_in'])
-                    network_out.append(metrics['data_out'])
-                    network_data['measured_in'] = metrics['measured_in']
-                    my_logger.info(network_in, network_out)
-                elif metrics['metric_name'] == 'storage':
-                    storage.append(metrics['available_storage'])
-                    storage_data['measured_in'] = metrics['measured_in']
-                    my_logger.info(storage)
-
-                else:
-                    disk_read.append(metrics['disk_read'])
-                    disk_write.append(metrics['disk_write'])
-                    disk_data['measured_in'] = metrics['measured_in']
-                    my_logger.info(disk_read, disk_write)
-        ram_data['ram_value'] = sum(ram)
-        network_data['network_data_in'] = sum(network_in)
-        storage_data['storage_value'] = sum(storage)
-        cpu_data['cpu_value'] = sum(cpu)
-        network_data['network_data_out'] = sum(network_out)
-        disk_data['disk_write'] = sum(disk_write)
-        disk_data['disk_read'] = sum(disk_read)
-        result = []
+        for data in req_data:
+            if len(data) == 0:
+                return jsonify(data='null')
+            else:
+                for lists in data['payload']:
+                    for dicts in lists:
+                        dicts['time'] = data['time']
+                        if dicts['metric_name'] == 'ram' and dicts['host_name'] == vm_name[0]:
+                            dicts['vm_id'] = vm_id
+                            ram.append(dicts)
+                        elif dicts['metric_name'] == 'storage' and dicts['host_name'].strip() == vm_name[0]:
+                            dicts['vm_id'] = vm_id
+                            storage.append(dicts)
+                        elif dicts['metric_name'] == 'cpu' and dicts['host_name'] == vm_name[0]:
+                            dicts['vm_id'] = vm_id
+                            cpu.append(dicts)
+                        else:
+                            pass
         if metric == 'ram':
-            result.append(ram_data)
-            return jsonify(data=result)
+            return jsonify(data=ram)
         elif metric == 'storage':
-            result.append(storage_data)
-            return jsonify(data=result)
+            return jsonify(data=storage)
         elif metric == 'cpu':
-            result.append(cpu_data)
-            return jsonify(data=result)
-        elif metric == 'network':
-            result.append(network_data)
-            return jsonify(data=result)
-        elif metric == 'disk':
-            result.append(disk_data)
-            return jsonify(data=result)
+            return jsonify(data=cpu)
         else:
-
-            result.extend((ram_data, network_data, storage_data, cpu_data, network_data, disk_data,))
-            return jsonify(data=result)
-    except Exception:
-        return jsonify(message='general errors')
-
-
-"""
-Get Metrics by node in cluster
-"""
-@azapi.route('/api/customer/metrics/<cusid>/<cluid>', methods=['GET'])
-def cluster_metrics(cusid, cluid):
-    mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
-    database_conn = mongo_db_conn['local']
-    collection = database_conn[cusid]
-    from_time_params = request.args.get('from')
-    to_time_params = request.args.get('to')
-    metric = request.args.get('metric')
-    if from_time_params and to_time_params:
-        my_logger.info('hiiiiiiiiiii from cluster metrics api')
-        from_time_params_str = str(from_time_params)
-        to_time_params_str = str(to_time_params)
-        req_data = collection.find(
-            {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
-        my_logger.info(req_data)
-        minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
-    else:
-        date_time = datetime.datetime.now()
-        from_time_params = (int(round(time.mktime(date_time.timetuple()))) * 1000) - (5 * 1000 * 60)
-        from_time_params_str = str(from_time_params)
-        to_time_params_str = str(int(round(time.mktime(date_time.timetuple()))) * 1000)
-        req_data = collection.find(
-            {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
-        minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
-
-    metrics_data = list(req_data)
-    agentlist_info = []
-
-    for data in metrics_data:
-        agentlist_info.append(data.get("agent_id"))
-
-    set_agentlist = set(agentlist_info)
-    agentlist = list(set_agentlist)
-
-    # req_data=[]
-    re = list(metrics_data)
-    re = [change(v, minutes) for v in re]
+            metricss = ram + cpu + storage
+            return jsonify(data=metricss)
+            # except Exception:
+            #     return jsonify(message='general errors')
+            # finally:
+            #     db_session.close
 
     """
-    reduceByMetricForCluster for Cluster level metrics
-    reduceByMetric for node level metrics
+    Get Metrics by node in cluster
     """
 
-    cpu = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'cpu') for v in re])
-    ram = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'ram') for v in re])
-    disk = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'disk') for v in re])
-    network = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'network') for v in re])
-    storage = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'storage') for v in re])
-    cpuMetrics = [reduce(cpu_reduce, group) for _, group in groupby(cpu, lambda v: v.get('time'))]
-    ramMetrics = [reduce(ram_reduce, group) for _, group in groupby(ram, lambda v: v.get('time'))]
-    diskMetrics = [reduce(disk_reduce, group) for _, group in groupby(disk, lambda v: v.get('time'))]
-    networkMetrics = [reduce(network_reduce, group) for _, group in groupby(network, lambda v: v.get('time'))]
-    storageMetrics = [reduce(storage_reduce, group) for _, group in groupby(storage, lambda v: v.get('time'))]
-    my_logger.info(cpuMetrics)
-    my_logger.info(storageMetrics)
-    my_logger.info(networkMetrics)
-    my_logger.info(diskMetrics)
-    my_logger.info(ramMetrics)
-
-    if metric == 'cpu':
-        return jsonify(cpuMetrics)
-    elif metric == 'ram':
-        return jsonify(ramMetrics)
-    elif metric == 'storage':
-        return jsonify(storageMetrics)
-    elif metric == 'network':
-        return jsonify(networkMetrics)
-    elif metric == 'disk':
-        return jsonify(diskMetrics)
-    else:
-        metrics = cpuMetrics + ramMetrics + storageMetrics + networkMetrics + diskMetrics
-        return jsonify(metrics)
-
-
-def cpu_reduce(cpu1, cpu2):
-    cpu3 = {}
-    cpu3["time"] = cpu1.get("time")
-    cpu3['metric_value'] = float(cpu1["metric_value"]) + float(cpu2["metric_value"])
-    cpu3['metric_name'] = cpu1.get("metric_name")
-    cpu3['measured_in'] = cpu1.get("measured_in")
-
-    return cpu3
-
-
-def network_reduce(n1, n2):
-    n3 = {}
-
-    n3["time"] = n1.get("time")
-    n3['data_in'] = float(n1["data_in"]) + float(n2["data_in"])
-    n3['data_out'] = float(n1["data_out"]) + float(n2["data_out"])
-    n3['metric_name'] = n1.get("metric_name")
-    n3['measured_in'] = n1.get("measured_in")
-
-    return n3
-
-
-def ram_reduce(ram1, ram2):
-    ram3 = {}
-    ram3["time"] = ram1.get("time")
-    ram3['metric_value'] = float(ram1["metric_value"]) + float(ram2["metric_value"])
-    ram3['metric_name'] = ram1.get("metric_name")
-    ram3['measured_in'] = ram1.get("measured_in")
-
-    return ram3
-
-
-def storage_reduce(s1, s2):
-    s3 = {}
-    s3["time"] = s1.get("time")
-    s3['available_storage'] = float(s1["available_storage"]) + float(s2["available_storage"])
-    s3['metric_name'] = s1.get("metric_name")
-    s3['measured_in'] = s1.get("measured_in")
-    my_logger.info(s3)
-
-    return s3
-
-
-def disk_reduce(d1, d2):
-    d3 = {}
-    d3["time"] = d1.get("time")
-    d3['disk_read'] = float(d1["disk_read"]) + float(d2["disk_read"])
-    d3['disk_write'] = float(d1["disk_write"]) + float(d2["disk_write"])
-    d3['metric_name'] = d1.get("metric_name")
-    d3['measured_in'] = d1.get("measured_in")
-
-    return d3
-
-
-def reduceByMetric(value, metricName, agent_id):
-    metric_dict = {}
-    payload = value.get("payload")
-    # my_logger.info(payload)
-
-    for index, data in enumerate(payload):
-        if (str(data.get("metric_name")) == metricName and str(value.get("agent_id")) == agent_id):
-            metric_dict['time'] = value.get("time")
-            metric_dict['agent_id'] = value.get("agent_id")
-
-            metric_dict['metric_value'] = data.get('metric_value')
-            metric_dict['measured_in'] = data.get('measured_in')
-            metric_dict.update(data)
-            return metric_dict
-
-
-def reduceByMetricForCluster(value, metricName):
-    metric_dict = {}
-    payload = value.get("payload");
-    # my_logger.info(payload)
-    for index, data in enumerate(payload):
-        if (str(data.get("metric_name")) == metricName):
-            metric_dict['time'] = value.get("time")
-            metric_dict['agent_id'] = value.get("agent_id")
-
-            metric_dict['metric_value'] = data.get('metric_value')
-            metric_dict.update(data)
-            return metric_dict
-
-
-def change(value, minutes):
-    v = {}
-
-    for timemetric in minutes:
-        if timemetric[0] < int(value.get('time')) <= timemetric[1]:
-            v['time'] = timemetric[0]
+    @azapi.route('/api/customer/metrics/<cusid>/<cluid>', methods=['GET'])
+    def cluster_metrics(cusid, cluid):
+        print cusid, cluid
+        mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
+        database_conn = mongo_db_conn['local']
+        collection = database_conn[cusid]
+        from_time_params = request.args.get('from')
+        to_time_params = request.args.get('to')
+        metric = request.args.get('metric')
+        if from_time_params and to_time_params:
+            print 'hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii from cluster metrics api'
+            from_time_params_str = str(from_time_params)
+            to_time_params_str = str(to_time_params)
+            req_data = collection.find(
+                {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
+            print req_data
+            # print to_time_params_str,from_time_params_str
+            minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
         else:
-            pass
+            date_time = datetime.datetime.now()
+            from_time_params = (int(round(time.mktime(date_time.timetuple()))) * 1000) - (5 * 1000 * 60)
+            from_time_params_str = str(from_time_params)
+            print from_time_params_str
+            to_time_params_str = str(int(round(time.mktime(date_time.timetuple()))) * 1000)
+            print to_time_params_str
+            req_data = collection.find(
+                {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
+            # print to_time_params_str, from_time_params_str
+            minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
+            print req_data, "req_data"
+        metrics_data = list(req_data)
+        re = list(metrics_data)
+        re = [change(v, minutes) for v in re]
+        if len(re) == 0:
+            return jsonify('null')
+        else:
+            """
+            reduceByMetricForCluster for Cluster level metrics
+            reduceByMetric for node level metrics
+            """
+            cpumetrics = []
+            rammetrics = []
+            storagemetrics = []
+            cpu = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'cpu') for v in re])
+            ram = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'ram') for v in re])
+            storage = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'storage') for v in re])
+            for value in cpu:
+                cpuMetrics = [reduce(cpu_reduce, group) for _, group in groupby(value, lambda v: v.get('time'))]
+                cpumetrics.append(cpuMetrics[0])
+            for value in ram:
+                ramMetrics = [reduce(ram_reduce, group) for _, group in groupby(value, lambda v: v.get('time'))]
+                rammetrics.append(ramMetrics[0])
+            for value in storage:
+                storageMetrics = [reduce(storage_reduce, group) for _, group in groupby(value, lambda v: v.get('time'))]
+                storagemetrics.append(storageMetrics[0])
+            # my_logger.info(cpumetrics)
+            # my_logger.info(storagemetrics)
+            # my_logger.info(rammetrics)
 
-    value.update(v)
-    return value
+            if metric == 'cpu':
+                return jsonify(cpumetrics)
+            elif metric == 'ram':
+                return jsonify(rammetrics)
+            elif metric == 'storage':
+                return jsonify(storagemetrics)
+            else:
+                metrics = cpumetrics + rammetrics + storagemetrics
+                return jsonify(metrics)
+
+    def cpu_reduce(cpu1, cpu2):
+        cpu3 = {}
+        cpu3["time"] = cpu1.get("time")
+        cpu3['metric_value'] = float(cpu1["metric_value"]) + float(cpu2["metric_value"])
+        cpu3['metric_name'] = "cpu_cores"
+        # cpu3['measured_in'] = cpu1.get("measured_in")
+        return cpu3
+
+    #
+
+    def ram_reduce(ram1, ram2):
+        ram3 = {}
+        ram3["time"] = ram1.get("time")
+        ram3['metric_value'] = float(ram1["metric_value"]) + float(ram2["metric_value"])
+        ram3['metric_name'] = "ram_metrics"
+        ram3['measured_in'] = "Bytes"
+        return ram3
+
+    def storage_reduce(s1, s2):
+        s3 = {}
+        s3["time"] = s1.get("time")
+        s3['metric_value'] = float(s1["metric_value"]) + float(s2["metric_value"])
+        s3['metric_name'] = "storage_metrics"
+        s3['measured_in'] = "Bytes"
+        # print s3,"s3333333333333333333333333333333"
+        return s3
+
+    def reduceByMetric(value, metricName, vm_name):
+        metric_dict = {}
+        payload = value.get("payload")
+        # print payload
+        for index, data in enumerate(payload):
+            if (str(data.get("metric_name")) == metricName and str(value.get("host_name")) == vm_name):
+                metric_dict['time'] = value.get("time")
+                metric_dict['host_name'] = value.get("host_name")
+                metric_dict['metric_value'] = data.get('metric_value')
+                metric_dict['measured_in'] = data.get('measured_in')
+                metric_dict.update(data)
+                # print metric_dict
+                return metric_dict
+
+    def reduceByMetricForCluster(value, metric):
+        payload = value.get("payload")
+        # print payload
+        for d in payload:
+            if len(d) == 0:
+                pass
+            else:
+                lis = []
+                # print d,"ddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+                for val in d:
+                    if val["metric_name"] == metric:
+                        metric_dict = {}
+                        metric_dict['time'] = value.get("time")
+                        metric_dict['metric_value'] = val['metric_value']
+                        lis.append(metric_dict)
+                if lis != []:
+                    return lis
+
+    def change(value, minutes):
+        # print value
+        v = {}
+
+        for timemetric in minutes:
+            # print "For time",int(value.get('time'))
+            if timemetric[0] < int(value.get('time')) <= timemetric[1]:
+                v['time'] = timemetric[0]
+            else:
+                pass
+
+        value.update(v)
+        return value
+
+    def divideMilliSeconds(fromtime, totime):
+        fromtime = int(fromtime)
+        totime = int(totime)
+        # print fromtime,type(fromtime),totime
+        totime = int(totime)
+
+        minutes = []
+        # type(fromtime)
+        from_time = (fromtime / 1000 / 60)
+        to_time = (totime / 1000 / 60) + 1
+        # print "for times",from_time,to_time
+        for i in range(from_time, to_time):
+            # print "in minutes",i*60
+            minutes.append([i * 1000 * 60, (i + 1) * 1000 * 60])
+        return minutes
 
 
-def divideMilliSeconds(fromtime, totime):
-    fromtime = int(fromtime)
-    totime = int(totime)
-    totime = int(totime)
-
-    minutes = []
-    # type(fromtime)
-    from_time = (fromtime / 1000 / 60)
-    to_time = (totime / 1000 / 60) + 1
-    for i in range(from_time, to_time):
-        minutes.append([i * 1000 * 60, (i + 1) * 1000 * 60])
-    return minutes
-
+#
+# """
+# Get cluster Metrics
+# """
+# @azapi.route('/api/customer/<cusid>/<cluid>', methods=['GET'])
+# def cluster(cusid, cluid):
+#     try:
+#         mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
+#         database_conn = mongo_db_conn['local']
+#         collection = database_conn[cusid]
+#         from_time_params = request.args.get('from')
+#         from_time_params_str = str(from_time_params)
+#         to_time_params = request.args.get('to')
+#         to_time_params_str = str(to_time_params)
+#         metric = request.args.get('metric')
+#         req_data = collection.find(
+#             {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
+#         payload_list = []
+#         for data in req_data:
+#             payload_list.append(data['payload'])
+#         my_logger.info(payload_list)
+#         ram_data = {}
+#         cpu_data = {}
+#         storage_data = {}
+#         disk_data = {}
+#         network_data = {}
+#         ram = []
+#         cpu = []
+#         network_in = []
+#         network_out = []
+#         disk_read = []
+#         disk_write = []
+#         storage = []
+#         for payload in payload_list:
+#             for metrics in payload:
+#
+#                 if metrics['metric_name'] == 'ram':
+#                     ram.append(metrics['metric_value'])
+#                     ram_data['measured_in'] = metrics['measured_in']
+#                     my_logger.info(ram)
+#
+#                 elif metrics['metric_name'] == 'cpu':
+#                     cpu.append(metrics['metric_value'])
+#                     cpu_data['measured_in'] = metrics['measured_in']
+#                     my_logger.info(cpu)
+#
+#                 elif metrics['metric_name'] == 'network':
+#                     network_in.append(metrics['data_in'])
+#                     network_out.append(metrics['data_out'])
+#                     network_data['measured_in'] = metrics['measured_in']
+#                     my_logger.info(network_in, network_out)
+#                 elif metrics['metric_name'] == 'storage':
+#                     storage.append(metrics['available_storage'])
+#                     storage_data['measured_in'] = metrics['measured_in']
+#                     my_logger.info(storage)
+#
+#                 else:
+#                     disk_read.append(metrics['disk_read'])
+#                     disk_write.append(metrics['disk_write'])
+#                     disk_data['measured_in'] = metrics['measured_in']
+#                     my_logger.info(disk_read, disk_write)
+#         ram_data['ram_value'] = sum(ram)
+#         network_data['network_data_in'] = sum(network_in)
+#         storage_data['storage_value'] = sum(storage)
+#         cpu_data['cpu_value'] = sum(cpu)
+#         network_data['network_data_out'] = sum(network_out)
+#         disk_data['disk_write'] = sum(disk_write)
+#         disk_data['disk_read'] = sum(disk_read)
+#         result = []
+#         if metric == 'ram':
+#             result.append(ram_data)
+#             return jsonify(data=result)
+#         elif metric == 'storage':
+#             result.append(storage_data)
+#             return jsonify(data=result)
+#         elif metric == 'cpu':
+#             result.append(cpu_data)
+#             return jsonify(data=result)
+#         elif metric == 'network':
+#             result.append(network_data)
+#             return jsonify(data=result)
+#         elif metric == 'disk':
+#             result.append(disk_data)
+#             return jsonify(data=result)
+#         else:
+#
+#             result.extend((ram_data, network_data, storage_data, cpu_data, network_data, disk_data,))
+#             return jsonify(data=result)
+#     except Exception:
+#         return jsonify(message='general errors')
+#
+#
+# """
+# Get Metrics by node in cluster
+# """
+# @azapi.route('/api/customer/metrics/<cusid>/<cluid>', methods=['GET'])
+# def cluster_metrics(cusid, cluid):
+#     mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
+#     database_conn = mongo_db_conn['local']
+#     collection = database_conn[cusid]
+#     from_time_params = request.args.get('from')
+#     to_time_params = request.args.get('to')
+#     metric = request.args.get('metric')
+#     if from_time_params and to_time_params:
+#         my_logger.info('hiiiiiiiiiii from cluster metrics api')
+#         from_time_params_str = str(from_time_params)
+#         to_time_params_str = str(to_time_params)
+#         req_data = collection.find(
+#             {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
+#         my_logger.info(req_data)
+#         minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
+#     else:
+#         date_time = datetime.datetime.now()
+#         from_time_params = (int(round(time.mktime(date_time.timetuple()))) * 1000) - (5 * 1000 * 60)
+#         from_time_params_str = str(from_time_params)
+#         to_time_params_str = str(int(round(time.mktime(date_time.timetuple()))) * 1000)
+#         req_data = collection.find(
+#             {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
+#         minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
+#
+#     metrics_data = list(req_data)
+#     agentlist_info = []
+#
+#     for data in metrics_data:
+#         agentlist_info.append(data.get("agent_id"))
+#
+#     set_agentlist = set(agentlist_info)
+#     agentlist = list(set_agentlist)
+#
+#     # req_data=[]
+#     re = list(metrics_data)
+#     re = [change(v, minutes) for v in re]
+#
+#     """
+#     reduceByMetricForCluster for Cluster level metrics
+#     reduceByMetric for node level metrics
+#     """
+#
+#     cpu = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'cpu') for v in re])
+#     ram = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'ram') for v in re])
+#     disk = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'disk') for v in re])
+#     network = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'network') for v in re])
+#     storage = filter(partial(is_not, None), [reduceByMetricForCluster(v, 'storage') for v in re])
+#     cpuMetrics = [reduce(cpu_reduce, group) for _, group in groupby(cpu, lambda v: v.get('time'))]
+#     ramMetrics = [reduce(ram_reduce, group) for _, group in groupby(ram, lambda v: v.get('time'))]
+#     diskMetrics = [reduce(disk_reduce, group) for _, group in groupby(disk, lambda v: v.get('time'))]
+#     networkMetrics = [reduce(network_reduce, group) for _, group in groupby(network, lambda v: v.get('time'))]
+#     storageMetrics = [reduce(storage_reduce, group) for _, group in groupby(storage, lambda v: v.get('time'))]
+#     my_logger.info(cpuMetrics)
+#     my_logger.info(storageMetrics)
+#     my_logger.info(networkMetrics)
+#     my_logger.info(diskMetrics)
+#     my_logger.info(ramMetrics)
+#
+#     if metric == 'cpu':
+#         return jsonify(cpuMetrics)
+#     elif metric == 'ram':
+#         return jsonify(ramMetrics)
+#     elif metric == 'storage':
+#         return jsonify(storageMetrics)
+#     elif metric == 'network':
+#         return jsonify(networkMetrics)
+#     elif metric == 'disk':
+#         return jsonify(diskMetrics)
+#     else:
+#         metrics = cpuMetrics + ramMetrics + storageMetrics + networkMetrics + diskMetrics
+#         return jsonify(metrics)
+#
+#
+# def cpu_reduce(cpu1, cpu2):
+#     cpu3 = {}
+#     cpu3["time"] = cpu1.get("time")
+#     cpu3['metric_value'] = float(cpu1["metric_value"]) + float(cpu2["metric_value"])
+#     cpu3['metric_name'] = cpu1.get("metric_name")
+#     cpu3['measured_in'] = cpu1.get("measured_in")
+#
+#     return cpu3
+#
+#
+# def network_reduce(n1, n2):
+#     n3 = {}
+#
+#     n3["time"] = n1.get("time")
+#     n3['data_in'] = float(n1["data_in"]) + float(n2["data_in"])
+#     n3['data_out'] = float(n1["data_out"]) + float(n2["data_out"])
+#     n3['metric_name'] = n1.get("metric_name")
+#     n3['measured_in'] = n1.get("measured_in")
+#
+#     return n3
+#
+#
+# def ram_reduce(ram1, ram2):
+#     ram3 = {}
+#     ram3["time"] = ram1.get("time")
+#     ram3['metric_value'] = float(ram1["metric_value"]) + float(ram2["metric_value"])
+#     ram3['metric_name'] = ram1.get("metric_name")
+#     ram3['measured_in'] = ram1.get("measured_in")
+#
+#     return ram3
+#
+#
+# def storage_reduce(s1, s2):
+#     s3 = {}
+#     s3["time"] = s1.get("time")
+#     s3['available_storage'] = float(s1["available_storage"]) + float(s2["available_storage"])
+#     s3['metric_name'] = s1.get("metric_name")
+#     s3['measured_in'] = s1.get("measured_in")
+#     my_logger.info(s3)
+#
+#     return s3
+#
+#
+# def disk_reduce(d1, d2):
+#     d3 = {}
+#     d3["time"] = d1.get("time")
+#     d3['disk_read'] = float(d1["disk_read"]) + float(d2["disk_read"])
+#     d3['disk_write'] = float(d1["disk_write"]) + float(d2["disk_write"])
+#     d3['metric_name'] = d1.get("metric_name")
+#     d3['measured_in'] = d1.get("measured_in")
+#
+#     return d3
+#
+#
+# def reduceByMetric(value, metricName, agent_id):
+#     metric_dict = {}
+#     payload = value.get("payload")
+#     # my_logger.info(payload)
+#
+#     for index, data in enumerate(payload):
+#         if (str(data.get("metric_name")) == metricName and str(value.get("agent_id")) == agent_id):
+#             metric_dict['time'] = value.get("time")
+#             metric_dict['agent_id'] = value.get("agent_id")
+#
+#             metric_dict['metric_value'] = data.get('metric_value')
+#             metric_dict['measured_in'] = data.get('measured_in')
+#             metric_dict.update(data)
+#             return metric_dict
+#
+#
+# def reduceByMetricForCluster(value, metricName):
+#     metric_dict = {}
+#     payload = value.get("payload");
+#     # my_logger.info(payload)
+#     for index, data in enumerate(payload):
+#         if (str(data.get("metric_name")) == metricName):
+#             metric_dict['time'] = value.get("time")
+#             metric_dict['agent_id'] = value.get("agent_id")
+#
+#             metric_dict['metric_value'] = data.get('metric_value')
+#             metric_dict.update(data)
+#             return metric_dict
+#
+#
+# def change(value, minutes):
+#     v = {}
+#
+#     for timemetric in minutes:
+#         if timemetric[0] < int(value.get('time')) <= timemetric[1]:
+#             v['time'] = timemetric[0]
+#         else:
+#             pass
+#
+#     value.update(v)
+#     return value
+#
+#
+# def divideMilliSeconds(fromtime, totime):
+#     fromtime = int(fromtime)
+#     totime = int(totime)
+#     totime = int(totime)
+#
+#     minutes = []
+#     # type(fromtime)
+#     from_time = (fromtime / 1000 / 60)
+#     to_time = (totime / 1000 / 60) + 1
+#     for i in range(from_time, to_time):
+#         minutes.append([i * 1000 * 60, (i + 1) * 1000 * 60])
+#     return minutes
+#
 
 # @azapi.route('/api/cluster/<customer_id>', methods=['GET'])
 # def cluster_info(customer_id):
