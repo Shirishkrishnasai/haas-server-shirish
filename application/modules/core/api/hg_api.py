@@ -11,10 +11,13 @@ import pymongo
 import uuid
 import datetime
 import time
+from azure.mgmt.monitor import MonitorManagementClient
+from msrestazure.azure_active_directory import ServicePrincipalCredentials
+from application.config.config_file import schema_statement, request_status, kafka_bootstrap_server, secret, client_id, \
+    tenant, subscription_id
 from flask import Flask, jsonify, request, Request, Blueprint
 from application import app,  conn_string, mongo_conn_string, session_factory
 from application.common.loggerfile import my_logger
-from application.config.config_file import schema_statement, request_status, kafka_bootstrap_server
 from application.models.models import TblCustomerRequest, TblAgentConfig, TblAgent, TblNodeInformation, \
     TblMetaCloudLocation, TblHiveMetaStatus, TblHiveRequest, TblFeature, TblPlan, TblSize, TblMetaRequestStatus, \
     TblCluster, TblVmCreation,TblMetaTaskStatus,TblTask,TblUsers
@@ -592,7 +595,11 @@ def cluster_info(customer_id):
                         available_storage = 'NA'
 
                     else:
-			available_storage = 'NA'
+                        storage = customer_id_metrics_list[-1]['payload'][1]
+                        available_storage=0
+                        for data in storage :
+                            value=float(data['metric_value'])
+                            available_storage=available_storage+value
                         #available_storage = customer_id_metrics_list[-1]['payload'][-2]['available_storage']
 
                     # metrics_dict =  customer_id_metrics_list[-1]
@@ -745,3 +752,91 @@ def edgenoderolebool(cluster_id,role):
     finally:
         db_session.close()
 
+
+
+@api.route("/api/metrics/<customer_id>/<cluster_id>/<metrics>", methods=['GET'])
+def metric(customer_id,cluster_id,metrics):
+    db_session= scoped_session(session_factory)
+    resource_group_name = str(customer_id)
+    mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
+    database_conn = mongo_db_conn['local']
+    db_collection = database_conn[resource_group_name]
+    metrics_dat={}
+    vm_names= db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_customer_id==customer_id,TblVmCreation.uid_cluster_id==cluster_id).all()
+    lis = []
+    val=[]
+    for names in vm_names:
+        vm_names=str(names[0])
+        credentials = ServicePrincipalCredentials(client_id=client_id, secret=secret, tenant=tenant)
+        subscription_id
+        resource_id = ("subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name
+                       +"/providers/Microsoft.Compute/virtualMachines/"+vm_names)
+        client = MonitorManagementClient(credentials, subscription_id)
+        metrics_data = client.metrics.list(resource_id,interval="PT1M",metricnames=metrics,aggregation='Total')
+        for item in metrics_data.value:
+            for timeserie in item.timeseries:
+                for data in timeserie.data:
+                     dicto={}
+                     timestam = data.time_stamp
+                     time_milliseconds = (int(round(time.mktime(timestam.timetuple()))) * 1000)
+                     dicto['vm_name']=vm_names
+                     dicto['metric_value']=data.total
+                     dicto['time']=time_milliseconds
+                     lis.append(dicto)
+        val.append(lis[-5:])
+    metrics_dat['customer_id'] = customer_id
+    metrics_dat['cluster_id'] = cluster_id
+    metrics_dat['payload'] = val
+    result = db_collection.insert_one(metrics_dat)
+
+    dic_list = []
+    for lis in val:
+        for n in range(0,len(lis)):
+            dic = [lis[n] for lis in val]
+            dic_list.append(dic)
+        break
+    lissto=[]
+    for lis in dic_list:
+        metric_value_lis = []
+        for line in lis :
+            metric_value = line['metric_value']
+            if metric_value != None:
+                metric_value_lis.append(metric_value)
+                metric_sum = sum(metric_value_lis)
+        dicton={}
+        dicton['metric_value'] = metric_sum
+        dicton['time'] = line['time']
+        dicton['measured_in'] = "bytes"
+        dicton['metric_name'] = metrics
+        lissto.append(dicton)
+    return jsonify(lissto)
+
+
+@api.route("/api/metrics/<customer_id>/<cluster_id>/<vm_id>/<metrics>", methods=['GET'])
+def metrics_node(customer_id,cluster_id,metrics,vm_id):
+    db_session= scoped_session(session_factory)
+    resource_group_name = str(customer_id)
+    print customer_id,cluster_id,vm_id
+    vmname= db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_cluster_id==cluster_id,TblVmCreation.uid_vm_id==vm_id).first()
+    print vmname
+    tups = []
+    vm_names=str(vmname[0])
+    credentials = ServicePrincipalCredentials(client_id=client_id, secret=secret, tenant=tenant)
+    subscription_id
+    resource_id = ("subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name
+                       +"/providers/Microsoft.Compute/virtualMachines/"+vm_names)
+    client = MonitorManagementClient(credentials, subscription_id)
+    metrics_data = client.metrics.list(resource_id,interval="PT1M",metricnames=metrics,aggregation='Total')
+    for item in metrics_data.value:
+        for timeserie in item.timeseries:
+            for data in timeserie.data:
+                dicto={}
+                timestam = data.time_stamp
+                time_milliseconds = (int(round(time.mktime(timestam.timetuple()))) * 1000)
+                dicto['vm_name']=vm_names
+                dicto['data']=data.total
+                dicto['time']=time_milliseconds
+                dicto['measured_in'] = "bytes"
+                dicto['metric_type'] = metrics
+                tups.append(dicto)
+    return jsonify(tups[-5:])
