@@ -574,7 +574,7 @@ def customer(cluster_id, role):
 
 @api.route('/api/cluster/<customer_id>', methods=['GET'])
 def cluster_info(customer_id):
-    #try:
+    try:
         db_session = scoped_session(session_factory)
         customer_cluster_info = db_session.query(TblCluster.uid_customer_id,TblCluster.uid_cluster_id,TblCluster.uid_cluster_type_id,TblCluster.valid_cluster,TblCluster.cluster_created_datetime,TblCluster.var_cluster_name)\
             .filter(TblCluster.uid_customer_id == customer_id).all()
@@ -590,7 +590,8 @@ def cluster_info(customer_id):
                     valid_cluster = cluster_info[3]
                     mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
                     database_conn = mongo_db_conn['local']
-                    customer_id_metrics_list = list(database_conn[customer_id].find())
+                    collection = database_conn[cluster_info[0]]
+                    customer_id_metrics_list = list(collection.find({"cluster_id": cluster_info[1]}))
                     if customer_id_metrics_list == []:
                         available_storage = 'NA'
 
@@ -656,15 +657,15 @@ def cluster_info(customer_id):
             reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
 
             return jsonify(clusterinformation=reversed_list_customer_cluster_info)
-    #except Exception as e:
+    except Exception as e:
 
-     #   exc_type, exc_obj, exc_tb = sys.exc_info()
-      #  fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-       # my_logger.error(exc_type)
-        #my_logger.error(fname)
-        #my_logger.error(exc_tb.tb_lineno)
-    #finally:
-     #   db_session.close()
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+    finally:
+       db_session.close()
 
 
 @api.route("/api/status/<customer_id>/<cluster_id>", methods=['GET'])
@@ -787,7 +788,7 @@ def metric(customer_id,cluster_id,metrics):
     metrics_dat['customer_id'] = customer_id
     metrics_dat['cluster_id'] = cluster_id
     metrics_dat['payload'] = val
-    result = db_collection.insert_one(metrics_dat)
+    # result = db_collection.insert_one(metrics_dat)
 
     dic_list = []
     for lis in val:
