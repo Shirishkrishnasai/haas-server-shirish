@@ -69,6 +69,8 @@ from application.modules.core.api.customeruserlist import customerusers
 from application.modules.core.api.get_cluster_size import clustersize
 from application.modules.core.api.get_cluster_location import clusterlocation
 from application.modules.core.api.hg_file_browser import filebrowser
+from application.modules.core.api.hdfs_requests_sender_api import hdfsrequestsender
+from application.modules.core.api.hdfs_result_upload_api import hdfsoutputupload
 
 from application.modules.mapr.api.hg_mr_job import mrapi
 from application.modules.mapr.api.hg_mr_job import mrjobstatus
@@ -95,7 +97,8 @@ from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 
 #from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
 #from application.modules.cluster.workers.configure_cluster import configure_cluster
-
+app.register_blueprint(hdfsoutputupload, url_prefix='')
+app.register_blueprint(hdfsrequestsender, url_prefix='')
 app.register_blueprint(jobstatusapi, url_prefix='')
 app.register_blueprint(mrjobupdate, url_prefix='')
 app.register_blueprint(hivequeryoutput, url_prefix='')

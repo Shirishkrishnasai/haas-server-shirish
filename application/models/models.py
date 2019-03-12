@@ -328,7 +328,24 @@ class TblFileDownload(ItemBase,OutputMixin):
     tbl_users = relationship(u'TblUsers')
     tbl_file_upload = relationship(u'TblFileUpload')
 
-
+class TblCustomerRequestHdfs(ItemBase,OutputMixin):
+    __tablename__ = 'tbl_customer_request_hdfs'
+    __table_args__ = {u'schema': 'highgear'}
+    srl_id = Column(Integer, primary_key=True)
+    uid_hdfs_request_id = Column(UUID)
+    uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
+    uid_cluster_id = Column(ForeignKey(u'highgear.tbl_cluster.uid_cluster_id'))
+    var_user_name = Column(ForeignKey(u'highgear.tbl_users.var_user_name'))
+    ts_requested_time = Column(DateTime)
+    txt_command_string = Column(Text)
+    txt_hdfs_parameters = Column(Text)
+    uid_agent_id = Column(ForeignKey(u'highgear.tbl_agent.uid_agent_id'))
+    hdfs_command_output = Column(Text)
+    bool_command_complete = Column(Boolean)
+    tbl_customer = relationship(u'TblCustomer')
+    tbl_cluster = relationship(u'TblCluster')
+    tbl_users = relationship(u'TblUsers')
+    tbl_agent = relationship(u'TblAgent')
 
 class TblCustomerRequest(ItemBase,OutputMixin):
     __tablename__ = 'tbl_customer_request'
