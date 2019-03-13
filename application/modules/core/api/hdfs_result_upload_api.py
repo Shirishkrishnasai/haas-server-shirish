@@ -15,6 +15,7 @@ def hdfs_result_upload():
         hdfs_customer_request=db_session.query(TblCustomerRequestHdfs).filter(TblCustomerRequestHdfs.uid_hdfs_request_id==hdfs_output_json['request_id'])
         hdfs_customer_request.update({"hdfs_command_output":str(hdfs_output_json['output'])})
         db_session.commit()
+        #hddddddfs
     except Exception as e:
 
         exc_type, exc_obj, exc_tb = sys.exc_info()
