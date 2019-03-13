@@ -167,7 +167,7 @@ def hg_mrjob_client():
                                      )
         db_session.add(data)
         db_session.commit()
-
+        print "commited"
         my_logger.info("hello")
         return jsonify(requestid=request_id,status="success")
     except exc.SQLAlchemyError as e:

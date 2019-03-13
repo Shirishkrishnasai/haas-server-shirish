@@ -11,7 +11,7 @@ from application import app,  conn_string, mongo_conn_string, session_factory
 from application.common.loggerfile import my_logger
 from application.models.models import TblCustomerRequest, TblAgentConfig, TblAgent, TblNodeInformation, \
     TblMetaCloudLocation, TblHiveMetaStatus, TblHiveRequest, TblFeature, TblPlan, TblSize, TblMetaRequestStatus, \
-    TblCluster, TblVmCreation,TblMetaTaskStatus,TblTask,TblUsers
+    TblCluster, TblVmCreation,TblMetaTaskStatus,TblTask,TblUsers,TblCustomerRequestHdfs
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from kafka import KafkaProducer
@@ -659,31 +659,96 @@ def cluster_info(customer_id):
        db_session.close()
 
 
-@api.route("/api/status/<customer_id>/<cluster_id>", methods=['GET'])
-def status(customer_id,cluster_id):
-    try:
-        db_session = scoped_session(session_factory)
-        valid_cluster= db_session.query(TblCluster.valid_cluster).filter(TblCluster.uid_cluster_id == cluster_id,TblCluster.uid_customer_id == customer_id).first()
-        my_logger.info(valid_cluster)
-        if valid_cluster[0]== True :
-            db_session.close()
-            return jsonify(status="Completed")
-        else :
-           # status_list = db_session.query(TblCustomerRequest.int_request_status).filter(
-           #     TblCustomerRequest.uid_cluster_id == cluster_id, TblCustomerRequest.char_feature_id == '10').first()
-           #status = status_list[0]
-           # meta_status = db_session.query(TblMetaRequestStatus.var_request_status).filter(TblMetaRequestStatus.srl_id == status).first()
-           # stat=meta_status[0]
-	   # if stat== "RUNNING"
-              return jsonify(status="Cluster configuration is in progress")
-    except Exception as e:
+@api.route('/api/hdfs', methods=['POST'])
+def customerrequesthdfs():
+    #try:
 
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
+        db_session = scoped_session(session_factory)
+        hdfs_request_parameters=request.json
+        customer_id=hdfs_request_parameters['customer_id']
+        cluster_id=hdfs_request_parameters['cluster_id']
+        user_name=hdfs_request_parameters['user_name']
+        comand_string=hdfs_request_parameters['command_string']
+        hdfs_parameters=hdfs_request_parameters['hdfs_parameters']
+        agent_id=hdfs_request_parameters['agent_id']
+        hdfs_request_id = uuid.uuid1()
+        hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
+                                                    uid_customer_id=customer_id,
+                                                    uid_cluster_id=cluster_id,
+                                                    uid_agent_id=agent_id,
+                                                    var_user_name=user_name,
+                                                    ts_requested_time=datetime.datetime.now(),
+                                                    txt_command_string=comand_string,
+                                                    txt_hdfs_parameters=hdfs_parameters,
+                                                    bool_command_complete=0)
+        db_session.add(hdfs_request_values)
+        db_session.commit()
+        db_session.close()
+        my_logger.info("committing to database and closing session done")
+
+        t_end = time.time() + 120
+        while time.time() < t_end:
+
+            hdfs_command_result = db_session.query(TblCustomerRequestHdfs.hdfs_command_output). \
+                filter(TblCustomerRequestHdfs.uid_hdfs_request_id == str(hdfs_request_id)).all()
+            if hdfs_command_result[0][0] is not None:
+
+
+                hdfs_output = hdfs_command_result[0][0]
+                return jsonify(command_output=hdfs_output)
+#    except Exception as e:
+
+ #       exc_type, exc_obj, exc_tb = sys.exc_info()
+  #      fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+   #     my_logger.error(exc_type)
+    #    my_logger.error(fname)
+     #   my_logger.error(exc_tb.tb_lineno)
+    #finally:
+        db_session.close()
+
+
+
+@api.route("/api/status/<provision_request_id>/<configuration_request_id>", methods=['GET'])
+def status(provision_request_id,configuration_request_id):
+    #try:
+        provision_request=provision_request_id
+        print provision_request,"provisoning"
+        configure_request=configuration_request_id
+        print configure_request,"configuring"
+        db_session = scoped_session(session_factory)
+        provision_request_query=db_session.query(TblCustomerRequest.bool_assigned,TblCustomerRequest.int_request_status).filter(TblCustomerRequest.uid_request_id == str(provision_request)).all()
+        configuration_request_query=db_session.query(TblCustomerRequest.bool_assigned,TblCustomerRequest.int_request_status).filter(TblCustomerRequest.uid_request_id == str(configure_request)).all()
+        provisioning_assigned=provision_request_query[0][0]
+        provisioning_status=provision_request_query[0][1]
+        configuration_assigned=configuration_request_query[0][0]
+        configuration_status=configuration_request_query[0][1]
+        print provisioning_assigned
+        print provisioning_status
+        print type(provisioning_status)
+        print configuration_assigned
+        print configuration_status
+        print type(configuration_status)
+        if provisioning_assigned is False and configuration_assigned is False and configuration_status == None and provisioning_status == None:
+            return jsonify(message="not assigned")
+        elif provisioning_assigned is True and configuration_assigned is False and configuration_status == None  and provisioning_status == None:
+            return jsonify(message=" provision running")
+        elif provisioning_assigned is True and configuration_assigned is False and provisioning_status == 4 and configuration_status == None:
+            return jsonify(message="provision completed")
+        elif provisioning_assigned is True and configuration_assigned is True and configuration_status == None and provisioning_status == 4:
+            return jsonify(message=" configuration in process")
+        elif provisioning_assigned is True and configuration_assigned is True and configuration_status == 3 and provisioning_status == 4:
+            return jsonify(message=" configuration running")
+        elif provisioning_assigned is True and configuration_assigned is True and configuration_status == 4 and provisioning_status == 4:
+            return jsonify(message="completed")
+        else:
+            return jsonify(message="failed")
+    #except Exception as e:
+
+     #   exc_type, exc_obj, exc_tb = sys.exc_info()
+      # my_logger.error(exc_type)
+       # my_logger.error(fname)
+        #my_logger.error(exc_tb.tb_lineno)
+    #finally:
         db_session.close()
 
 
