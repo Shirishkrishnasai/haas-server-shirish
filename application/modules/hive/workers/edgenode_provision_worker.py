@@ -50,8 +50,9 @@ def edgenodeProvision(request_id):
         my_logger.info(vm_creation_list)
         my_logger.info("calling createvm method")
         my_logger.info("calling vm_creation")
-        vm_information = vmcreation(vm_creation_info)#u should call another function probably
-        my_logger.debug(vm_information)
+        vm_information = vmcreation(vm_creation_info)
+        #you should call another function probably
+        my_logger.info(vm_information)
         metatablestatus = db_session.query(TblMetaRequestStatus.var_request_status, TblMetaRequestStatus.srl_id).all()
         table_status_values = dict(metatablestatus)
         completed_task_status_value = table_status_values['COMPLETED']
@@ -73,14 +74,14 @@ def edgenodeProvision(request_id):
         file_service.create_directory(cluster_id, 'spark')
         my_logger.info("doneeee")
 
-     except Exception as e:
+    except Exception as e:
          exc_type, exc_obj, exc_tb = sys.exc_info()
          fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
          my_logger.error(str(e))
          my_logger.error(exc_type)
          my_logger.error(fname)
          my_logger.error(exc_tb.tb_lineno)
-     finally:
+    finally:
          db_session.close()
 
 if __name__ == '__main__':

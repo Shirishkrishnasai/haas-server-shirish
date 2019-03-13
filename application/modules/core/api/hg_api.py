@@ -2,11 +2,6 @@ import yaml
 import re
 from pytz import timezone
 import psycopg2,sys,os,json
-import io
-from azure.storage.file import FileService, FilePermissions
-from application.models.models import TblMetaFileUpload, TblFileUpload, TblMetaHdfsUpload, TblClusterType
-from configparser import ConfigParser
-from msrestazure.azure_exceptions import CloudError
 import pymongo
 import uuid
 import datetime
@@ -14,7 +9,6 @@ import time
 from flask import Flask, jsonify, request, Request, Blueprint
 from application import app,  conn_string, mongo_conn_string, session_factory
 from application.common.loggerfile import my_logger
-from application.config.config_file import schema_statement, request_status, kafka_bootstrap_server
 from application.models.models import TblCustomerRequest, TblAgentConfig, TblAgent, TblNodeInformation, \
     TblMetaCloudLocation, TblHiveMetaStatus, TblHiveRequest, TblFeature, TblPlan, TblSize, TblMetaRequestStatus, \
     TblCluster, TblVmCreation,TblMetaTaskStatus,TblTask,TblUsers,TblCustomerRequestHdfs
@@ -43,10 +37,10 @@ def monitor():
         metatable_rows_list = cur.fetchall()
         table_status_values = dict(metatable_rows_list)
 
-        my_logger.debug(table_status_values)
+        my_logger.info(table_status_values)
 
         insert_status_value = table_status_values[posted_status_value]
-        my_logger.debug(insert_status_value)
+        my_logger.info(insert_status_value)
 
         date = datetime.datetime.now()
         task_id = data['task_id']
@@ -86,13 +80,11 @@ def monitor():
 
     except Exception as e:
         return e.message
-
-
     except psycopg2.DatabaseError, e:
-        my_logger.debug(e.pgerror)
+        my_logger.info(e.pgerror)
         return jsonify(message='database error')
     except psycopg2.OperationalError, e:
-        my_logger.debug(e.pgerror)
+        my_logger.info(e.pgerror)
         return jsonify(message='Operational error')
     except Exception:
         return jsonify(error='value error', message='not in json format')
@@ -103,8 +95,6 @@ def hg_client():
     try:
         my_logger.info('hello client')
         db_session = scoped_session(session_factory)
-
-        # try:
         customer_request = request.json
         my_logger.info(customer_request)
         feature_request = customer_request['features']
@@ -209,11 +199,6 @@ def hg_client():
                     db_session.add(insert_customer)
                     db_session.commit()
 
-
-                    # except Exception as e:
-                    #	return e.message
-                    # finally:
-                    #   db_session.close()
         my_logger.info(requests)
         return jsonify(provision_request_id=requests[0]['9'],configure_request_id =requests[1]['10'], cluster_name =clustername,message='success')
     except Exception as e:
@@ -230,9 +215,9 @@ def hg_client():
 @api.route('/api/agent/register', methods=['POST'])
 def register():
     try:
-        my_logger.debug('in server register api')
+        my_logger.info('in server register api')
         agent_data = request.json
-        my_logger.debug(agent_data)
+        my_logger.info(agent_data)
         agent_id = agent_data['agent_id']
         customer_id = agent_data['customer_id']
         cluster_id = agent_data['cluster_id']
@@ -250,7 +235,7 @@ def register():
                 TblAgent.uid_cluster_id == cluster_id)
             update_statement.update({"bool_registered": 1, "ts_registered_datetime": registered_time})
             db_session.commit()
-            my_logger.debug("committing to database done")
+            my_logger.info("committing to database done")
 
             agent_config_data = db_session.query(TblAgentConfig.config_entity_name,
                                                  TblAgentConfig.config_entity_value).all()
@@ -261,7 +246,7 @@ def register():
             return jsonify(agent_config_data_json)
 
         else:
-            my_logger.debug('i am in else')
+            my_logger.info('i am in else')
             return jsonify(message="either registration is done previously or agent_data is not correct")
 
     except psycopg2.DatabaseError, e:
@@ -410,7 +395,7 @@ def hivestatus(request):
         if result[0] == None:
             db_session.close()
 
-            return jsonify(message="query under execution..please wait")
+            return jsonify(message="query under execution....please wait")
         else:
             result = eval(result[0])
             tup= {}
@@ -485,7 +470,6 @@ def clusterStatus(request_id):
         status_select_query_statement = db_session.query(TblCustomerRequest.int_request_status,
                                                          TblCustomerRequest.uid_cluster_id).filter(
             TblCustomerRequest.uid_request_id == request_id).all()
-        # status_select_query_statement = db.session.query(TblCustomerRequest.int_request_status,TblCustomerRequest.uid_customer_id).filter(TblCustomerRequest.uid_request_id == request_id).all()
         status = None
         if len(status_select_query_statement) == 0:
             return jsonify(message="request id not available")
@@ -498,7 +482,6 @@ def clusterStatus(request_id):
                 TblMetaRequestStatus.srl_id == request_status).all()
             cluster_details = db_session.query(TblCluster.var_cluster_name, TblCluster.char_cluster_region).filter(
                 TblCluster.uid_cluster_id == cluster_id).all()
-            # cluster_details = db.session.query(TblCluster.var_cluster_name, TblCluster.char_cluster_region).filter(TblCluster.uid_customer_id == customer_id).all()
             if len(cluster_details) == 0:
                 return jsonify(message="cluster_Id not avilable", request_id=request_id)
             cluster_name = cluster_details[0][0]
@@ -598,12 +581,19 @@ def cluster_info(customer_id):
                     valid_cluster = cluster_info[3]
                     mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
                     database_conn = mongo_db_conn['local']
-                    customer_id_metrics_list = list(database_conn[customer_id].find())
+                    collection = database_conn[cluster_info[0]]
+                    customer_id_metrics_list = list(collection.find({"cluster_id": cluster_info[1]}))
                     if customer_id_metrics_list == []:
                         available_storage = 'NA'
 
                     else:
-                        available_storage = customer_id_metrics_list[-1]['payload'][-2]['available_storage']
+                        storage = customer_id_metrics_list[-1]['payload'][1]
+                        available_storage=0
+                        for data in storage :
+                            value=float(data['metric_value'])
+                            available_storage=available_storage+value
+                        #available_storage = customer_id_metrics_list[-1]['payload'][-2]['available_storage']
+
                     # metrics_dict =  customer_id_metrics_list[-1]
                     #for keys, values in metrics_dict['payload'][3].items():
                     #    if keys == 'available_storage':
@@ -611,9 +601,6 @@ def cluster_info(customer_id):
                 else:
                     valid_cluster = False
                     available_storage = 0
-                #clustername = db_session.query(TblClusterType.char_name).\
-                #    filter(TblClusterType.uid_cluster_type_id == cluster_info[2]).all()
-                #clus_name = clustername[0][0].rstrip()
 
                 cus_node_info = db_session.query(TblNodeInformation.uid_node_id,TblNodeInformation.char_role).\
                     filter(TblNodeInformation.uid_cluster_id == cluster_info[1]).all()
@@ -623,7 +610,6 @@ def cluster_info(customer_id):
                 for cus in cus_node_info:
                     node_info_list.append({"node_id": cus[0], "char_role": cus[1]})
                 et = timezone('Asia/Kolkata')
-                #parse_time = parse(cluster_info[4])
                 if cluster_info[4] is None:
                     cluster_created_datetime = "00-00-0000 00:00:00"
                     up_time_string = "0d,0h:0m"
@@ -670,7 +656,7 @@ def cluster_info(customer_id):
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
     finally:
-        db_session.close()
+       db_session.close()
 
 
 @api.route('/api/hdfs', methods=['POST'])

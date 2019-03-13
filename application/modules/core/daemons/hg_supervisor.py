@@ -34,17 +34,17 @@ def hgsuper():
                     my_logger.info("in dependency_id== None")
                     subprocess.call(["python", worker_path, request_id], shell=False)
 
-                    my_logger.debug("Got Request")
+                    my_logger.info("Got Request")
                     update_object = db_session.query(TblCustomerRequest).filter(
                         TblCustomerRequest.uid_request_id == request_id)
                     update_statement = update_object.update({"bool_assigned": 1, "ts_requested_time": time_updated})
-                    my_logger.debug(update_statement)
+                    my_logger.info(update_statement)
                     insert_request_status = TblTaskRequestLog(uid_request_id=request_id,
                                                               int_meta_request_status=update_request_status_value,
                                                               ts_time_updated=time_updated)
                     db_session.add(insert_request_status)
                     db_session.commit()
-                    my_logger.debug("Closing Request")
+                    my_logger.info("Closing Request")
 
                 else:
                     my_logger.info("in dependency")
@@ -61,19 +61,19 @@ def hgsuper():
                             my_logger.info('done')
                     if len(completedrequests) == len(list_of_dependency_requests):
                         subprocess.call(["python", worker_path, request_id], shell=False)
-                        my_logger.debug("Got Request")
+                        my_logger.info("Got Request")
                         update_object = db_session.query(TblCustomerRequest).filter(
                             TblCustomerRequest.uid_request_id == request_id)
                         update_statement = update_object.update(
                             {"bool_assigned": 1, "ts_requested_time": time_updated})
-                        my_logger.debug(update_statement)
+                        my_logger.info(update_statement)
                         insert_request_status = TblTaskRequestLog(uid_request_id=request_id,
                                                                   int_meta_request_status=update_request_status_value,
                                                                   ts_time_updated=time_updated)
                         db_session.add(insert_request_status)
                         db_session.commit()
 
-                        my_logger.debug("Closing Request")
+                        my_logger.info("Closing Request")
                 time.sleep(5)
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -86,3 +86,4 @@ def hgsuper():
             db_session.close()
 
 	time.sleep(5)
+

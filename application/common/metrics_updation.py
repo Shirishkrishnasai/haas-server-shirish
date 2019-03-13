@@ -16,8 +16,7 @@ def metricSubscriber(data):
         result = db_collection.insert_one(data)
         my_logger.info(customerid)
         my_logger.info("data inserted")
-    except pymongo.errors.ConnectionFailure, e:
-        my_logger.error(e)
+
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]

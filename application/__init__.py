@@ -64,7 +64,7 @@ from application.modules.core.api.az_api import azapi
 
 from application.modules.hive.api.hive_query_request import hivequery
 from application.modules.hive.api.hive_query_output_api import hivequeryoutput
-
+from application.modules.core.api.metric_api import metricapi
 from application.modules.core.api.customeruserlist import customerusers
 from application.modules.core.api.get_cluster_size import clustersize
 from application.modules.core.api.get_cluster_location import clusterlocation
@@ -80,7 +80,7 @@ from application.modules.mapr.api.mapreduceapi import mapreduce
 from application.modules.mapr.api.job_diagnostics_api import jobdiagnostics
 from application.modules.core.api.hg_manager_api import highgearmanager
 from application.modules.core.api.task_status_updation import taskstatus
-from application.modules.core.daemons.kafka_job_producer import  jobproducer
+from application.modules.core.daemons.kafka_job_producer import jobproducer
 from application.modules.core.daemons.filebrowsestatus import filebrowsestatus
 from application.modules.core.daemons.hg_manager import hgmanagerscheduler, hgmanager
 from application.modules.hive.daemons.hive_database_result_consumer import hiveDatabaseResult
@@ -130,7 +130,7 @@ app.register_blueprint(jobdetails, url_prefix='')
 app.register_blueprint(highgearmanager, url_prefix='')
 app.register_blueprint(taskstatus, url_prefix='')
 app.register_blueprint(jobproducer, url_prefix='')
-
+app.register_blueprint(metricapi,url_prefix='')
 def has_no_empty_params(rule):
     defaults = rule.defaults if rule.defaults is not None else ()
     arguments = rule.arguments if rule.arguments is not None else ()
@@ -156,7 +156,7 @@ def runProcess():
     #selecturl_process = Process(target=hgSelectQueryUrlScheduler)
     #selecturl_process.start()
     # kafkataskconsumer_process = Process(target=kafkataskconsumer)
-    # kafkaconsumer_process = Process(target=kafkaconsumer)
+    kafkaconsumer_process = Process(target=kafkaconsumer)
     # hgmanager_process = Process(target=hgmanager)
     hgsuper_process = Process(target=hgsuper)
     hgsuper_process.start()
@@ -175,7 +175,7 @@ def runProcess():
     # customerjobreqestconsumer = Process(target=jobinsertion)
     # mrjobproducer_process.start()
     # customerjobreqestconsumer.start()
-    # kafkaconsumer_process.start()
+    kafkaconsumer_process.start()
     # hgmanager_process.start()
     print "method ended"
 

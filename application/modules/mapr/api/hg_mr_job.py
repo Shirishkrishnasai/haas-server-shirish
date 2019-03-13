@@ -26,7 +26,6 @@ mrapi = Blueprint('mrapi', __name__)
 def configuration():
     try:
 
-
         data = request.json
         filesize = data["filesize"]
         plan_id = data["plan_id"]
@@ -77,7 +76,6 @@ def hg_mrjob_client():
 
     try:
         db_session = scoped_session(session_factory)
-
         request_id = str(uuid.uuid1())
         date_time = datetime.datetime.now()
         posted_args = request.args
@@ -158,7 +156,7 @@ def hg_mrjob_client():
                                      conf_mapreduce_task_io_sort_mb=(customer_request['sortmb']),
                                      conf_mapreduce_task_io_sort_factor=(customer_request['sortfactor']),
                                      conf_output_compress=1,
-				                     int_request_status=1,
+                                     int_request_status=1,
                                      conf_mapreduce_job_maps=(customer_request['total_map_tasks']),
                                      conf_mapreduce_job_reduces=(customer_request['reducer_tasks']),
                                      var_created_by='system',

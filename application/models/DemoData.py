@@ -63,6 +63,10 @@ tbl_feature_type_hive_typeid_4 = TblFeatureType(char_feature_id='12',
                                                 char_task_type_id='F12_T4')
 tbl_feature_type_hive_typeid_5 = TblFeatureType(char_feature_id='12',
                                                 char_task_type_id='F12_T5')
+tbl_feature_type_hive_typeid_6 = TblFeatureType(char_feature_id='12',
+                                                char_task_type_id='F12_T6')
+tbl_feature_type_hive_typeid_7 = TblFeatureType(char_feature_id='12',
+                                                char_task_type_id='F12_T7')
 
 # meta node roles
 
@@ -143,13 +147,14 @@ cluster_task_type_6 = TblTaskType(char_task_type_id='F1_T6',
                                   txt_description='ssh key scan',
                                   txt_agent_worker_version_path='/opt/scripts/sshkeyscan.ksh',
                                   txt_agent_worker_version='1.0',
-                                  txt_dependency_task_id='F1_T1,F1_T3',
+                                  txt_dependency_task_id='F1_T1,F1_T3,F1_T4',
                                   int_vm_roles=1
                                   )
 cluster_task_type_7 = TblTaskType(char_task_type_id='F1_T7',
                                   txt_description='ssh key generation',
                                   txt_agent_worker_version_path='/opt/scripts/ssh-keygen.sh',
                                   txt_agent_worker_version='1.0',
+                                  txt_dependency_task_id='F1_T6',
                                   int_vm_roles=1
                                   )
 cluster_task_type_8 = TblTaskType(char_task_type_id='F1_T8',
@@ -163,7 +168,7 @@ cluster_task_type_9 = TblTaskType(char_task_type_id='F1_T9',
                                   txt_description='hdfs format',
                                   txt_agent_worker_version_path='/opt/scripts/hdfs-format.sh',
                                   txt_agent_worker_version='1.0',
-                                  txt_dependency_task_id='F1_T2,F1_T4,F1_T5,F1_T8,F1_T1',
+                                  txt_dependency_task_id='F1_T1,F1_T2,F1_T4,F1_T5,F1_T8',
                                   int_vm_roles=1
                                   )
 cluster_task_type_10 = TblTaskType(char_task_type_id='F1_T10',
@@ -188,21 +193,21 @@ hive_task_type_1 = TblTaskType(char_task_type_id='F12_T1',
                                )
 hive_task_type_2 = TblTaskType(char_task_type_id='F12_T2',
                                txt_description='hive-configuration',
-                               txt_agent_worker_version_path='/opt/scripts/hive.sh',
+                               txt_agent_worker_version_path='/opt/scripts/hive-installation.ksh',
                                txt_agent_worker_version='1.0',
                                txt_dependency_task_id='F12_T1',
                                int_vm_roles=3
                                )
 hive_task_type_3 = TblTaskType(char_task_type_id='F12_T3',
-                               txt_description='mysql-installation',
-                               txt_agent_worker_version_path='/opt/scripts/mysql.sh',
+                               txt_description='mysql-hive-installation',
+                               txt_agent_worker_version_path='/opt/scripts/mysql-hive-installation.sh',
                                txt_agent_worker_version='1.0',
                                txt_dependency_task_id='F12_T2',
                                int_vm_roles=3
                                )
 hive_task_type_4 = TblTaskType(char_task_type_id='F12_T4',
                                txt_description='start-hiveServer2',
-                               txt_agent_worker_version_path='/opt/scripts/start-hiveserver2.sh',
+                               txt_agent_worker_version_path='/opt/scripts/start-hiveserver2.ksh',
                                txt_agent_worker_version='1.0',
                                txt_dependency_task_id='F12_T3',
                                int_vm_roles=3
@@ -225,7 +230,6 @@ hive_task_type_7 = TblTaskType(char_task_type_id='F12_T7',
                                txt_agent_worker_version='1.0',
                                int_vm_roles=2
                                )
-
 cluster_type_1 = TblClusterType(uid_cluster_type_id='f5826f72-d135-11e8-84db-3ca9f49ab2cc',
                                 char_name='azure')
 
@@ -794,16 +798,14 @@ tbl_azure_credentials = TblAzureFileStorageCredentials(account_name='sbvsolution
                                                        account_secondary_key='9fASv4JGbIhzM03rGFb84TuYtHVVNjfIE35N54IL4rFBOlrnqGnQTUpLPRvPHWURGqmo0QyalFtrY8fBc5JBvw=='
                                                        )
 
-#db_session.add(tbl_vm_info_1)
-#db_session.add(tbl_vm_info_2)
-#db_session.add(tbl_vm_info_2)
+
 db_session.add(tbl_azure_resource_group)
 db_session.add(tbl_azure_credentials)
 db_session.add(tbl_customer)
 
 #db_session.add(tbl_vm_info_1)
 #db_session.add(tbl_vm_info_2)
-#db_session.add(tbl_vm_info_2)
+#db_session.add(tbl_vm_info_3)
 
 db_session.add(cluster_feature_provision)
 db_session.add(cluster_feature_configuration)
@@ -825,6 +827,8 @@ db_session.add(tbl_feature_type_hive_typeid_2)
 db_session.add(tbl_feature_type_hive_typeid_3)
 db_session.add(tbl_feature_type_hive_typeid_4)
 db_session.add(tbl_feature_type_hive_typeid_5)
+db_session.add(tbl_feature_type_hive_typeid_6)
+db_session.add(tbl_feature_type_hive_typeid_7)
 db_session.add(node_role_1)
 db_session.add(node_role_2)
 db_session.add(node_role_3)

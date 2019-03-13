@@ -49,8 +49,10 @@ def installcluster(request_id):
         account_key = cfg.get('file_storage', 'key')
 
         file_service = FileService(account_name=account_name, account_key=account_key)
+        file_service.create_share(share_name=cluster_id,quota=100)
 
-        file_service.create_share(cluster_id)
+
+        #file_service.create_share(cluster_id)
         file_service.create_directory(cluster_id, 'system')
         file_service.create_directory(cluster_id, 'mapreduce')
         my_logger.info("doneeee")
@@ -121,9 +123,6 @@ def installcluster(request_id):
         db_session.commit()
         db_session.close()
 
-        #
-
-    # installcluster('4a82d464-0aa0-11e9-ba4c-3ca9f49ab2cc')
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -138,8 +137,8 @@ if __name__ == '__main__':
 
         if len(sys.argv)>=1:
             request_id = sys.argv[1]
-            my_logger.info("Callign with id "+request_id)
-
+            my_logger.info("Calling with id ")
+            my_logger.info(request_id)
             installcluster(request_id)
         else:
             my_logger.info("args not passed")

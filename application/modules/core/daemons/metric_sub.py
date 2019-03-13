@@ -55,9 +55,6 @@ def metricSubscriber(data):
 
         result = db_collection.insert_one(data)
         my_logger.info(result)
-    # query_statement= database_conn.find(dat
-    # object_id=query_statement[0]["_id"]
-    # print object_id
 
     except pymongo.errors.ConnectionFailure, e:
 

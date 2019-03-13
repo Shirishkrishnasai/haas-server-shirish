@@ -1,7 +1,7 @@
 import uuid
 import time
 from xml.etree.ElementTree import ParseError
-
+import os,sys
 from application import session_factory
 from msrestazure.azure_exceptions import CloudError
 from sqlalchemy import func
@@ -102,7 +102,7 @@ def customercreation():
                               password)
             # Resource group creation
 
-            my_logger.debug('Create Resource Group')
+            my_logger.info('Create Resource Group')
             credentials = ServicePrincipalCredentials(
                 client_id=customer_client_id,
                 secret=secret_code,
@@ -120,7 +120,7 @@ def customercreation():
                 vn_ip = "10.0.0.0/24"
             else:
                 ip_of_previous_cluster = virtual_network_ip_info[0][0]
-                my_logger.debug(ip_of_previous_cluster)
+                my_logger.info(ip_of_previous_cluster)
                 splitting_vn_ip = ip_of_previous_cluster.split('.')
                 splitting_vn_ip_range = splitting_vn_ip[2]
                 ip_value = int(splitting_vn_ip_range) + 1
@@ -165,16 +165,16 @@ def customercreation():
                                                                                                                security_rule1,security_rule2]))
             NSG.wait()
             nsg_result = NSG.result()
-            my_logger.debug(nsg_result)
+            my_logger.info(nsg_result)
             subnet_ip = vn_ip
             SUBNET_NAME = 'snet' + str(int(round(time.time() * 1000)))
-            my_logger.debug('\nCreate Subnet')
+            my_logger.info('\nCreate Subnet')
             subnet_creation = network_client.subnets.create_or_update(GROUP_NAME, VNET_NAME, SUBNET_NAME,
                                                                       {'address_prefix': subnet_ip,
                                                                        'network_security_group': nsg_result})
             subnet_info = subnet_creation.result()
             subnet_id = subnet_info.id
-            my_logger.debug(subnet_id)
+            my_logger.info(subnet_id)
             insert_subnet = TblSubnet(uid_customer_id=customer_id, txt_subnet_id=subnet_id, inet_subnet_ip_range=subnet_ip,
                                       var_resource_group_name=GROUP_NAME, var_virtual_network_name=VNET_NAME)
             db_session.add(insert_subnet)
@@ -182,21 +182,12 @@ def customercreation():
 
             return jsonify(customer_first_name=display_name, customer_last_name=mail_nickname, customer_password=password,
                            customer_id=customer_id,successmessage="Successfully registered")
-    except ParseError as e:
-        my_logger.debug(e)
-        return jsonify(message=e,err_code=500)
-    # except psycopg2.DatabaseError as e:
-    #     my_logger.error(e.pgerror)
-    #     return jsonify(message=e,err_code=500)
-    # except psycopg2.OperationalError as e:
-    #     my_logger.error(e.pgerror)
-    #     return jsonify(message=e,err_code=500)
-    except CloudError as e:
-        my_logger.error(e.clouderror)
-        return jsonify(message=e,err_code=500)
     except Exception as e:
-        my_logger.error(e)
-        return jsonify(message=e,err_code=500)
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
 
