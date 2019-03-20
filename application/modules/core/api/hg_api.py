@@ -17,6 +17,7 @@ from application import session_factory
 from kafka import KafkaProducer
 from kafka import KafkaConsumer
 from sqlalchemy import and_
+import io
 
 api = Blueprint('api', __name__)
 
@@ -668,34 +669,57 @@ def customerrequesthdfs():
         customer_id=hdfs_request_parameters['customer_id']
         cluster_id=hdfs_request_parameters['cluster_id']
         user_name=hdfs_request_parameters['user_name']
-        comand_string=hdfs_request_parameters['command_string']
+        command_string=hdfs_request_parameters['command_string']
         hdfs_parameters=hdfs_request_parameters['hdfs_parameters']
         agent_id=hdfs_request_parameters['agent_id']
         hdfs_request_id = uuid.uuid1()
-        hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
+        if command_string == 'upload':
+            filename=uuid.uuid1()
+            file_upload_id=uuid.uuid1()
+            posted_file = request.files
+            str_posted_file = posted_file['files'].read()
+            byte_stream = io.BytesIO(str_posted_file)
+
+            file_service.create_file_from_stream(share_name=cluster_id,
+                                                 directory_name='hdfs',
+                                                 file_name=filename,
+                                                 stream=byte_stream,
+                                                 count=no_of_bytes,
+                                                 progress_callback=fileProgress)
+            file_insert_values = TblFileUpload(uid_upload_id=file_upload_id,
+                                               uid_customer_id=customer_id,
+                                               var_share_name=cluster_id,
+                                               var_directory_name='hdfs',
+                                               var_file_name=filename,
+                                               var_username=user_name,
+                                               ts_uploaded_time=datetime.datetime.now())
+            db_session.add(file_insert_values)
+            db_session.commit()
+
+            hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
                                                     uid_customer_id=customer_id,
                                                     uid_cluster_id=cluster_id,
                                                     uid_agent_id=agent_id,
                                                     var_user_name=user_name,
                                                     ts_requested_time=datetime.datetime.now(),
-                                                    txt_command_string=comand_string,
+                                                    txt_command_string=command_string,
                                                     txt_hdfs_parameters=hdfs_parameters,
                                                     bool_command_complete=0)
-        db_session.add(hdfs_request_values)
-        db_session.commit()
-        db_session.close()
-        my_logger.info("committing to database and closing session done")
+            db_session.add(hdfs_request_values)
+            db_session.commit()
+            db_session.close()
+            my_logger.info("committing to database and closing session done")
 
-        t_end = time.time() + 120
-        while time.time() < t_end:
+            t_end = time.time() + 120
+            while time.time() < t_end:
 
-            hdfs_command_result = db_session.query(TblCustomerRequestHdfs.hdfs_command_output). \
+                hdfs_command_result = db_session.query(TblCustomerRequestHdfs.hdfs_command_output). \
                 filter(TblCustomerRequestHdfs.uid_hdfs_request_id == str(hdfs_request_id)).all()
-            if hdfs_command_result[0][0] is not None:
+                if hdfs_command_result[0][0] is not None:
 
 
-                hdfs_output = hdfs_command_result[0][0]
-                return jsonify(command_output=hdfs_output)
+                    hdfs_output = hdfs_command_result[0][0]
+                    return jsonify(command_output=hdfs_output)
 #    except Exception as e:
 
  #       exc_type, exc_obj, exc_tb = sys.exc_info()

@@ -61,7 +61,7 @@ from multiprocessing import Process
 
 from application.modules.core.api.hg_api import api
 from application.modules.core.api.az_api import azapi
-
+from application.modules.hdfs.api.hg_hdfs_api import hdfsapi
 from application.modules.hive.api.hive_query_request import hivequery
 from application.modules.hive.api.hive_query_output_api import hivequeryoutput
 from application.modules.core.api.metric_api import metricapi
@@ -98,6 +98,7 @@ from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 #from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
 #from application.modules.cluster.workers.configure_cluster import configure_cluster
 app.register_blueprint(hdfsoutputupload, url_prefix='')
+app.register_blueprint(hdfsapi, url_prefix='')
 app.register_blueprint(hdfsrequestsender, url_prefix='')
 app.register_blueprint(jobstatusapi, url_prefix='')
 app.register_blueprint(mrjobupdate, url_prefix='')

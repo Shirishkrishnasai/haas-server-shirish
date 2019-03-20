@@ -335,6 +335,7 @@ class TblCustomerRequestHdfs(ItemBase,OutputMixin):
     uid_hdfs_request_id = Column(UUID)
     uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
     uid_cluster_id = Column(ForeignKey(u'highgear.tbl_cluster.uid_cluster_id'))
+    uid_upload_id = Column(ForeignKey(u'highgear.tbl_file_upload.uid_upload_id'))
     var_user_name = Column(ForeignKey(u'highgear.tbl_users.var_user_name'))
     ts_requested_time = Column(DateTime)
     txt_command_string = Column(Text)
@@ -346,7 +347,7 @@ class TblCustomerRequestHdfs(ItemBase,OutputMixin):
     tbl_cluster = relationship(u'TblCluster')
     tbl_users = relationship(u'TblUsers')
     tbl_agent = relationship(u'TblAgent')
-
+    tbl_file_upload = relationship(u'TblFileUpload')
 class TblCustomerRequest(ItemBase,OutputMixin):
     __tablename__ = 'tbl_customer_request'
     __table_args__ = {u'schema': 'highgear'}
@@ -357,6 +358,7 @@ class TblCustomerRequest(ItemBase,OutputMixin):
     txt_payload_id = Column(Text)
     char_feature_id = Column(ForeignKey(u'highgear.tbl_feature.char_feature_id'))
     uid_cluster_id = Column(ForeignKey(u'highgear.tbl_cluster.uid_cluster_id'))
+    uid_upload_id = Column(ForeignKey(u'highgear.tbl_file_upload.uid_upload_id'))
     ts_requested_time = Column(DateTime)
     int_request_status = Column(ForeignKey(u'highgear.tbl_meta_request_status.srl_id'))
     txt_dependency_request_id = Column(Text)
@@ -373,7 +375,7 @@ class TblCustomerRequest(ItemBase,OutputMixin):
     tbl_feature = relationship(u'TblFeature')
     tbl_cluster = relationship(u'TblCluster')
     tbl_meta_request_status = relationship(U'TblMetaRequestStatus')
-
+    tbl_file_upload = relationship(u'TblFileUpload')
 class TblKafkaTopic(ItemBase, OutputMixin):
     __tablename__ = 'tbl_kafka_topic'
     __table_args__ = {u'schema': 'highgear'}

@@ -1,4 +1,3 @@
-from kafka import KafkaConsumer
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application.models.models import TblCustomerJobRequest,TblMetaMrRequestStatus

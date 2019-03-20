@@ -142,13 +142,13 @@ def hg_mrjob_client():
         #r = requests.post(file_upload_url, files=up, params=params)
         #conf_uid = r.text
         data = TblCustomerJobRequest(uid_customer_id=str(customer_id),
+                                     uid_jar_upload_id=str(jar_uid),
+                                     var_job_name=job_name,
+                                     txt_job_description=job_description,
                                      var_user_name=user_name,
                                      uid_request_id=str(request_id),
                                      uid_cluster_id=str(cluster_id),
                                 #     uid_conf_upload_id=str(conf_uid),
-                                     uid_jar_upload_id=str(jar_uid),
-                                     var_job_name=job_name,
-                                     txt_job_description=job_description,
                                    #  var_input_file_path=input_path,
                                      #var_output_file_path=output_path,
                                      var_job_parameters=job_parameters,
