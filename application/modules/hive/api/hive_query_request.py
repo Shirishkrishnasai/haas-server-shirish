@@ -1,5 +1,5 @@
 import re,datetime,os,sys
-from flask import jsonify, request, Request, Blueprint
+from flask import jsonify, Blueprint
 from application.models.models import TblHiveMetaStatus, TblHiveRequest
 from sqlalchemy.orm import scoped_session
 from sqlalchemy import and_
@@ -10,7 +10,7 @@ hivequery = Blueprint('hivequery', __name__)
 @hivequery.route("/hivequery/<agentid>", methods=['GET'])
 def hiveQuery(agentid):
     try:
-        my_logger.info("in hive request query aoi called by agent with its agent id")
+        my_logger.info("in hive request query api called by agent with its agent id")
         hive_req_data = []
         db_session = scoped_session(session_factory)
         agent_queries_reqids=db_session.query(TblHiveRequest.txt_query_string,

@@ -8,12 +8,10 @@ from application.common.loggerfile import my_logger
 
 
 def kafkaconsumer():
-    # Connection to kafka
-    # try:
+    try:
         consumer = KafkaConsumer(bootstrap_servers=kafka_bootstrap_server, api_version=kafka_api_version)
         consumer.subscribe(pattern='metrics*')
         # Reading data from consumer and passing to the function
-
         for message in consumer:
             customer_data = message.value
             data = customer_data.replace("'", '"')
@@ -24,10 +22,10 @@ def kafkaconsumer():
 
         time.sleep(1)
         my_logger.info("Cling loop")
-    # except Exception as e:
-    #     exc_type, exc_obj, exc_tb = sys.exc_info()
-    #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    #
-    #     my_logger.error(exc_type)
-    #     my_logger.error(fname)
-    #     my_logger.error(exc_tb.tb_lineno)
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+

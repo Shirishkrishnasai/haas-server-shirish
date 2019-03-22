@@ -9,8 +9,6 @@ hivequeryoutput = Blueprint('hivequeryoutput', __name__)
 @hivequeryoutput.route("/hivequeryoutput", methods = ['POST'])
 def hiveQueryOutput():
    try:
-
-
         hive_query_result = request.json
         my_logger.info(hive_query_result)
         message = hive_query_result
@@ -18,7 +16,6 @@ def hiveQueryOutput():
             decoded_output = json.loads(message['output'].decode('base64', 'strict'))
             decoded_output = yaml.load(decoded_output)
             message['output'] = decoded_output
-
         db_session = scoped_session(session_factory)
         query_output = db_session.query(TblHiveRequest.hive_query_output).filter(TblHiveRequest.uid_hive_request_id == message['hive_request_id'])
         query_output.update({"hive_query_output":str(message)})

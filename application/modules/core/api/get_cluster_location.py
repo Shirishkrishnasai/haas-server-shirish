@@ -1,7 +1,9 @@
 from flask import Blueprint,jsonify
-from application.models.models import TblMetaCloudLocation, TblMetaCloudType,TblClusterType
+from application.models.models import TblMetaCloudLocation, TblClusterType
 from sqlalchemy.orm import scoped_session
 from application import session_factory
+from application.common.loggerfile import my_logger
+import os,sys
 
 clusterlocation=Blueprint('clusterlocation',__name__)
 @clusterlocation.route("/clusterlocation/cloudtype",methods=['GET'])
@@ -21,37 +23,34 @@ def clusterLocation():
             location_id_dict[str(cloud_type)] = cluster_location[3]
             location_id_list.append(location_id_dict)
 
-
             if cloud_type in dict_location:
                 dict_location[cloud_type].append(cluster_location[1])
             else:
                 dict_location[cloud_type] = [cluster_location[1]]
-
         result_dict = {}
         end_list = []
         locations_dict = {}
-
-        for keys,values in dict_location.items():
-            result_dict["cloud_type"] = keys
+        for type_cloud, location_cloud in dict_location.items():
+            result_dict["cloud_type"] = type_cloud
             locations_list = []
-            for vals in values:
-                for dicts in location_id_list:
-                    for key,value in dicts.items():
-                        if dicts.has_key(keys):
-                            result_dict['id'] = dicts[keys]
-                        if vals == key and dicts.has_key(keys):
-
-                            locations_dict["key"] = value
-                            locations_dict["value"] = vals
+            for location_list in location_cloud:
+                for location_values in location_id_list:
+                    for cloud_key,cloud_value in location_values.items():
+                        if location_values.has_key(type_cloud):
+                            result_dict['id'] = location_values[type_cloud]
+                        if location_list == cloud_key and location_values.has_key(type_cloud):
+                            locations_dict["key"] = cloud_value
+                            locations_dict["value"] = location_list
                             locations_list.append(locations_dict.copy())
-
             result_dict["location"] = locations_list
-
             end_list.append(result_dict.copy())
-
         return jsonify(end_list)
-    except Exception as e:
-        return e.message
+    except Exception  as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
     finally:
         session.close()
 

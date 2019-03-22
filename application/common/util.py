@@ -1,13 +1,11 @@
 import uuid
 from application.common.loggerfile import my_logger
 import io
-import time
-from application import app, db, mongo_conn_string, conn_string, session_factory
-from azure.storage.file import FileService, FilePermissions
+from application import session_factory
+from azure.storage.file import FileService
 from configparser import ConfigParser
 from sqlalchemy.orm import scoped_session
 from application.models.models import TblVmCreation
-#from application.common.file_upload import fileProgress
 
 def find_list_in_dictionary(dicttasks, lst_dep_task_types):
         # Generic Function used to search a list of values in a dictionary. it returns keys for the found values as a list
@@ -93,7 +91,7 @@ def identify_tasks_for_assignment(dict_tasks, lst_completed_tasks):
     return lst_assign_tasks
 
 def create_azure_share(str_azure_account_name, str_azure_account_key,str_share_name, int_share_quota=100):
-    from azure.storage.file import FileService, FilePermissions
+    from azure.storage.file import FileService
 
     file_service = FileService(account_name=str_azure_account_name, account_key=str_azure_account_key)
     bool_created = file_service.create_share(share_name=str_share_name, quota=int_share_quota)
@@ -101,30 +99,21 @@ def create_azure_share(str_azure_account_name, str_azure_account_key,str_share_n
     return bool_created
 
 def azure_upload_host_slave(cluster_id):
-
-
-
-    hostname_ip_details = db.session.query(TblVmCreation.var_ip,TblVmCreation.var_name,TblVmCreation.var_role).filter(TblVmCreation.uid_cluster_id == cluster_id).all()
-    my_logger.info(hostname_ip_details)
+    db_session = scoped_session(session_factory)
+    hostname_ip_details = db_session.query(TblVmCreation.var_ip,TblVmCreation.var_name,TblVmCreation.var_role).filter(TblVmCreation.uid_cluster_id == cluster_id).all()
 
     hostlist = []
     slavelist = []
     for tups in hostname_ip_details:
-        my_logger.info(tups)
 
         host_file =  str(tups[0]) + '   ' + str(tups[1])
         hostlist.append(host_file)
         if str(tups[2]).lower() == 'datanode':
             slave_file = str(tups[0]) + '   ' + str(tups[1])
             slavelist.append(slave_file)
-            
-    #my_logger.info(host_file,type(host_file))
+
     host_file_result = '\n'.join(hostlist)
-    my_logger.info(host_file_result)
-    my_logger.info(type(host_file_result))
     slave_file_result = '\n'.join(slavelist)
-    my_logger.info(slave_file_result)
-    my_logger.info(type(slave_file_result))
 
     byte_stream_host = io.BytesIO(host_file_result)
     no_of_bytes_host = len(host_file_result)
@@ -137,7 +126,6 @@ def azure_upload_host_slave(cluster_id):
     account_key = cfg.get('file_storage', 'key')
 
     file_service = FileService(account_name=account_name, account_key=account_key)
-    my_logger.info(file_service)
 
     file_service.create_file_from_stream(share_name=cluster_id,
                                          directory_name='system',
@@ -145,8 +133,7 @@ def azure_upload_host_slave(cluster_id):
                                          stream=byte_stream_slave,
                                          count=no_of_bytes_slave,
                                          progress_callback=fileprogress)
-    my_logger.info('heyyyyyyyyyyy')
-    my_logger.info("file process done")
+
     #time.sleep(5)
     file_service.create_file_from_stream(share_name=cluster_id,
                                          directory_name='system',
@@ -154,6 +141,7 @@ def azure_upload_host_slave(cluster_id):
                                          stream=byte_stream_host,
                                          count=no_of_bytes_host,
                                          progress_callback=fileprogress)
+    db_session.close()
 
 def fileprogress(start, size):
     my_logger.debug("%d%d", start, size)

@@ -1,23 +1,19 @@
 import uuid
 import time
-from xml.etree.ElementTree import ParseError
 import os,sys
 from application import session_factory
-from msrestazure.azure_exceptions import CloudError
 from sqlalchemy import func
 from flask import request, jsonify, Blueprint
 from azure.mgmt.network import NetworkManagementClient
 from azure.common.credentials import ServicePrincipalCredentials
-from application.config.config_file import application_id, customer_client_id, secret_code, tenant_id, subscription_id, \
-    resource
+from application.config.config_file import application_id, customer_client_id, secret_code, tenant_id, subscription_id
 from application.modules.azure.create_ldap_customer import azureldapcustomer
 from azure.mgmt.resource import ResourceManagementClient
 from application.models.models import TblCustomer, TblCustomerAzureResourceGroup, TblVirtualNetwork, TblAzureAppGateway, \
-    TblSubnet, TblClusterType,TblMetaCloudLocation, TblUsers
+    TblSubnet,TblMetaCloudLocation, TblUsers
 from application.common.loggerfile import my_logger
 from azure.mgmt.network.models import NetworkSecurityGroup
 from azure.mgmt.network.models import SecurityRule, SecurityRuleProtocol, SecurityRuleAccess, SecurityRuleDirection
-from sqlalchemy.dialects.postgresql import psycopg2
 from sqlalchemy.orm import scoped_session
 
 customers = Blueprint('customers', __name__)
@@ -66,33 +62,18 @@ def customercreation():
             db_session.add(insert_resource_group)
             db_session.commit()
 
-            # insert_resource_group_first = TblCustomerAzureResourceGroup(var_resource_group_name=GROUP_NAME)
-            # db.session.add(insert_resource_group_first)
-            # db.session.commit()
-
-            # insert_customer_details = TblCustomer(uid_customer_id=customer_id, uid_gateway_id=gateway_id)
-            # db.session.add(insert_customer_details)
-            # db.session.commit()
 
             db_session.query(TblCustomer).filter(TblCustomer.uid_customer_id == customer_id).update(
                 {"uid_gateway_id": gateway_id})
 
-            # db.session.add(insert_customer_details)
             db_session.commit()
 
-            # insert_resource_group = TblCustomerAzureResourceGroup(uid_customer_id=customer_id, var_resource_group_name=GROUP_NAME,txt_resource_group_id=resourcegroup_id)
-            # db.session.add(insert_resource_group)
-            # db.session.commit()
-
-            #    insert_into_app_gateway = TblAzureAppGateway(txt_app_id=application_id, txt_subscription_id=subscription_id,var_resource_group_name=GROUP_NAME, txt_tenant_id=tenant_id,txt_client_secret=secret_code, uid_gateway_id=gateway_id)
-            #    db.session.add(insert_into_app_gateway)
-            #    db.session.commit()
 
             db_session.query(TblAzureAppGateway).filter(TblAzureAppGateway.uid_gateway_id == gateway_id).update(
                 {"txt_app_id": application_id, "txt_subscription_id": subscription_id,
                  "var_resource_group_name": GROUP_NAME, "txt_tenant_id": tenant_id,
                  "txt_client_secret": secret_code})
-            # db.session.add(insert_into_app_gateway)
+
             db_session.commit()
 
             customer_gid_query = db_session.query(func.max(TblCustomer.int_gid_id))
@@ -116,7 +97,6 @@ def customercreation():
             virtual_network_ip_info = db_session.query(TblVirtualNetwork.inet_ip_range).filter(
                 TblVirtualNetwork.srl_id == virtual_network_id_query[0][0]).all()
             if len(virtual_network_ip_info) == 0:
-                # if virtual_network_ip_info[0][0] == None:
                 vn_ip = "10.0.0.0/24"
             else:
                 ip_of_previous_cluster = virtual_network_ip_info[0][0]
