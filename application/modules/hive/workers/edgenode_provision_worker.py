@@ -1,12 +1,8 @@
 import uuid
 import sys,os
-import pymongo
-from bson.objectid import ObjectId
-from sqlalchemy import and_
 from sqlalchemy.orm import scoped_session
 from configparser import ConfigParser
-from azure.storage.file import FileService, FilePermissions
-from application import mongo_conn_string
+from azure.storage.file import FileService
 from application import session_factory
 from application.models.models import  TblEdgenode
 from application.models.models import TblCustomerRequest, TblCluster, TblCustomer, TblMetaRequestStatus

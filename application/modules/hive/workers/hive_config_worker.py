@@ -1,16 +1,14 @@
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 import pymongo
-from bson.objectid import ObjectId
 import uuid
 import sys, os
 from datetime import datetime
-from application import conn_string, mongo_conn_string
-from application.models.models import TblMetaTaskStatus, TblTask,  TblCustomerRequest, TblCluster, \
+from application import  mongo_conn_string
+from application.models.models import TblMetaTaskStatus, TblTask,  TblCustomerRequest,  \
     TblFeatureType, TblTaskType, TblMetaNodeRoles, TblVmCreation, \
     TblNodeInformation, TblAgent
 from application.common.loggerfile import my_logger
-from sqlalchemy import and_
 
 
 def configure_hive(request_id):
@@ -236,6 +234,7 @@ def configure_hive(request_id):
         my_logger.error(exc_tb.tb_lineno)
     finally:
         session.close()
+        mongo_connection.close()
 
 
 if __name__ == '__main__':

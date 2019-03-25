@@ -1,9 +1,12 @@
+import os
+
 import ldap
 import ldap.modlist as modlist
+import sys
+
 from application import db
 from application.config.config_file import ldap_connection, ldap_connection_dn, ldap_connection_password
 from application.models.models import TblCustomer, TblUsers
-from flask import jsonify
 from application.common.loggerfile import my_logger
 
 
@@ -62,14 +65,18 @@ def azureldapcustomer(customer_id, display_name, customer_gid_id, user_principal
             "homeDirectory": ["/home/users/"]
         }
         # addModList transforms your dictionary into a list that is conform to ldap input.
-        addinguser = connect.add_s(dn_user, ldap.modlist.addModlist(userlist))
+        connect.add_s(dn_user, ldap.modlist.addModlist(userlist))
         user_insertion = TblUsers(uid_customer_id=customer_id, var_user_name=display_name, txt_dn=dn_user,
                                   bool_active='t')
         db.session.add(user_insertion)
         db.session.commit()
     except Exception as e:
-        return e.message
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
     except ldap.LDAPError as e:
-        return jsonify(str(e))
+        my_logger.error(str(e))
     finally:
         db.session.close()
