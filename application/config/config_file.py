@@ -16,6 +16,7 @@ tenant_id='07272dbe-1df8-41bd-b29c-ae16bb7b9b83'
 subscription_id='cfed96cf-1241-4c76-827e-785b6d5cff7c'
 kafka_bootstrap_server = ['52.172.28.18:9092']
 kafka_api_version = (0, 10, 1)
+sendgrid_key='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'
 
 file_upload_url="http://104.211.222.41:5000/fileupload"
 path="/opt/hadoop/etc/hadoop/mapred-site.xml"
