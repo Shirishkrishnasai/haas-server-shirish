@@ -3,6 +3,7 @@ from application.models.models import TblCustomerRequestHdfs,TblAgent
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 import sys,os,json
+from application.common.loggerfile import my_logger
 
 hdfsrequestsender = Blueprint('hdfsrequestsender', __name__)
 @hdfsrequestsender.route("/api/hdfsrequests", methods=['GET'])
@@ -12,7 +13,7 @@ def request_sender():
         hdfs_requests_query = db_session.query(TblCustomerRequestHdfs.uid_hdfs_request_id,TblCustomerRequestHdfs.uid_customer_id,TblCustomerRequestHdfs.uid_cluster_id,TblCustomerRequestHdfs.uid_agent_id,TblCustomerRequestHdfs.var_user_name,TblCustomerRequestHdfs.txt_command_string,TblCustomerRequestHdfs.txt_hdfs_parameters).all()
         requests_list=[]
         for requests in hdfs_requests_query:
-            hdfs_request_dict={}psycopg2
+            hdfs_request_dict={}#psycopg2
             agent_ip_query = db_session.query(TblAgent.private_ips).filter(TblAgent.uid_agent_id == requests[3]).all()
             hdfs_request_dict['hdfs_request_id']=requests[0]
             hdfs_request_dict['customer_id']=requests[1]

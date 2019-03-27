@@ -1,7 +1,11 @@
+import io
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application.common.util import generate_tasks, find_dep_tasks
 import pymongo
+from azure.storage.file import FileService, FilePermissions
+from configparser import ConfigParser
+import unicodedata
 import uuid
 import sys,os
 import datetime
@@ -15,7 +19,7 @@ from application.common.loggerfile import my_logger
 
 def configure_cluster(request_id):
 
-    try:
+    #try:
 
         my_logger.info("in cluster configure worker")
         session = scoped_session(session_factory)
@@ -86,8 +90,8 @@ def configure_cluster(request_id):
                                                                 char_role=vm_information[2], var_created_by='system',
                                                                 var_modified_by='system', ts_created_datetime=time_now,
                                                                 ts_modified_datetime=time_now)
-                session.add(node_information_insertion)
-                session.commit()
+                # session.add(node_information_insertion)
+                # session.commit()
 
             my_logger.info("inserting into agent table")
 
@@ -106,8 +110,8 @@ def configure_cluster(request_id):
                                         ts_created_datetime=time_now, ts_modified_datetime=time_now)
 
 
-                        session.add(agent_insertion)
-                        session.commit()
+                        # session.add(agent_insertion)
+                        # session.commit()
             my_logger.info("heeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
 
             # inserting into kafka tables
@@ -150,166 +154,214 @@ def configure_cluster(request_id):
                 if cluster_nodes_information[2] == 'namenode':
                     namenode_payload += cluster_nodes_information[3]
             # calling task generation method
+            # with open('hosts.txt', 'w') as filehandle:
+            #     filehandle.write(host_dns_string)
+            # print filehandle.read(),'lolllllllllllllllllllllllllllllll'
 
+            print host_dns_string,type(host_dns_string),'typeeeeeeeeeeeeeeeeeee'
+            utf_posted_file = str(host_dns_string)#.encode('base64')
+            # utf_posted_file = host_dns_string.encode('UTF-8')
+            unified = unicodedata.normalize('NFKD', host_dns_string).encode('utf-8', 'ignore')
+            print unified,type(unified),'uniiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii'
+            # print utf_posted_file,type(utf_posted_file),'utfffffffffffffffffffffffff'
+            # no_of_bytes = len(utf_posted_file)
+            # print no_of_bytes,'numberrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr'
+            # byte_stream = io.BytesIO(utf_posted_file)
+            # print byte_stream,'bytesssssssssssssssssssssssssss'
+            # print 'heyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy'
+            # byte_array = bytes(str(host_dns_string))
+
+            # sizy = len(byte_array)
+            # print sizy,'sizzzzzzzzzzzzzzzzzz'
+            cfg = ConfigParser()
+            cfg.read('application/config/azure_config.ini')
+            account_name = cfg.get('file_storage', 'account_name')
+            account_key = cfg.get('file_storage', 'key')
+            file_service = FileService(account_name=account_name, account_key=account_key)
+            file_service.create_file_from_text(share_name=cluster_id,
+                                               directory_name='system',
+                                               file_name='hosts.txt',
+                                               text=str(unified),
+                                               encoding='utf-8', content_settings=None,
+                                               metadata=None, validate_content=True, timeout=None)
+
+
+            # file_service.create_file_from_stream(share_name=cluster_id,
+            #                                    directory_name='system',
+            #                                    file_name='hosts.txt',
+            #                                    stream=byte_stream,
+            #                                    count=no_of_bytes,
+            #                                    progress_callback=fileProgress)
+            # print byte_array,'bayatattatattatatatta'
+            # file_service.create_file_from_bytes(share_name=cluster_id,
+            #                                     directory_name='system',
+            #                                     file_name='hosts.txt',
+            #                                     file=byte_array,
+            #                                     index=0,
+            #                                     count=no_of_bytes,
+            #                                     progress_callback=fileProgress)
+
+            my_logger.info( 'bodyuyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
             # inserting slaves string to mongo db
-
             mongo_connection = pymongo.MongoClient(mongo_conn_string)
             database_connection = mongo_connection['haas']
-            slaves_content = {"file_name": "slaves.txt", "content": slaves_string}
-            database_connection.slaves.insert_one(slaves_content)
-            slaves_content_query = database_connection.slaves.find_one(slaves_content)
-            slaves_content_objectid = str(slaves_content_query["_id"])
+            #slaves_content = {"file_name": "slaves.txt", "content": slaves_string}
+            #database_connection.slaves.insert_one(slaves_content)
+            #slaves_content_query = database_connection.slaves.find_one(slaves_content)
+            #slaves_content_objectid = str(slaves_content_query["_id"])
 
-            my_logger.info("Appending slaves string object id into list")
-
-            for task_information in task_generator:
-                if task_information[2] == 'F1_T3':
-                    task_information.append(slaves_content_objectid)
-
-            # Inserting hostdns string to mongodb
-
-            host_content = {"file_name": "host.txt", "content": host_dns_string}
-            database_connection.hostdns.insert_one(host_content)
-            host_content_query = database_connection.hostdns.find_one(host_content)
-            host_content_objectid = str(host_content_query["_id"])
-            my_logger.info(host_content_objectid)
-            # Appending hosts payload to list
-
-            for task_information in task_generator:
-                if task_information[2] in ('F1_T1', 'F1_T2'):
-                    task_information.append(host_content_objectid)
-            # inserting name node ip mongo
-
-            database_connection.configurenamenode.insert_one({"content": namenode_payload})
-            namenode_ip_info = database_connection.configurenamenode.find_one({"content": namenode_payload})
-            namenode_ip_payload = namenode_ip_info["_id"]
-
-            # Appending configure payload to list
-
-            for task_information in task_generator:
-                if task_information[2] in ('F1_T4', 'F1_T5'):
-                    task_information.append(namenode_ip_payload)
-
-            # generating task type mapping dict to give input for dependency task method
-
-            task_tasktype_mapping_dict = {}
-            for task_information in task_generator:
-                task_tasktype_mapping_dict[task_information[1]] = task_information[2]
-
-            # generating list dependent task dict to give input for dependency task method
-
-            list_dependent_tasks_dict = {}
-            dependency_task_types_info = session.query(TblTaskType.char_task_type_id,
-                                                       TblTaskType.txt_dependency_task_id).filter(
-                TblTaskType.char_task_type_id.in_(task_type_list)).all()
-
-            for task_type_dependency in dependency_task_types_info:
-                if task_type_dependency[1] == None:
-                    list_dependent_tasks_dict[task_type_dependency[0]] = []
-                else:
-                    list_of_dependencies_string = task_type_dependency[1].split(",")
-                    list_of_dependencies_string = map(str, list_of_dependencies_string)
-                    list_dependent_tasks_dict[task_type_dependency[0]] = list_of_dependencies_string
-            dependent_task_info = find_dep_tasks(dict_tasktypes=list_dependent_tasks_dict,
-                                                 dict_tasks=task_tasktype_mapping_dict)
-
-            # inserting dependency tasks into list
-
-            for task_information in task_generator:
-                for taskid, dependency_tasks in dependent_task_info.items():
-                    if task_information[1] == taskid:
-                        listoftasks = ''
-                        for taskids in dependency_tasks:
-                            listoftasks += '"' + taskids + '",'
-                        task_information.append(listoftasks[:-1])
-
-            # adding worker path for each task in list
-
-            task_path = session.query(TblTaskType.char_task_type_id, TblTaskType.txt_agent_worker_version_path).filter(
-                TblTaskType.char_task_type_id.in_(task_type_list)).all()
-            my_logger.info(task_path)
-            for task_information in task_generator:
-                for task_type_information in task_path:
-                    if task_information[2] == task_type_information[0]:
-                        task_information.append(task_type_information[1])
-
-            # quering data from meta status table
-
-            metatablestatus = session.query(TblMetaTaskStatus.var_task_status, TblMetaTaskStatus.srl_id).all()
-            table_status_values = dict(metatablestatus)
-            task_status_value = table_status_values['CREATED']
-
-            my_logger.info(task_generator)
-
-            for task_information in task_generator:
-                time_now = datetime.datetime.now()
-                if len(task_information) == 7:
-                    if task_information[5] == '':
-                        task_insertion = TblTask(uid_task_id=str(task_information[1]),
-                                                 char_task_type_id=task_information[2], int_task_status=task_status_value,
-                                                 uid_request_id=str(request_id), char_feature_id=feature_id,
-                                                 uid_customer_id=str(customer_id), txt_payload_id=str(task_information[4]),
-                                                 uid_agent_id=str(task_information[0]),
-                                                 txt_agent_worker_version_path=task_information[6], var_created_by='system',
-                                                 var_modified_by='system', ts_created_datetime=time_now,
-                                                 ts_modified_datetime=time_now)
-                    else:
-                        task_insertion = TblTask(uid_task_id=str(task_information[1]),
-                                                 char_task_type_id=task_information[2], int_task_status=task_status_value,
-                                                 uid_request_id=str(request_id), char_feature_id=feature_id,
-                                                 uid_customer_id=str(customer_id), txt_payload_id=str(task_information[4]),
-                                                 txt_dependent_task_id=task_information[5],
-                                                 uid_agent_id=str(task_information[0]),
-                                                 txt_agent_worker_version_path=task_information[6], var_created_by='system',
-                                                 var_modified_by='system', ts_created_datetime=time_now,
-                                                 ts_modified_datetime=time_now)
-                else:
-                    if task_information[4] == '':
-                        task_insertion = TblTask(uid_task_id=str(task_information[1]),
-                                                 char_task_type_id=task_information[2], int_task_status=task_status_value,
-                                                 uid_request_id=str(request_id), char_feature_id=feature_id,
-                                                 uid_customer_id=str(customer_id), uid_agent_id=task_information[0],
-                                                 txt_agent_worker_version_path=task_information[5], var_created_by='system',
-                                                 var_modified_by='system', ts_created_datetime=time_now,
-                                                 ts_modified_datetime=time_now)
-                    else:
-                        task_insertion = TblTask(uid_task_id=str(task_information[1]),
-                                                 char_task_type_id=task_information[2], int_task_status=task_status_value,
-                                                 uid_request_id=str(request_id), char_feature_id=feature_id,
-                                                 uid_customer_id=str(customer_id),
-                                                 txt_dependent_task_id=task_information[4],
-                                                 uid_agent_id=str(task_information[0]),
-                                                 txt_agent_worker_version_path=task_information[5], var_created_by='system',
-                                                 var_modified_by='system', ts_created_datetime=time_now,
-                                                 ts_modified_datetime=time_now)
-                my_logger.info(task_insertion)
-                session.add(task_insertion)
-                session.commit()
-        else:
-            my_logger.info('passsssssss')
-            pass
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(str(e))
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
-        session.close()
+        #     my_logger.info("Appending slaves string object id into list")
+        #
+        #     for task_information in task_generator:
+        #         if task_information[2] == 'F1_T3':
+        #             task_information.append(slaves_content_objectid)
+        #
+        #     # Inserting hostdns string to mongodb
+        #
+        #     host_content = {"file_name": "host.txt", "content": host_dns_string}
+        #     database_connection.hostdns.insert_one(host_content)
+        #     host_content_query = database_connection.hostdns.find_one(host_content)
+        #     host_content_objectid = str(host_content_query["_id"])
+        #     my_logger.info(host_content_objectid)
+        #     # Appending hosts payload to list
+        #
+        #     for task_information in task_generator:
+        #         if task_information[2] in ('F1_T1', 'F1_T2'):
+        #             task_information.append(host_content_objectid)
+        #     # inserting name node ip mongo
+        #
+        #     database_connection.configurenamenode.insert_one({"content": namenode_payload})
+        #     namenode_ip_info = database_connection.configurenamenode.find_one({"content": namenode_payload})
+        #     namenode_ip_payload = namenode_ip_info["_id"]
+        #
+        #     # Appending configure payload to list
+        #
+        #     for task_information in task_generator:
+        #         if task_information[2] in ('F1_T4', 'F1_T5'):
+        #             task_information.append(namenode_ip_payload)
+        #
+        #     # generating task type mapping dict to give input for dependency task method
+        #
+        #     task_tasktype_mapping_dict = {}
+        #     for task_information in task_generator:
+        #         task_tasktype_mapping_dict[task_information[1]] = task_information[2]
+        #
+        #     # generating list dependent task dict to give input for dependency task method
+        #
+        #     list_dependent_tasks_dict = {}
+        #     dependency_task_types_info = session.query(TblTaskType.char_task_type_id,
+        #                                                TblTaskType.txt_dependency_task_id).filter(
+        #         TblTaskType.char_task_type_id.in_(task_type_list)).all()
+        #
+        #     for task_type_dependency in dependency_task_types_info:
+        #         if task_type_dependency[1] == None:
+        #             list_dependent_tasks_dict[task_type_dependency[0]] = []
+        #         else:
+        #             list_of_dependencies_string = task_type_dependency[1].split(",")
+        #             list_of_dependencies_string = map(str, list_of_dependencies_string)
+        #             list_dependent_tasks_dict[task_type_dependency[0]] = list_of_dependencies_string
+        #     dependent_task_info = find_dep_tasks(dict_tasktypes=list_dependent_tasks_dict,
+        #                                          dict_tasks=task_tasktype_mapping_dict)
+        #
+        #     # inserting dependency tasks into list
+        #
+        #     for task_information in task_generator:
+        #         for taskid, dependency_tasks in dependent_task_info.items():
+        #             if task_information[1] == taskid:
+        #                 listoftasks = ''
+        #                 for taskids in dependency_tasks:
+        #                     listoftasks += '"' + taskids + '",'
+        #                 task_information.append(listoftasks[:-1])
+        #
+        #     # adding worker path for each task in list
+        #
+        #     task_path = session.query(TblTaskType.char_task_type_id, TblTaskType.txt_agent_worker_version_path).filter(
+        #         TblTaskType.char_task_type_id.in_(task_type_list)).all()
+        #     my_logger.info(task_path)
+        #     for task_information in task_generator:
+        #         for task_type_information in task_path:
+        #             if task_information[2] == task_type_information[0]:
+        #                 task_information.append(task_type_information[1])
+        #
+        #     # quering data from meta status table
+        #
+        #     metatablestatus = session.query(TblMetaTaskStatus.var_task_status, TblMetaTaskStatus.srl_id).all()
+        #     table_status_values = dict(metatablestatus)
+        #     task_status_value = table_status_values['CREATED']
+        #
+        #     my_logger.info(task_generator)
+        #
+        #     for task_information in task_generator:
+        #         time_now = datetime.datetime.now()
+        #         if len(task_information) == 7:
+        #             if task_information[5] == '':
+        #                 task_insertion = TblTask(uid_task_id=str(task_information[1]),
+        #                                          char_task_type_id=task_information[2], int_task_status=task_status_value,
+        #                                          uid_request_id=str(request_id), char_feature_id=feature_id,
+        #                                          uid_customer_id=str(customer_id), txt_payload_id=str(task_information[4]),
+        #                                          uid_agent_id=str(task_information[0]),
+        #                                          txt_agent_worker_version_path=task_information[6], var_created_by='system',
+        #                                          var_modified_by='system', ts_created_datetime=time_now,
+        #                                          ts_modified_datetime=time_now)
+        #             else:
+        #                 task_insertion = TblTask(uid_task_id=str(task_information[1]),
+        #                                          char_task_type_id=task_information[2], int_task_status=task_status_value,
+        #                                          uid_request_id=str(request_id), char_feature_id=feature_id,
+        #                                          uid_customer_id=str(customer_id), txt_payload_id=str(task_information[4]),
+        #                                          txt_dependent_task_id=task_information[5],
+        #                                          uid_agent_id=str(task_information[0]),
+        #                                          txt_agent_worker_version_path=task_information[6], var_created_by='system',
+        #                                          var_modified_by='system', ts_created_datetime=time_now,
+        #                                          ts_modified_datetime=time_now)
+        #         else:
+        #             if task_information[4] == '':
+        #                 task_insertion = TblTask(uid_task_id=str(task_information[1]),
+        #                                          char_task_type_id=task_information[2], int_task_status=task_status_value,
+        #                                          uid_request_id=str(request_id), char_feature_id=feature_id,
+        #                                          uid_customer_id=str(customer_id), uid_agent_id=task_information[0],
+        #                                          txt_agent_worker_version_path=task_information[5], var_created_by='system',
+        #                                          var_modified_by='system', ts_created_datetime=time_now,
+        #                                          ts_modified_datetime=time_now)
+        #             else:
+        #                 task_insertion = TblTask(uid_task_id=str(task_information[1]),
+        #                                          char_task_type_id=task_information[2], int_task_status=task_status_value,
+        #                                          uid_request_id=str(request_id), char_feature_id=feature_id,
+        #                                          uid_customer_id=str(customer_id),
+        #                                          txt_dependent_task_id=task_information[4],
+        #                                          uid_agent_id=str(task_information[0]),
+        #                                          txt_agent_worker_version_path=task_information[5], var_created_by='system',
+        #                                          var_modified_by='system', ts_created_datetime=time_now,
+        #                                          ts_modified_datetime=time_now)
+        #         my_logger.info(task_insertion)
+        #         session.add(task_insertion)
+        #         session.commit()
+        # else:
+        #     my_logger.info('passsssssss')
+        #     pass
+    # except Exception as e:
+    #     exc_type, exc_obj, exc_tb = sys.exc_info()
+    #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #     my_logger.error(str(e))
+    #     my_logger.error(exc_type)
+    #     my_logger.error(fname)
+    #     my_logger.error(exc_tb.tb_lineno)
+    # finally:
+    #     session.close()
 if __name__ == '__main__':
-    try:
+    # try:
         if len(sys.argv)>=1:
             request_id = sys.argv[1]
             configure_cluster(request_id)
         else:
             my_logger.info("args not passed")
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(str(e))
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
+    # except Exception as e:
+    #     exc_type, exc_obj, exc_tb = sys.exc_info()
+    #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #     my_logger.error(str(e))
+    #     my_logger.error(exc_type)
+    #     my_logger.error(fname)
+    #     my_logger.error(exc_tb.tb_lineno)
 
 
+def fileProgress(start, size):
+    my_logger.info("%d %d", start, size)
