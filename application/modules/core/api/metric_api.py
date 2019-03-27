@@ -19,8 +19,8 @@ from sqlalchemy.orm import scoped_session
 
 metricapi = Blueprint('metricapi', __name__)
 
-@metricapi.route("/api/metrics/<customer_id>/<cluster_id>/<metrics>", methods=['GET'])
-def metric(customer_id,cluster_id,metrics):
+@metricapi.route("/api/metrics/<customer_id>/<cluster_id>/<metric>", methods=['GET'])
+def metric(customer_id,cluster_id,metric):
     try :
         db_session= scoped_session(session_factory)
         resource_group_name = str(customer_id)
@@ -34,7 +34,9 @@ def metric(customer_id,cluster_id,metrics):
             resource_id = ("subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name
                            +"/providers/Microsoft.Compute/virtualMachines/"+vm_names)
             client = MonitorManagementClient(credentials, subscription_id)
-            metrics_data = client.metrics.list(resource_id,interval="PT1M",metricnames=metrics,aggregation='Total')
+            print client
+            metrics_data = client.metrics.list(resource_id,interval="PT1M",metricnames=metric,aggregation='Total')
+            print metrics_data
             for item in metrics_data.value:
                 for timeserie in item.timeseries:
                     for data in timeserie.data:
@@ -64,16 +66,24 @@ def metric(customer_id,cluster_id,metrics):
             total_metric['metric_value'] = metric_sum
             total_metric['time'] = line['time']
             total_metric['measured_in'] = "bytes"
-            total_metric['metric_name'] = metrics
+            total_metric['metric_name'] = metric
             network_metrics.append(total_metric)
         return jsonify(network_metrics)
 
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
+            no_metric=[]
+            error_metric={}
+            error_metric['metric_value'] = 0
+            error_metric['time'] = 0
+            error_metric['measured_in'] = "bytes"
+            error_metric['metric_name'] = metric
+            no_metric.append(error_metric)
+            return jsonify(no_metric)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            my_logger.error(exc_type)
+            my_logger.error(fname)
+            my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
 
@@ -158,7 +168,14 @@ def clusterNodeLevel(cusid, cluid, vm_id):
         storage = []
         for data in req_data:
             if len(data) == 0:
-                return jsonify(data='null')
+                no_metric = []
+                error_metric = {}
+                error_metric['metric_value'] = 0
+                error_metric['time'] = to_time_params_str
+                error_metric['measured_in'] = "bytes"
+                error_metric['metric_name'] = metric
+                no_metric.append(error_metric)
+                return jsonify(no_metric)
             else:
                 for lists in data['payload']:
                     for dicts in lists:
@@ -231,7 +248,14 @@ def cluster_metrics(cusid, cluid):
         re = list(metrics_data)
         re = [change(v, minutes) for v in re]
         if len(re) == 0:
-            return jsonify('null')
+            no_metric = []
+            error_metric = {}
+            error_metric['metric_value'] = 0
+            error_metric['time'] = to_time_params_str
+            error_metric['measured_in'] = "bytes"
+            error_metric['metric_name'] = metric
+            no_metric.append(error_metric)
+            return jsonify(no_metric)
         else:
             """
             reduceByMetricForCluster for Cluster level metrics
@@ -345,5 +369,3 @@ def divideMilliSeconds(fromtime, totime):
         for i in range(from_time, to_time):
             minutes.append([i * 1000 * 60, (i + 1) * 1000 * 60])
         return minutes
-
-
