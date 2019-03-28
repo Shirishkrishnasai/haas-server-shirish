@@ -34,9 +34,7 @@ def metric(customer_id,cluster_id,metric):
             resource_id = ("subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name
                            +"/providers/Microsoft.Compute/virtualMachines/"+vm_names)
             client = MonitorManagementClient(credentials, subscription_id)
-            print client
             metrics_data = client.metrics.list(resource_id,interval="PT1M",metricnames=metric,aggregation='Total')
-            print metrics_data
             for item in metrics_data.value:
                 for timeserie in item.timeseries:
                     for data in timeserie.data:
@@ -93,9 +91,7 @@ def metrics_node(customer_id,cluster_id,metrics,vm_id):
     try :
         db_session= scoped_session(session_factory)
         resource_group_name = str(customer_id)
-        print customer_id,cluster_id,vm_id
         vmname= db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_cluster_id==cluster_id,TblVmCreation.uid_vm_id==vm_id).first()
-        print vmname
         network_metric = []
         vm_names=str(vmname[0])
         credentials = ServicePrincipalCredentials(client_id=client_id, secret=secret, tenant=tenant)
@@ -143,26 +139,20 @@ def clusterNodeLevel(cusid, cluid, vm_id):
         metric = request.args.get('metric')
         vm_name = db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_cluster_id == cluid,
                                                                   TblVmCreation.uid_vm_id == vm_id).first()
-        print vm_name
         if from_time_params and to_time_params:
-            print 'hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii from cluster metrics api'
             from_time_params_str = str(from_time_params)
             to_time_params_str = str(to_time_params)
             req_data = collection.find(
                 {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
-            print req_data
             minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
         else:
             date_time = datetime.datetime.now()
             from_time_params = (int(round(time.mktime(date_time.timetuple()))) * 1000) - (5 * 1000 * 60)
             from_time_params_str = str(from_time_params)
-            print from_time_params_str
             to_time_params_str = str(int(round(time.mktime(date_time.timetuple()))) * 1000)
-            print to_time_params_str
             req_data = collection.find(
                 {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
             minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
-            print req_data, "req_data"
         ram = []
         cpu = []
         storage = []
@@ -216,7 +206,6 @@ Get Metrics by node in cluster
 @metricapi.route('/api/customer/metrics/<cusid>/<cluid>', methods=['GET'])
 def cluster_metrics(cusid, cluid):
     try :
-        print cusid, cluid
         mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
         database_conn = mongo_db_conn['local']
         collection = database_conn[cusid]
@@ -224,26 +213,20 @@ def cluster_metrics(cusid, cluid):
         to_time_params = request.args.get('to')
         metric = request.args.get('metric')
         if from_time_params and to_time_params:
-            print 'hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii from cluster metrics api'
             from_time_params_str = str(from_time_params)
             to_time_params_str = str(to_time_params)
             req_data = collection.find(
                 {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
-            print req_data
-            # print to_time_params_str,from_time_params_str
             minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
         else:
             date_time = datetime.datetime.now()
             from_time_params = (int(round(time.mktime(date_time.timetuple()))) * 1000) - (5 * 1000 * 60)
             from_time_params_str = str(from_time_params)
-            print from_time_params_str
             to_time_params_str = str(int(round(time.mktime(date_time.timetuple()))) * 1000)
-            print to_time_params_str
             req_data = collection.find(
                 {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
             # print to_time_params_str, from_time_params_str
             minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
-            print req_data, "req_data"
         metrics_data = list(req_data)
         re = list(metrics_data)
         re = [change(v, minutes) for v in re]
