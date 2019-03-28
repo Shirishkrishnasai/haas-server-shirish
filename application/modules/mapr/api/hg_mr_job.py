@@ -2,7 +2,6 @@
 import datetime
 import io
 from azure.storage.file import FileService
-from sqlalchemy import exc
 from configparser import ConfigParser
 import uuid
 import os,sys
@@ -73,7 +72,6 @@ def hg_mrjob_client():
         date_time = datetime.datetime.now()
         posted_args = request.args
         customer_request = request.values.to_dict()
-        my_logger.info(customer_request)
         customer_id = uuid.UUID(customer_request["customer_id"]).hex
         cluster_id = uuid.UUID(customer_request['cluster_id']).hex
         user_name = customer_request['user_name']
@@ -144,7 +142,6 @@ def hg_mrjob_client():
     except Exception as e:
          exc_type, exc_obj, exc_tb = sys.exc_info()
          fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-
          my_logger.error(exc_type)
          my_logger.error(fname)
          my_logger.error(exc_tb.tb_lineno)
@@ -159,11 +156,9 @@ mrjobstatus=Blueprint('mrjobstatus',__name__)
 @mrjobstatus.route("/api/mrjobstatus/<mr_job_id>",methods=['GET'])
 def mrJobStatus(mr_job_id):
     try :
-        my_logger.info("inside")
         session = scoped_session(session_factory)
         result_dict = {}
         customer_job_request_id_list = session.query(TblCustomerJobRequest.int_request_status).filter(TblCustomerJobRequest.uid_request_id == mr_job_id).all()
-        my_logger.info(customer_job_request_id_list)
         if customer_job_request_id_list == []:
             return jsonify(message="no jobs found for the request id")
         else:
