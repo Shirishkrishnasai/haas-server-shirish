@@ -1,8 +1,9 @@
+from application.common.loggerfile import my_logger
 from flask import Blueprint,jsonify
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application.models.models import TblCustomerJobRequest
-import json
+import json,os,sys
 
 jobdetails=Blueprint('jobdetails',__name__)
 
@@ -16,6 +17,11 @@ def requestresponse(request_id):
         job_output_dict['job']['request_status']=customer_job_request_query[0][1]
         return jsonify(job_output_dict['job'])
     except Exception as e:
-		return e.message
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+
     finally:
         db_session.close()
