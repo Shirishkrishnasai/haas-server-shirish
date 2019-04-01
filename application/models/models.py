@@ -947,5 +947,40 @@ class TblMetaCloudLocation(ItemBase,OutputMixin):
     var_cloud_type = Column(String(40))
     var_location = Column(Text)
 
+    class TblCustomerSparkRequest(ItemBase, OutputMixin):
+        __tablename__ = 'tbl_customer_spark_request'
+        __table_args__ = {u'schema': 'highgear'}
 
-#Drop table tbl_feature_status meta table
+        srl_id = Column(Integer, primary_key=True)
+        uid_request_id = Column(UUID, nullable=False, unique=True)
+        uid_customer_id = Column(ForeignKey(u'highgear.tbl_customer.uid_customer_id'))
+        var_user_name = Column(ForeignKey(u'highgear.tbl_users.var_user_name'))
+        txt_payload_id = Column(Text)
+        uid_agent_id = Column(UUID)
+        uid_cluster_id = Column(ForeignKey(u'highgear.tbl_cluster.uid_cluster_id'))
+        uid_jar_upload_id = Column(UUID)
+        var_spark_job_name = Column(String(100))
+        txt_job_description = Column(Text)
+        var_input_file_path = Column(String(200))
+        var_output_file_path = Column(String(200))
+        ts_requested_time = Column(DateTime)
+        int_request_status = Column(Integer, default=7)
+        var_status = Column(String(200))
+        var_application_id = Column(String(100))
+        var_job_parameters = Column(Text)
+        var_job_diagnostics = Column(Text)
+        ts_completed_time = Column(DateTime)
+        txt_message = Column(Text)
+        bool_assigned = Column(Boolean, default=False)
+        var_created_by = Column(String(20), server_default="system")
+        var_modified_by = Column(String(20), server_default="system")
+        ts_created_datetime = Column(DateTime(timezone=True), server_default=func.now())
+        ts_modified_datetime = Column(DateTime(timezone=True), server_onupdate=func.now())
+
+        tbl_customer = relationship(u'TblCustomer')
+        tbl_cluster = relationship(u'TblCluster')
+        tbl_users = relationship(u'TblUsers')
+
+
+
+        #Drop table tbl_feature_status meta table

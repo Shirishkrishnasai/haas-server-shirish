@@ -2,7 +2,7 @@ import sys,os
 from flask import jsonify, request, Blueprint
 from application import session_factory
 from application.common.loggerfile import my_logger
-from application.models.models import TblTask, TblMetaTaskStatus,TblCustomerRequest, TblCluster,TblMetaRequestStatus
+from application.models.models import TblTask, TblMetaTaskStatus
 from sqlalchemy.orm import scoped_session
 servertaskstatus=Blueprint('servertaskstatus', __name__)
 @servertaskstatus.route('/servertaskstatus/<task_id>', methods=['POST'])
@@ -25,32 +25,8 @@ def server_task_status_update(task_id):
         my_logger.info(request_id)
         task_status_query = db_session.query(TblTask.int_task_status).filter(TblTask.uid_request_id == request_id).all()
         my_logger.info(task_status_query)
+        return jsonify(message="success", taskid=task_id, return_status=status)
 
-        if all(tasks[0] == meta_task_status_dict['COMPLETED'] for tasks in task_status_query):
-            my_logger.info('in All status as COMPLETED')
-            customer_request_status = db_session.query(TblMetaRequestStatus.srl_id)\
-                .filter(TblMetaRequestStatus.var_request_status == 'COMPLETED' ).all()
-            my_logger.info(customer_request_status[0][0])
-            customer_request_status_update = db_session.query(TblCustomerRequest).filter(
-                TblCustomerRequest.uid_request_id == request_id)
-            customer_request_status_update.update({"int_request_status": customer_request_status[0][0]})
-            db_session.commit()
-            my_logger.info("task status updation RUNNING commiting doneeeeee")
-            update_valid_cluster = db_session.query(TblCluster).filter(TblCluster.uid_cluster_id == cluster_id)
-            update_valid_cluster.update({"valid_cluster": 1})
-            db_session.commit()
-
-            return jsonify(message="success", taskid=task_id)
-        else:
-            my_logger.info('in any one of the status is not COMPLETED')
-            customer_request_status = db_session.query(TblMetaRequestStatus.srl_id) \
-                .filter(TblMetaRequestStatus.var_request_status == 'RUNNING').all()
-            customer_request_status_update = db_session.query(TblCustomerRequest).filter(
-                TblCustomerRequest.uid_request_id == request_id)
-            customer_request_status_update.update({"int_request_status": customer_request_status[0][0]})
-            db_session.commit()
-            my_logger.info("task status updation RUNNING commiting doneeeeee")
-            return jsonify(message="success", taskid=task_id)
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -60,4 +36,3 @@ def server_task_status_update(task_id):
         return jsonify(message="failed")
     finally:
         db_session.close()
-

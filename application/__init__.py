@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from application.config.config_file import  *
 from logging.config import dictConfig
 
-from application.modules.spark.spark_job_api import spark_update
+# from application.modules.spark.spark_job_api import sparkupdate
 
 dictConfig({
     'version': 1,
@@ -64,7 +64,7 @@ from multiprocessing import Process
 
 from application.modules.core.api.hg_api import api
 from application.modules.core.api.az_api import azapi
-from application.modules.hdfs.api.hg_hdfs_api import hdfsapi
+
 from application.modules.hive.api.hive_query_request import hivequery
 from application.modules.hive.api.hive_query_output_api import hivequeryoutput
 from application.modules.core.api.metric_api import metricapi
@@ -72,8 +72,8 @@ from application.modules.core.api.customeruserlist import customerusers
 from application.modules.core.api.get_cluster_size import clustersize
 from application.modules.core.api.get_cluster_location import clusterlocation
 from application.modules.core.api.hg_file_browser import filebrowser
-#from application.modules.core.api.hdfs_requests_sender_api import hdfsrequestsender
-#from application.modules.core.api.hdfs_result_upload_api import hdfsoutputupload
+from application.modules.core.api.hdfs_requests_sender_api import hdfsrequestsender
+from application.modules.core.api.hdfs_result_upload_api import hdfsoutputupload
 
 from application.modules.mapr.api.hg_mr_job import mrapi
 from application.modules.mapr.api.hg_mr_job import mrjobstatus
@@ -98,12 +98,12 @@ from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 #from application.modules.core.daemons.task_status_consumer import kafkataskconsumer
 #from application.common.util import azure_upload_host_slave
 
+# app.register_blueprint(sparkupdate,url_prefix='')
 #from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
 #from application.modules.cluster.workers.configure_cluster import configure_cluster
-#app.register_blueprint(hdfsoutputupload, url_prefix='')
-app.register_blueprint(hdfsapi, url_prefix='')
-app.register_blueprint(spark_update,url_prefix='')
-#app.register_blueprint(hdfsrequestsender, url_prefix='')
+
+app.register_blueprint(hdfsoutputupload, url_prefix='')
+app.register_blueprint(hdfsrequestsender, url_prefix='')
 app.register_blueprint(jobstatusapi, url_prefix='')
 app.register_blueprint(mrjobupdate, url_prefix='')
 app.register_blueprint(hivequeryoutput, url_prefix='')
@@ -136,6 +136,7 @@ app.register_blueprint(highgearmanager, url_prefix='')
 app.register_blueprint(taskstatus, url_prefix='')
 app.register_blueprint(jobproducer, url_prefix='')
 app.register_blueprint(metricapi,url_prefix='')
+
 def has_no_empty_params(rule):
     defaults = rule.defaults if rule.defaults is not None else ()
     arguments = rule.arguments if rule.arguments is not None else ()
@@ -155,13 +156,13 @@ def site_map():
     print (links)
 
 
-hgSelectQueryUrlScheduler()
+# hgSelectQueryUrlScheduler()
 def runProcess():
     #edgenodeProvision('bd17dcb4-251b-11e9-8b29-000d3af26ae2')
     #selecturl_process = Process(target=hgSelectQueryUrlScheduler)
     #selecturl_process.start()
     # kafkataskconsumer_process = Process(target=kafkataskconsumer)
-#    kafkaconsumer_process = Process(target=kafkaconsumer)
+    kafkaconsumer_process = Process(target=kafkaconsumer)
     # hgmanager_process = Process(target=hgmanager)
     hgsuper_process = Process(target=hgsuper)
     hgsuper_process.start()
@@ -180,8 +181,6 @@ def runProcess():
     # customerjobreqestconsumer = Process(target=jobinsertion)
     # mrjobproducer_process.start()
     # customerjobreqestconsumer.start()
-   # kafkaconsumer_process.start()
+    kafkaconsumer_process.start()
     # hgmanager_process.start()
     print "method ended"
-
-
