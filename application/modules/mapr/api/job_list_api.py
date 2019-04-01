@@ -19,7 +19,6 @@ def job_list(customer_id,cluster_id):
                 individual_job_diagnostics={}
                 meta_mr_status_query=db_session.query(TblMetaMrRequestStatus.var_mr_request_status).filter(TblMetaMrRequestStatus.srl_id==each_job[1]).all()
                 job_diagnostic=json.loads(each_job[2])
-                my_logger.info(job_diagnostic)
                 individual_job_diagnostics['application_id']=each_job[0]
                 individual_job_diagnostics['job_status']=meta_mr_status_query[0][0]
                 individual_job_diagnostics['startedTime']=job_diagnostic['startedTime']
@@ -32,7 +31,6 @@ def job_list(customer_id,cluster_id):
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-
         my_logger.error(exc_type)
         my_logger.error(fname)
         my_logger.error(exc_tb.tb_lineno)
