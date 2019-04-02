@@ -17,17 +17,23 @@ import ast
 #from datetime import datetime
 hdfsapi = Blueprint('hdfsapi', __name__)
 
+
+
 @hdfsapi.route("/api/hdfs/directorylisting/<customer_id>/<cluster_id>/<user_name>", methods=['GET'])
 
 def hdfs_listing_api(customer_id,cluster_id,user_name):
-   try:
+    try:
         db_session = scoped_session(session_factory)
         hdfs_request_parameters = request.args
+        print hdfs_request_parameters,"statusssssssss"
+
         command_string = 'list'
         hdfs_parameters = hdfs_request_parameters['hdfs_parameters'][1:]
         hdfs_request_id = uuid.uuid1()
+        print hdfs_parameters
         nodeinformationquery = db_session.query(TblNodeInformation.uid_node_id).filter(
             TblNodeInformation.uid_cluster_id == cluster_id, TblNodeInformation.char_role == 'namenode').all()
+        print nodeinformationquery[0][0]
         agentinfoquery = db_session.query(TblAgent.uid_agent_id).filter(
             TblAgent.uid_node_id == nodeinformationquery[0][0]).all()
         hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
@@ -43,6 +49,8 @@ def hdfs_listing_api(customer_id,cluster_id,user_name):
         db_session.add(hdfs_request_values)
         db_session.commit()
         db_session.close()
+        print "commited"
+        my_logger.info("committing to database and closing session done")
 
         t_end = time.time() + 120
         while time.time() < t_end:
@@ -52,15 +60,19 @@ def hdfs_listing_api(customer_id,cluster_id,user_name):
                 hdfs_output = hdfs_command_result[0][0]
                 output=hdfs_output.encode('utf-8')
                 x = ast.literal_eval(output)
+
+                print output
+                print type(x),"tttttttttttttttttttttttttttttttttttttttttttttttt"
                 return jsonify(command_output=x)
-   except Exception as e:
-       exc_type, exc_obj, exc_tb = sys.exc_info()
-       fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-       my_logger.error(exc_type)
-       my_logger.error(fname)
-       my_logger.error(exc_tb.tb_lineno)
-   finally:
-       db_session.close()
+    except Exception as e:
+
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()
 
 @hdfsapi.route("/api/hdfs/status/<customer_id>/<cluster_id>/<user_name>", methods=['GET'])
 
@@ -68,11 +80,15 @@ def hdfs_status_api(customer_id,cluster_id,user_name):
     try:
         db_session = scoped_session(session_factory)
         hdfs_request_parameters = request.args
+	print hdfs_request_parameters,"statusssssssss"
+
         command_string = 'fsck'
         hdfs_parameters = hdfs_request_parameters['hdfs_parameters']
         hdfs_request_id = uuid.uuid1()
+        print hdfs_parameters
         nodeinformationquery = db_session.query(TblNodeInformation.uid_node_id).filter(
             TblNodeInformation.uid_cluster_id == cluster_id, TblNodeInformation.char_role == 'namenode').all()
+        print nodeinformationquery[0][0]
         agentinfoquery = db_session.query(TblAgent.uid_agent_id).filter(
             TblAgent.uid_node_id == nodeinformationquery[0][0]).all()
         hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
@@ -88,6 +104,9 @@ def hdfs_status_api(customer_id,cluster_id,user_name):
         db_session.add(hdfs_request_values)
         db_session.commit()
         db_session.close()
+        print "commited"
+        my_logger.info("committing to database and closing session done")
+
         t_end = time.time() + 120
         while time.time() < t_end:
 
@@ -97,8 +116,12 @@ def hdfs_status_api(customer_id,cluster_id,user_name):
                 hdfs_output = hdfs_command_result[0][0]
                 output=hdfs_output.encode('utf-8')
                 x = ast.literal_eval(output)
+                print output
+                print type(x),"tttttttttttttttttttttttttttttttttttttttttttttttt"
+
                 return jsonify(command_output=x)
     except Exception as e:
+
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         my_logger.error(exc_type)
@@ -113,11 +136,16 @@ def hdfs_count_api(customer_id,cluster_id,user_name):
     try:
         db_session = scoped_session(session_factory)
         hdfs_request_parameters = request.args
+#        customer_id = hdfs_request_parameters['customer_id']
+ #       cluster_id = hdfs_request_parameters['cluster_id']
+  #      user_name = hdfs_request_parameters['user_name']
         command_string = 'count'
         hdfs_parameters = hdfs_request_parameters['hdfs_parameters']
         hdfs_request_id = uuid.uuid1()
+        print hdfs_parameters
         nodeinformationquery = db_session.query(TblNodeInformation.uid_node_id).filter(
             TblNodeInformation.uid_cluster_id == cluster_id, TblNodeInformation.char_role == 'namenode').all()
+        print nodeinformationquery[0][0]
         agentinfoquery = db_session.query(TblAgent.uid_agent_id).filter(
             TblAgent.uid_node_id == nodeinformationquery[0][0]).all()
         hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
@@ -132,6 +160,8 @@ def hdfs_count_api(customer_id,cluster_id,user_name):
         db_session.add(hdfs_request_values)
         db_session.commit()
         db_session.close()
+        print "commited"
+        my_logger.info("committing to database and closing session done")
 
         t_end = time.time() + 120
         while time.time() < t_end:
@@ -160,6 +190,7 @@ def hdfs_createdirectory_api():
     try:
         db_session = scoped_session(session_factory)
         hdfs_request_parameters = request.json
+	print hdfs_request_parameters,"createeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
         customer_id = hdfs_request_parameters['customer_id']
         cluster_id = hdfs_request_parameters['cluster_id']
         user_name = hdfs_request_parameters['user_name']
@@ -167,8 +198,10 @@ def hdfs_createdirectory_api():
         hdfs_parameters = hdfs_request_parameters['hdfs_parameters']
 	directory_name = hdfs_request_parameters['new_folder']
         hdfs_request_id = uuid.uuid1()
+        print hdfs_parameters
         nodeinformationquery = db_session.query(TblNodeInformation.uid_node_id).filter(
             TblNodeInformation.uid_cluster_id == cluster_id, TblNodeInformation.char_role == 'namenode').all()
+        print nodeinformationquery[0][0]
         agentinfoquery = db_session.query(TblAgent.uid_agent_id).filter(
             TblAgent.uid_node_id == nodeinformationquery[0][0]).all()
         hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
@@ -185,6 +218,117 @@ def hdfs_createdirectory_api():
         db_session.add(hdfs_request_values)
         db_session.commit()
         db_session.close()
+        print "commited"
+        my_logger.info("committing to database and closing session done")
+
+        t_end = time.time() + 120
+        while time.time() < t_end:
+
+            hdfs_command_result = db_session.query(TblCustomerRequestHdfs.hdfs_command_output). \
+                filter(TblCustomerRequestHdfs.uid_hdfs_request_id == str(hdfs_request_id)).all()
+            if hdfs_command_result[0][0] is not None:
+                hdfs_output = hdfs_command_result[0][0]
+                output=hdfs_output.encode('utf-8')
+                x = ast.literal_eval(output)
+                return jsonify(command_output=[{"message":x['message']}])
+    except Exception as e:
+
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()
+
+
+@hdfsapi.route("/api/hdfs/remove/<customer_id>/<cluster_id>/<user_name>", methods=['GET'])
+def hdfs_remove_api(customer_id,cluster_id,user_name):
+    try:
+        db_session = scoped_session(session_factory)
+        hdfs_request_parameters = request.args
+#        customer_id = hdfs_request_parameters['customer_id']
+ #       cluster_id = hdfs_request_parameters['cluster_id']
+  #      user_name = hdfs_request_parameters['user_name']
+        command_string = 'remove'
+        hdfs_parameters = hdfs_request_parameters['hdfs_parameters']
+        hdfs_request_id = uuid.uuid1()
+        print hdfs_parameters
+        nodeinformationquery = db_session.query(TblNodeInformation.uid_node_id).filter(
+            TblNodeInformation.uid_cluster_id == cluster_id, TblNodeInformation.char_role == 'namenode').all()
+        print nodeinformationquery[0][0]
+        agentinfoquery = db_session.query(TblAgent.uid_agent_id).filter(
+            TblAgent.uid_node_id == nodeinformationquery[0][0]).all()
+        hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
+                                                     uid_customer_id=customer_id,
+                                                     uid_cluster_id=cluster_id,
+                                                     uid_agent_id=agentinfoquery[0][0],
+                                                     var_user_name=user_name,
+                                                     ts_requested_time=datetime.now(),
+                                                     txt_command_string=command_string,
+                                                     txt_hdfs_parameters=hdfs_parameters,
+						     bool_assigned=0,
+                                                     bool_command_complete=0)
+        db_session.add(hdfs_request_values)
+        db_session.commit()
+        db_session.close()
+        print "commited"
+        my_logger.info("committing to database and closing session done")
+
+        t_end = time.time() + 120
+        while time.time() < t_end:
+
+            hdfs_command_result = db_session.query(TblCustomerRequestHdfs.hdfs_command_output). \
+                filter(TblCustomerRequestHdfs.uid_hdfs_request_id == str(hdfs_request_id)).all()
+            if hdfs_command_result[0][0] is not None:
+                hdfs_output = hdfs_command_result[0][0]
+                output=hdfs_output.encode('utf-8')
+               	x = ast.literal_eval(output)
+		return jsonify(command_output=x['message'])
+    except Exception as e:
+
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()
+
+
+@hdfsapi.route("/api/hdfs/tail/<customer_id>/<cluster_id>/<user_name>", methods=['GET'])
+def hdfs_tail_api(customer_id,cluster_id,user_name):
+    try:
+        db_session = scoped_session(session_factory)
+        hdfs_request_parameters = request.args
+#        customer_id = hdfs_request_parameters['customer_id']
+ #       cluster_id = hdfs_request_parameters['cluster_id']
+  #      user_name = hdfs_request_parameters['user_name']
+        command_string = 'tail'
+        hdfs_parameters = hdfs_request_parameters['hdfs_parameters']
+        hdfs_request_id = uuid.uuid1()
+        print hdfs_parameters
+        nodeinformationquery = db_session.query(TblNodeInformation.uid_node_id).filter(
+            TblNodeInformation.uid_cluster_id == cluster_id, TblNodeInformation.char_role == 'namenode').all()
+        print nodeinformationquery[0][0]
+        agentinfoquery = db_session.query(TblAgent.uid_agent_id).filter(
+            TblAgent.uid_node_id == nodeinformationquery[0][0]).all()
+        hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
+                                                     uid_customer_id=customer_id,
+                                                     uid_cluster_id=cluster_id,
+                                                     uid_agent_id=agentinfoquery[0][0],
+                                                     var_user_name=user_name,
+                                                     ts_requested_time=datetime.now(),
+                                                     txt_command_string=command_string,
+                                                     txt_hdfs_parameters=hdfs_parameters,
+						     bool_assigned=0,
+                                                     bool_command_complete=0)
+        db_session.add(hdfs_request_values)
+        db_session.commit()
+        db_session.close()
+        print "commited"
+        my_logger.info("committing to database and closing session done")
+
         t_end = time.time() + 120
         while time.time() < t_end:
 
@@ -206,107 +350,21 @@ def hdfs_createdirectory_api():
         db_session.close()
 
 
-@hdfsapi.route("/api/hdfs/remove/<customer_id>/<cluster_id>/<user_name>", methods=['GET'])
-def hdfs_remove_api(customer_id,cluster_id,user_name):
-    try:
-        db_session = scoped_session(session_factory)
-        hdfs_request_parameters = request.args
-        command_string = 'remove'
-        hdfs_parameters = hdfs_request_parameters['hdfs_parameters']
-        hdfs_request_id = uuid.uuid1()
-        nodeinformationquery = db_session.query(TblNodeInformation.uid_node_id).filter(
-            TblNodeInformation.uid_cluster_id == cluster_id, TblNodeInformation.char_role == 'namenode').all()
-        agentinfoquery = db_session.query(TblAgent.uid_agent_id).filter(
-            TblAgent.uid_node_id == nodeinformationquery[0][0]).all()
-        hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
-                                                     uid_customer_id=customer_id,
-                                                     uid_cluster_id=cluster_id,
-                                                     uid_agent_id=agentinfoquery[0][0],
-                                                     var_user_name=user_name,
-                                                     ts_requested_time=datetime.now(),
-                                                     txt_command_string=command_string,
-                                                     txt_hdfs_parameters=hdfs_parameters,
-						     bool_assigned=0,
-                                                     bool_command_complete=0)
-        db_session.add(hdfs_request_values)
-        db_session.commit()
-        db_session.close()
-        t_end = time.time() + 120
-        while time.time() < t_end:
-
-            hdfs_command_result = db_session.query(TblCustomerRequestHdfs.hdfs_command_output). \
-                filter(TblCustomerRequestHdfs.uid_hdfs_request_id == str(hdfs_request_id)).all()
-            if hdfs_command_result[0][0] is not None:
-                hdfs_output = hdfs_command_result[0][0]
-                output=hdfs_output.encode('utf-8')
-               	x = ast.literal_eval(output)
-		return jsonify(command_output=x)
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
-        db_session.close()
-
-
-@hdfsapi.route("/api/hdfs/tail/<customer_id>/<cluster_id>/<user_name>", methods=['GET'])
-def hdfs_tail_api(customer_id,cluster_id,user_name):
-    try:
-        db_session = scoped_session(session_factory)
-        hdfs_request_parameters = request.args
-        command_string = 'tail'
-        hdfs_parameters = hdfs_request_parameters['hdfs_parameters']
-        hdfs_request_id = uuid.uuid1()
-        nodeinformationquery = db_session.query(TblNodeInformation.uid_node_id).filter(
-            TblNodeInformation.uid_cluster_id == cluster_id, TblNodeInformation.char_role == 'namenode').all()
-        agentinfoquery = db_session.query(TblAgent.uid_agent_id).filter(
-            TblAgent.uid_node_id == nodeinformationquery[0][0]).all()
-        hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
-                                                     uid_customer_id=customer_id,
-                                                     uid_cluster_id=cluster_id,
-                                                     uid_agent_id=agentinfoquery[0][0],
-                                                     var_user_name=user_name,
-                                                     ts_requested_time=datetime.now(),
-                                                     txt_command_string=command_string,
-                                                     txt_hdfs_parameters=hdfs_parameters,
-						     bool_assigned=0,
-                                                     bool_command_complete=0)
-        db_session.add(hdfs_request_values)
-        db_session.commit()
-        db_session.close()
-        t_end = time.time() + 120
-        while time.time() < t_end:
-
-            hdfs_command_result = db_session.query(TblCustomerRequestHdfs.hdfs_command_output). \
-                filter(TblCustomerRequestHdfs.uid_hdfs_request_id == str(hdfs_request_id)).all()
-            if hdfs_command_result[0][0] is not None:
-                hdfs_output = hdfs_command_result[0][0]
-                output=hdfs_output.encode('utf-8')
-                x = ast.literal_eval(output)
-                return jsonify(command_output=hdfs_output)
-    except Exception as e:
-
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
-        db_session.close()
-
-
 @hdfsapi.route("/api/hdfs/head/<customer_id>/<cluster_id>/<user_name>", methods=['GET'])
 def hdfs_head_api(customer_id,cluster_id,user_name):
     try:
         db_session = scoped_session(session_factory)
         hdfs_request_parameters = request.args
+   #     customer_id = hdfs_request_parameters['customer_id']
+    #    cluster_id = hdfs_request_parameters['cluster_id']
+     #   user_name = hdfs_request_parameters['user_name']
         command_string = 'text'
         hdfs_parameters = hdfs_request_parameters['hdfs_parameters']
         hdfs_request_id = uuid.uuid1()
+        print hdfs_parameters
         nodeinformationquery = db_session.query(TblNodeInformation.uid_node_id).filter(
             TblNodeInformation.uid_cluster_id == cluster_id, TblNodeInformation.char_role == 'namenode').all()
+        print nodeinformationquery[0][0]
         agentinfoquery = db_session.query(TblAgent.uid_agent_id).filter(
             TblAgent.uid_node_id == nodeinformationquery[0][0]).all()
         hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
@@ -322,15 +380,20 @@ def hdfs_head_api(customer_id,cluster_id,user_name):
         db_session.add(hdfs_request_values)
         db_session.commit()
         db_session.close()
+        print "commited"
+        my_logger.info("committing to database and closing session done")
+
         t_end = time.time() + 120
         while time.time() < t_end:
+
             hdfs_command_result = db_session.query(TblCustomerRequestHdfs.hdfs_command_output). \
                 filter(TblCustomerRequestHdfs.uid_hdfs_request_id == str(hdfs_request_id)).all()
             if hdfs_command_result[0][0] is not None:
                 hdfs_output = hdfs_command_result[0][0]
                 output=hdfs_output.encode('utf-8')
+		print output,"outputtttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt"
 		x = ast.literal_eval(output)
-                return jsonify(command_output=x)
+                return jsonify(command_output=x['message'])
     except Exception as e:
 
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -348,17 +411,21 @@ def fileProgress(start, size):
 
 @hdfsapi.route("/api/hdfs/upload", methods=['POST'])
 def hdfs_upload_api():
-   try:
+#    try:
+	print "uploaddddddddddddddddddddddddddddddddddddddddddddddddddddd"
         db_session = scoped_session(session_factory)
         hdfs_request_parameters = request.values
+        print hdfs_request_parameters,"uploadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
         customer_id = hdfs_request_parameters['customer_id']
         cluster_id = hdfs_request_parameters['cluster_id']
         user_name = hdfs_request_parameters['user_name']
         command_string = 'upload'
         hdfs_parameters = hdfs_request_parameters['hdfs_parameters']
         hdfs_request_id = uuid.uuid1()
+        print hdfs_parameters,cluster_id
         posted_file = request.files
         str_posted_file = posted_file['files'].read()
+#        print str_posted_file,"fileeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
         byte_stream = io.BytesIO(str_posted_file)
         no_of_bytes=len(str_posted_file)
         filename=uuid.uuid1()
@@ -369,12 +436,16 @@ def hdfs_upload_api():
         account_key = cfg.get('file_storage', 'key')
 
         file_service = FileService(account_name=account_name, account_key=account_key)
+ #       print file_service
+  #      print no_of_bytes
+
         file_service.create_file_from_stream(share_name=str(cluster_id),
                                              directory_name='hdfs',
                                              file_name=str(filename),
                                              stream=byte_stream,
                                              count=no_of_bytes,
                                              progress_callback=fileProgress)
+	print 'created'
         file_insert_values = TblFileUpload(uid_upload_id=str(file_upload_id),
                                            uid_customer_id=str(customer_id),
                                            var_share_name=str(cluster_id),
@@ -387,6 +458,7 @@ def hdfs_upload_api():
 
         nodeinformationquery = db_session.query(TblNodeInformation.uid_node_id).filter(
             TblNodeInformation.uid_cluster_id == cluster_id, TblNodeInformation.char_role == 'namenode').all()
+        print nodeinformationquery[0][0]
         agentinfoquery = db_session.query(TblAgent.uid_agent_id).filter(
             TblAgent.uid_node_id == nodeinformationquery[0][0]).all()
         hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
@@ -403,6 +475,9 @@ def hdfs_upload_api():
         db_session.add(hdfs_request_values)
         db_session.commit()
         db_session.close()
+        print "commited"
+        my_logger.info("committing to database and closing session done")
+
         t_end = time.time() + 120
         while time.time() < t_end:
 
@@ -411,29 +486,35 @@ def hdfs_upload_api():
             if hdfs_command_result[0][0] is not None:
                 hdfs_output = hdfs_command_result[0][0]
                 output=hdfs_output.encode('utf-8')
+                print output,"outputtttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt"
                 x = ast.literal_eval(output)
                 return jsonify(command_output=x['message'])
-   except Exception as e:
+ #   except Exception as e:
 
-       exc_type, exc_obj, exc_tb = sys.exc_info()
-       fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-       my_logger.error(exc_type)
-       my_logger.error(fname)
-       my_logger.error(exc_tb.tb_lineno)
-   finally:
+  #      exc_type, exc_obj, exc_tb = sys.exc_info()
+   #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #    my_logger.error(exc_type)
+     #   my_logger.error(fname)
+      #  my_logger.error(exc_tb.tb_lineno)
+#    finally:
         db_session.close()
 
 
 @hdfsapi.route("/api/hdfs/download/<customer_id>/<cluster_id>/<user_name>", methods=['GET'])
 def hdfs_download_api(customer_id,cluster_id,user_name):
-   try:
+#    try:
         db_session = scoped_session(session_factory)
         hdfs_request_parameters = request.args
+#        customer_id = hdfs_request_parameters['customer_id']
+ #       cluster_id = hdfs_request_parameters['cluster_id']
+  #      user_name = hdfs_request_parameters['user_name']
         command_string = 'download'
         hdfs_parameters = hdfs_request_parameters['hdfs_parameters']
         hdfs_request_id = uuid.uuid1()
+        print hdfs_parameters
         nodeinformationquery = db_session.query(TblNodeInformation.uid_node_id).filter(
             TblNodeInformation.uid_cluster_id == cluster_id, TblNodeInformation.char_role == 'namenode').all()
+        print nodeinformationquery[0][0]
         agentinfoquery = db_session.query(TblAgent.uid_agent_id).filter(
             TblAgent.uid_node_id == nodeinformationquery[0][0]).all()
         hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
@@ -444,55 +525,70 @@ def hdfs_download_api(customer_id,cluster_id,user_name):
                                                      ts_requested_time=datetime.now(),
                                                      txt_command_string=command_string,
                                                      txt_hdfs_parameters=hdfs_parameters,
+						     bool_assigned=0,
                                                      bool_command_complete=0)
 
         db_session.add(hdfs_request_values)
         db_session.commit()
         db_session.close()
+        print "commited"
+        my_logger.info("committing to database and closing session done")
+
         t_end = time.time() + 120
         while time.time() < t_end:
 
             hdfs_command_result = db_session.query(TblCustomerRequestHdfs.hdfs_command_output). \
                 filter(TblCustomerRequestHdfs.uid_hdfs_request_id == str(hdfs_request_id)).all()
             if hdfs_command_result[0][0] is not None:
+                hdfs_output = hdfs_command_result[0][0]
+                output=hdfs_output.encode('utf-8')
+                x = ast.literal_eval(output)
 
 
                 cfg = ConfigParser()
                 cfg.read('application/config/azure_config.ini')
                 account_name = cfg.get('file_storage', 'account_name')
                 account_key = cfg.get('file_storage', 'key')
+                print hdfs_command_result[0][0]
                 expiry_date = str(datetime.now().date() + timedelta(days=3))
 
                 file_service = FileService(account_name=account_name, account_key=account_key)
                 access_signature = file_service.generate_file_shared_access_signature(share_name=cluster_id,
                                                                                       directory_name='hdfs',
-                                                                                      file_name=hdfs_command_result[0][0],
+                                                                                      file_name=x['message'],
                                                                                       permission=FilePermissions.READ,
                                                                                       expiry=expiry_date)
+                my_logger.info('access signature is generated')
+                my_logger.info('now creating fileurl to access')
+                # getting file url
                 file_url = file_service.make_file_url(share_name=cluster_id,
                                                       directory_name='hdfs',
-                                                      file_name=hdfs_command_result[0][0],
+                                                      file_name=x['message'],
                                                       protocol='https',
                                                       sas_token=access_signature)
 
                 return jsonify(command_output=file_url)
-   except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-   finally:
-         db_session.close()
+ #   except Exception as e:
+
+#        exc_type, exc_obj, exc_tb = sys.exc_info()
+ #       fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+  #      my_logger.error(exc_type)
+   #     my_logger.error(fname)
+    #    my_logger.error(exc_tb.tb_lineno)
+    #finally:
+        db_session.close()
 
 
 @hdfsapi.route("/api/hdfs/request/<agent_id>", methods=['GET'])
 def hdfs_request_sender(agent_id):
-   try:
+#    try:
+	print "requesttttttttttttttttttttttttttttttt"
         db_session = scoped_session(session_factory)
         hdfs_requests_query = db_session.query(TblCustomerRequestHdfs.uid_hdfs_request_id,TblCustomerRequestHdfs.uid_customer_id,TblCustomerRequestHdfs.uid_cluster_id,TblCustomerRequestHdfs.uid_agent_id,TblCustomerRequestHdfs.var_user_name,TblCustomerRequestHdfs.txt_command_string,TblCustomerRequestHdfs.txt_hdfs_parameters,TblCustomerRequestHdfs.txt_directory_name,TblCustomerRequestHdfs.uid_upload_id).filter(TblCustomerRequestHdfs.bool_assigned == 'f',TblCustomerRequestHdfs.uid_agent_id==agent_id).all()
+	print "innnnnnnnnnnnn"
         requests_list=[]
 	
+	print hdfs_requests_query,"sss"
         for requests in hdfs_requests_query:
             hdfs_request_dict={}
             agent_ip_query = db_session.query(TblAgent.private_ips).filter(TblAgent.uid_agent_id == requests[3]).all()
@@ -503,54 +599,72 @@ def hdfs_request_sender(agent_id):
             hdfs_request_dict['user_name']=requests[4]
             hdfs_request_dict['namenode_ip']=agent_ip_query[0][0]
             hdfs_request_dict['command_type']=requests[5]
+ 	    hdfs_list=requests[6].split(" ")
+	    if len(hdfs_list) == 2:
+		hdfs_request_dict['hdfs_parameters']=hdfs_list[0]
+		hdfs_request_dict['output_path']=hdfs_list[1]
+	    else:
+		hdfs_request_dict['hdfs_parameters']=requests[6]
 	    if hdfs_request_dict['command_type'] ==  'upload':
 		fileuploaddata=db_session.query(TblFileUpload.var_file_name).filter(TblFileUpload.uid_upload_id == requests[8]).all()
 	    	hdfs_request_dict['input_path']='/opt/mnt/azurefileshare/hdfs/'+fileuploaddata[0][0]
-            hdfs_request_dict['hdfs_parameters']=requests[6]
 	    hdfs_request_dict['directory_name']=requests[7]
             requests_list.append(hdfs_request_dict)
+	    print requests_list,"mmmmmmmmmmmmmmnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
 	    customer_request_hdfs_query=db_session.query(TblCustomerRequestHdfs).filter(TblCustomerRequestHdfs.uid_hdfs_request_id == hdfs_request_dict['request_id'])
 	    customer_request_hdfs_query.update({'bool_assigned':1})
 	    db_session.commit()
+	print requests_list
         return jsonify(message=requests_list)
-   except Exception as e:
-       exc_type, exc_obj, exc_tb = sys.exc_info()
-       fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-       my_logger.error(exc_type)
-       my_logger.error(fname)
-       my_logger.error(exc_tb.tb_lineno)
-   finally:
+ #   except Exception as e:
+
+  #      exc_type, exc_obj, exc_tb = sys.exc_info()
+   #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #    my_logger.error(exc_type)
+     #   my_logger.error(fname)
+      #  my_logger.error(exc_tb.tb_lineno)
+#    finally:
         db_session.close()
 
 @hdfsapi.route("/api/upload", methods=['POST'])
 
 def hdfs_result_upload():
-   try:
+#    try:
+
+	print "calledddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
         hdfs_output_json=request.json
+        print hdfs_output_json,"printtttttttttttttttttttttttttttttttttttttttttttttttt"
         db_session = scoped_session(session_factory)
         hdfs_customer_request=db_session.query(TblCustomerRequestHdfs).filter(TblCustomerRequestHdfs.uid_hdfs_request_id==hdfs_output_json['request_id'])
         hdfs_customer_request.update({"hdfs_command_output":str(hdfs_output_json['output'])})
         db_session.commit()
-   except Exception as e:
-       exc_type, exc_obj, exc_tb = sys.exc_info()
-       fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-       my_logger.error(exc_type)
-       my_logger.error(fname)
-       my_logger.error(exc_tb.tb_lineno)
-   finally:
+	print "commiteddddddddddddddddddddddddddddddddddddddddddddd"
+ #   except Exception as e:
+
+  #      exc_type, exc_obj, exc_tb = sys.exc_info()
+   #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #    my_logger.error(exc_type)
+     #   my_logger.error(fname)
+      #  my_logger.error(exc_tb.tb_lineno)
+   # finally:
         db_session.close()
 
 
-@hdfsapi.route("/api/hdfs/move/<customer_id>/<cluster_id>/<user_name>", methods=['GET'])
+@hdfsapi.route("/api/hdfs/move", methods=['POST'])
 
 def hdfs_move_api():
     try:
         db_session = scoped_session(session_factory)
-        hdfs_request_parameters = request.args
+        hdfs_request_parameters = request.json
+        customer_id = hdfs_request_parameters['customer_id']
+        cluster_id = hdfs_request_parameters['cluster_id']
+        user_name = hdfs_request_parameters['user_name']
         command_string = 'mv'
-        hdfs_parameters = hdfs_request_parameters['hdfs_parameters']
+        hdfs_parameters = hdfs_request_parameters['hdfs_parameters'] + " " + hdfs_request_parameters['output_path']
         hdfs_request_id = uuid.uuid1()
+        print hdfs_parameters
         nodeinformationquery=db_session.query(TblNodeInformation.uid_node_id).filter(TblNodeInformation.uid_cluster_id==cluster_id,TblNodeInformation.char_role=='namenode').all()
+        print nodeinformationquery[0][0]
         agentinfoquery=db_session.query(TblAgent.uid_agent_id).filter(TblAgent.uid_node_id==nodeinformationquery[0][0]).all()
         hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
                                                  uid_customer_id=customer_id,
@@ -560,10 +674,14 @@ def hdfs_move_api():
                                                  ts_requested_time=datetime.now(),
                                                  txt_command_string=command_string,
                                                  txt_hdfs_parameters=hdfs_parameters,
+						 bool_assigned=0,
                                                  bool_command_complete=0)
         db_session.add(hdfs_request_values)
         db_session.commit()
         db_session.close()
+        print "commited"
+        my_logger.info("committing to database and closing session done")
+
         t_end = time.time() + 120
         while time.time() < t_end:
 
@@ -571,7 +689,11 @@ def hdfs_move_api():
             filter(TblCustomerRequestHdfs.uid_hdfs_request_id == str(hdfs_request_id)).all()
             if hdfs_command_result[0][0] is not None:
                 hdfs_output = hdfs_command_result[0][0]
-                return jsonify(command_output=hdfs_output)
+                output=hdfs_output.encode('utf-8')
+                print output,"outputtttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt"
+                x = ast.literal_eval(output)
+
+                return jsonify(command_output=x['message'])
     except Exception as e:
 
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -582,4 +704,57 @@ def hdfs_move_api():
     finally:
         db_session.close()
 
+
+
+@hdfsapi.route("/api/hdfs/rename", methods=['POST'])
+
+def hdfs_rename_api():
+    try:
+        db_session = scoped_session(session_factory)
+        hdfs_request_parameters = request.json
+        customer_id = hdfs_request_parameters['customer_id']
+        cluster_id = hdfs_request_parameters['cluster_id']
+        user_name = hdfs_request_parameters['user_name']
+        command_string = 'rename'
+        hdfs_parameters = hdfs_request_parameters['hdfs_parameters'] + " " + hdfs_request_parameters['output_path']
+        hdfs_request_id = uuid.uuid1()
+        print hdfs_parameters
+        nodeinformationquery=db_session.query(TblNodeInformation.uid_node_id).filter(TblNodeInformation.uid_cluster_id==cluster_id,TblNodeInformation.char_role=='namenode').all()
+        print nodeinformationquery[0][0]
+        agentinfoquery=db_session.query(TblAgent.uid_agent_id).filter(TblAgent.uid_node_id==nodeinformationquery[0][0]).all()
+        hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
+                                                 uid_customer_id=customer_id,
+                                                 uid_cluster_id=cluster_id,
+                                                 uid_agent_id=agentinfoquery[0][0],
+                                                 var_user_name=user_name,
+                                                 ts_requested_time=datetime.now(),
+                                                 txt_command_string=command_string,
+                                                 txt_hdfs_parameters=hdfs_parameters,
+                                                 bool_assigned=0,
+                                                 bool_command_complete=0)
+        db_session.add(hdfs_request_values)
+        db_session.commit()
+        db_session.close()
+        my_logger.info("committing to database and closing session done")
+
+        t_end = time.time() + 120
+        while time.time() < t_end:
+
+            hdfs_command_result = db_session.query(TblCustomerRequestHdfs.hdfs_command_output). \
+            filter(TblCustomerRequestHdfs.uid_hdfs_request_id == str(hdfs_request_id)).all()
+            if hdfs_command_result[0][0] is not None:
+                hdfs_output = hdfs_command_result[0][0]
+                output=hdfs_output.encode('utf-8')
+                x = ast.literal_eval(output)
+
+                return jsonify(command_output=x['message'])
+    except Exception as e:
+
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()
 
