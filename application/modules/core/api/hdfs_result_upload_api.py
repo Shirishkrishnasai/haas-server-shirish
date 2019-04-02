@@ -10,7 +10,6 @@ hdfsoutputupload=Blueprint('hdfsoutputupload',__name__)
 def hdfs_result_upload():
     try:
         hdfs_output_json=request.json
-        print hdfs_output_json
         db_session = scoped_session(session_factory)
         hdfs_customer_request=db_session.query(TblCustomerRequestHdfs).filter(TblCustomerRequestHdfs.uid_hdfs_request_id==hdfs_output_json['request_id'])
         hdfs_customer_request.update({"hdfs_command_output":str(hdfs_output_json['output'])})

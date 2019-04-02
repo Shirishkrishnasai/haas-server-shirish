@@ -6,6 +6,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from application.config.config_file import  *
 from logging.config import dictConfig
+
+from application.modules.spark.spark_job_api import spark_update
+
 dictConfig({
     'version': 1,
     'formatters': {'default': {
@@ -99,6 +102,7 @@ from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 #from application.modules.cluster.workers.configure_cluster import configure_cluster
 #app.register_blueprint(hdfsoutputupload, url_prefix='')
 app.register_blueprint(hdfsapi, url_prefix='')
+app.register_blueprint(spark_update,url_prefix='')
 #app.register_blueprint(hdfsrequestsender, url_prefix='')
 app.register_blueprint(jobstatusapi, url_prefix='')
 app.register_blueprint(mrjobupdate, url_prefix='')

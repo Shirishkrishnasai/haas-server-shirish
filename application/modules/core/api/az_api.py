@@ -98,9 +98,12 @@ def createUserLdap():
                 TblUsers.srl_id.desc()).all()
 
             get_data = [rows.to_json() for rows in select_user_dn]
+            connect.unbind_s()
             return jsonify(message="user is added", userdata=get_data)
         else:
+            connect.unbind_s()
             return jsonify(message="user is not added")
+
     except ldap.INVALID_CREDENTIALS:
         return jsonify(message="Your username or password is incorrect.")
     except Exception as e:
@@ -111,7 +114,7 @@ def createUserLdap():
         my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
-        connect.unbind_s()
+
 
 
 """
@@ -123,6 +126,7 @@ Authenticating user
 def userAuthenticate():
     try:
         db_session=scoped_session(session_factory)
+        connect = ldap.initialize(ldap_connection)
         my_logger.info("@azapi.route('/api/customer/user/auth', methods=['POST']) is used to check authentication of user")
         content = request.json
         mail = content['email']
@@ -134,7 +138,7 @@ def userAuthenticate():
                    'customerid': customer_id}
         algorithm = 'HS256'
         secret_key = "qwartile"
-        connect = ldap.initialize(ldap_connection)
+        # connect = ldap.initialize(ldap_connection)
         select_user_dn = db_session.query(TblUsers.txt_dn).filter(TblUsers.var_user_name == mail).all()
         dn = select_user_dn[0][0]
         connect.bind_s(dn, password)
@@ -143,6 +147,7 @@ def userAuthenticate():
         data['user_name'] = mail
         data['token'] = token
         data['customer_id'] = customer_id
+        connect.unbind_s()
         return jsonify(data=data)
 
     except ldap.INVALID_CREDENTIALS:
@@ -155,7 +160,7 @@ def userAuthenticate():
         my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
-        connect.unbind_s()
+
 
 """
 Deleting user
@@ -174,6 +179,7 @@ def removeUser():
         connect = ldap.initialize(ldap_connection)
         connect.simple_bind_s(ldap_connection_dn, ldap_connection_password)
         del_user = connect.delete_s(dn)
+        connect.unbind_s()
         if del_user:
             object = db_session.query(TblUsers).filter(TblUsers.var_user_name == uid)
             object.update({"bool_active": 0})
@@ -191,7 +197,7 @@ def removeUser():
         my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
-        connect.unbind_s()
+
 
 @azapi.route("/api/cluster_members/<customer_id>/<cluster_id>", methods=['GET'])
 def clustermembers(customer_id, cluster_id):

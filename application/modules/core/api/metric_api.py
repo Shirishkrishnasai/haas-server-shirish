@@ -19,8 +19,8 @@ from sqlalchemy.orm import scoped_session
 
 metricapi = Blueprint('metricapi', __name__)
 
-@metricapi.route("/api/metrics/<customer_id>/<cluster_id>/<metrics>", methods=['GET'])
-def metric(customer_id,cluster_id,metrics):
+@metricapi.route("/api/metrics/<customer_id>/<cluster_id>/<metric>", methods=['GET'])
+def metric(customer_id,cluster_id,metric):
     try :
         db_session= scoped_session(session_factory)
         resource_group_name = str(customer_id)
@@ -34,7 +34,7 @@ def metric(customer_id,cluster_id,metrics):
             resource_id = ("subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name
                            +"/providers/Microsoft.Compute/virtualMachines/"+vm_names)
             client = MonitorManagementClient(credentials, subscription_id)
-            metrics_data = client.metrics.list(resource_id,interval="PT1M",metricnames=metrics,aggregation='Total')
+            metrics_data = client.metrics.list(resource_id,interval="PT1M",metricnames=metric,aggregation='Total')
             for item in metrics_data.value:
                 for timeserie in item.timeseries:
                     for data in timeserie.data:
@@ -64,16 +64,24 @@ def metric(customer_id,cluster_id,metrics):
             total_metric['metric_value'] = metric_sum
             total_metric['time'] = line['time']
             total_metric['measured_in'] = "bytes"
-            total_metric['metric_name'] = metrics
+            total_metric['metric_name'] = metric
             network_metrics.append(total_metric)
         return jsonify(network_metrics)
 
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
+            no_metric=[]
+            error_metric={}
+            error_metric['metric_value'] = 0
+            error_metric['time'] = 0
+            error_metric['measured_in'] = "bytes"
+            error_metric['metric_name'] = metric
+            no_metric.append(error_metric)
+            return jsonify(no_metric)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            my_logger.error(exc_type)
+            my_logger.error(fname)
+            my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
 
@@ -83,9 +91,7 @@ def metrics_node(customer_id,cluster_id,metrics,vm_id):
     try :
         db_session= scoped_session(session_factory)
         resource_group_name = str(customer_id)
-        print customer_id,cluster_id,vm_id
         vmname= db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_cluster_id==cluster_id,TblVmCreation.uid_vm_id==vm_id).first()
-        print vmname
         network_metric = []
         vm_names=str(vmname[0])
         credentials = ServicePrincipalCredentials(client_id=client_id, secret=secret, tenant=tenant)
@@ -133,32 +139,33 @@ def clusterNodeLevel(cusid, cluid, vm_id):
         metric = request.args.get('metric')
         vm_name = db_session.query(TblVmCreation.var_name).filter(TblVmCreation.uid_cluster_id == cluid,
                                                                   TblVmCreation.uid_vm_id == vm_id).first()
-        print vm_name
         if from_time_params and to_time_params:
-            print 'hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii from cluster metrics api'
             from_time_params_str = str(from_time_params)
             to_time_params_str = str(to_time_params)
             req_data = collection.find(
                 {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
-            print req_data
             minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
         else:
             date_time = datetime.datetime.now()
             from_time_params = (int(round(time.mktime(date_time.timetuple()))) * 1000) - (5 * 1000 * 60)
             from_time_params_str = str(from_time_params)
-            print from_time_params_str
             to_time_params_str = str(int(round(time.mktime(date_time.timetuple()))) * 1000)
-            print to_time_params_str
             req_data = collection.find(
                 {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
             minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
-            print req_data, "req_data"
         ram = []
         cpu = []
         storage = []
         for data in req_data:
             if len(data) == 0:
-                return jsonify(data='null')
+                no_metric = []
+                error_metric = {}
+                error_metric['metric_value'] = 0
+                error_metric['time'] = to_time_params_str
+                error_metric['measured_in'] = "bytes"
+                error_metric['metric_name'] = metric
+                no_metric.append(error_metric)
+                return jsonify(no_metric)
             else:
                 for lists in data['payload']:
                     for dicts in lists:
@@ -199,7 +206,6 @@ Get Metrics by node in cluster
 @metricapi.route('/api/customer/metrics/<cusid>/<cluid>', methods=['GET'])
 def cluster_metrics(cusid, cluid):
     try :
-        print cusid, cluid
         mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
         database_conn = mongo_db_conn['local']
         collection = database_conn[cusid]
@@ -207,31 +213,32 @@ def cluster_metrics(cusid, cluid):
         to_time_params = request.args.get('to')
         metric = request.args.get('metric')
         if from_time_params and to_time_params:
-            print 'hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii from cluster metrics api'
             from_time_params_str = str(from_time_params)
             to_time_params_str = str(to_time_params)
             req_data = collection.find(
                 {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
-            print req_data
-            # print to_time_params_str,from_time_params_str
             minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
         else:
             date_time = datetime.datetime.now()
             from_time_params = (int(round(time.mktime(date_time.timetuple()))) * 1000) - (5 * 1000 * 60)
             from_time_params_str = str(from_time_params)
-            print from_time_params_str
             to_time_params_str = str(int(round(time.mktime(date_time.timetuple()))) * 1000)
-            print to_time_params_str
             req_data = collection.find(
                 {"cluster_id": cluid, "time": {"$gte": from_time_params_str, "$lte": to_time_params_str}})
             # print to_time_params_str, from_time_params_str
             minutes = divideMilliSeconds(from_time_params_str, to_time_params_str)
-            print req_data, "req_data"
         metrics_data = list(req_data)
         re = list(metrics_data)
         re = [change(v, minutes) for v in re]
         if len(re) == 0:
-            return jsonify('null')
+            no_metric = []
+            error_metric = {}
+            error_metric['metric_value'] = 0
+            error_metric['time'] = to_time_params_str
+            error_metric['measured_in'] = "bytes"
+            error_metric['metric_name'] = metric
+            no_metric.append(error_metric)
+            return jsonify(no_metric)
         else:
             """
             reduceByMetricForCluster for Cluster level metrics
@@ -345,5 +352,3 @@ def divideMilliSeconds(fromtime, totime):
         for i in range(from_time, to_time):
             minutes.append([i * 1000 * 60, (i + 1) * 1000 * 60])
         return minutes
-
-

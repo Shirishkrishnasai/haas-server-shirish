@@ -20,6 +20,7 @@ api = Blueprint('api', __name__)
 def hg_client():
     try:
         db_session = scoped_session(session_factory)
+        mongo_connection = pymongo.MongoClient(mongo_conn_string)
         customer_request = request.json
         feature_request = customer_request['features']
         clustername = customer_request['features'][0]['payload']['cluster_name']
@@ -41,7 +42,6 @@ def hg_client():
                     insert = TblCluster(uid_cluster_id=cluster_id)
                     db_session.add(insert)
                     db_session.commit()
-                mongo_connection = pymongo.MongoClient(mongo_conn_string)
                 database_connection = mongo_connection["haas"]
                 collection_connection = database_connection["highgear"]
                 collection_connection.insert_one(payload)
@@ -96,6 +96,7 @@ def hg_client():
                                                          uid_cluster_id=cluster_id)
                     db_session.add(insert_customer)
                     db_session.commit()
+        mongo_connection.close()
         return jsonify(provision_request_id=requests[0]['9'],configure_request_id =requests[1]['10'], cluster_name =clustername,message='success')
     except Exception as e:
 
@@ -106,7 +107,6 @@ def hg_client():
         my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
-        mongo_connection.close()
 
 
 @api.route('/api/agent/register', methods=['POST'])
@@ -242,6 +242,7 @@ def hiveDatabaseQuery(customer_id, cluster_id, agent_id):
         my_logger.error(exc_tb.tb_lineno)
     finally:
         db_session.close()
+
 @api.route('/api/hiveselectqueryresult/<request_id>', methods=['GET'])
 def hiveSelectQueryResultUrl(request_id):
     try:
@@ -418,6 +419,8 @@ def roleAgentId(cluster_id, role):
 def cluster_info(customer_id):
     try:
         db_session = scoped_session(session_factory)
+        mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
+        database_conn = mongo_db_conn['local']
         customer_cluster_info = db_session.query(TblCluster.uid_customer_id,TblCluster.uid_cluster_id,TblCluster.uid_cluster_type_id,TblCluster.valid_cluster,TblCluster.cluster_created_datetime,TblCluster.var_cluster_name)\
             .filter(TblCluster.uid_customer_id == customer_id).all()
         if customer_cluster_info == []:
@@ -427,8 +430,6 @@ def cluster_info(customer_id):
             for cluster_info in customer_cluster_info:
                 if cluster_info[3] is True:
                     valid_cluster = cluster_info[3]
-                    mongo_db_conn = pymongo.MongoClient(mongo_conn_string)
-                    database_conn = mongo_db_conn['local']
                     collection = database_conn[cluster_info[0]]
                     customer_id_metrics_list = list(collection.find({"cluster_id": cluster_info[1]}))
                     if customer_id_metrics_list == []:
@@ -481,7 +482,9 @@ def cluster_info(customer_id):
                      "cluster_type_id": cluster_info[2], "clustername": cluster_info[5],"valid_cluster": valid_cluster,
                      "cluster_up_time":up_time_string,"cluster_created_datetime":str(cluster_created_datetime),"available_storage": available_storage})
             reversed_list_customer_cluster_info = list_customer_cluster_info[::-1]
+            mongo_db_conn.close()
             return jsonify(clusterinformation=reversed_list_customer_cluster_info)
+
     except Exception as e:
 
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -491,7 +494,7 @@ def cluster_info(customer_id):
         my_logger.error(exc_tb.tb_lineno)
     finally:
        db_session.close()
-       mongo_db_conn.close()
+
 
 
 @api.route('/api/hdfs', methods=['POST'])
@@ -683,6 +686,7 @@ def StatusWithMetrics(customer_id,cluster_id) :
             configuration_staus['status'] = 1
             config_data.append(configuration_staus)
             return jsonify(config_data)
+        mongo_db_conn.close()
     except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -690,7 +694,6 @@ def StatusWithMetrics(customer_id,cluster_id) :
             my_logger.error(fname)
             my_logger.error(exc_tb.tb_lineno)
     finally:
-        mongo_db_conn.close()
         db_session.close()
 
 def hiveStatusAfterConfiguration(customer_id,cluster_id,from_time_params_str,to_time_params_str):
@@ -722,6 +725,7 @@ def hiveStatusAfterConfiguration(customer_id,cluster_id,from_time_params_str,to_
                 edgenode_status['role'] = payload['role']
                 edgenode_status['edgenode_status'] = 0
                 return_edgenode_status.append(edgenode_status)
+        mongo_db_conn.close()
         return (return_edgenode_status)
     except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -730,7 +734,6 @@ def hiveStatusAfterConfiguration(customer_id,cluster_id,from_time_params_str,to_
             my_logger.error(fname)
             my_logger.error(exc_tb.tb_lineno)
     finally:
-        mongo_db_conn.close()
         db_session.close()
 
 
@@ -743,13 +746,13 @@ def hiveStatusPostedFromAgent():
         database_conn = mongo_db_conn['hive_status']
         db_collection = database_conn[customerid]
         db_collection.insert_one(role)
+        mongo_db_conn.close()
         return jsonify(message='success')
+
     except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             my_logger.error(exc_type)
             my_logger.error(fname)
             my_logger.error(exc_tb.tb_lineno)
-    finally:
-        mongo_db_conn.close()
 
