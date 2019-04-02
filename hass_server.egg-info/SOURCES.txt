@@ -50,6 +50,7 @@ application/modules/core/daemons/kafka_job_producer.py
 application/modules/core/daemons/metric_sub.py
 application/modules/core/daemons/metrics_consumer.py
 application/modules/core/daemons/task_status_consumer.py
+application/modules/core/daemons/task_updation_daemon.py
 application/modules/core/workers/__init__.py
 application/modules/hdfs/__init__.py
 application/modules/hdfs/api/__init__.py
@@ -77,6 +78,9 @@ application/modules/mapr/daemons/customer_job_request_consumer.py
 application/modules/mapr/daemons/job_diagnostic_consumer.py
 application/modules/mapr/daemons/job_status_consumer.py
 application/modules/mapr/workers/__init__.py
+application/modules/spark/__init__.py
+application/modules/spark/spark_config_worker.py
+application/modules/spark/spark_job_api.py
 hass_server.egg-info/PKG-INFO
 hass_server.egg-info/SOURCES.txt
 hass_server.egg-info/dependency_links.txt

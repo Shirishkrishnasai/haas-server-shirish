@@ -27,6 +27,12 @@ hive_feature_configuration = TblFeature(char_feature_id='12',
                                         txt_dependency_feature_id='11',
                                         txt_worker_path='/home/database/haas-server/application/modules/hive/workers/hive_config_worker.py')
 
+spark_feature_provision = TblFeature(char_feature_id='13',
+                                     txt_worker_path='/home/database/haas-server/application/modules/hive/workers/edgenode_provision_worker.py')
+
+spark_feature_configuration = TblFeature(char_feature_id='14',
+                                        txt_dependency_feature_id='13',
+                                        txt_worker_path='/home/database/haas-server/application/modules/spark/workers/spark_config_worker.py')
 # cluster related
 tbl_feature_type_tbl_task_typeid_1 = TblFeatureType(char_feature_id='10',
                                                     char_task_type_id='F1_T1')
@@ -67,6 +73,19 @@ tbl_feature_type_hive_typeid_6 = TblFeatureType(char_feature_id='12',
                                                 char_task_type_id='F12_T6')
 tbl_feature_type_hive_typeid_7 = TblFeatureType(char_feature_id='12',
                                                 char_task_type_id='F12_T7')
+
+# spark related
+
+tbl_feature_type_spark_typeid_1 = TblFeatureType(char_feature_id='14',
+                                                char_task_type_id='F14_T1')
+tbl_feature_type_spark_typeid_2 = TblFeatureType(char_feature_id='14',
+                                                char_task_type_id='F14_T2')
+tbl_feature_type_spark_typeid_3 = TblFeatureType(char_feature_id='14',
+                                                char_task_type_id='F14_T3')
+tbl_feature_type_spark_typeid_4 = TblFeatureType(char_feature_id='14',
+                                                char_task_type_id='F14_T4')
+tbl_feature_type_spark_typeid_5 = TblFeatureType(char_feature_id='14',
+                                                char_task_type_id='F14_T5')
 
 # meta node roles
 
@@ -230,6 +249,36 @@ hive_task_type_7 = TblTaskType(char_task_type_id='F12_T7',
                                txt_agent_worker_version='1.0',
                                int_vm_roles=2
                                )
+spark_task_type_1 = TblTaskType(char_task_type_id='F14_T1',
+                                txt_description='hosts file',
+                                txt_agent_worker_version_path='/opt/agent/application/modules/workers/sparkhostdns.py',
+                                txt_agent_worker_version='1.0',
+                                int_vm_roles=4
+                                )
+spark_task_type_2 = TblTaskType(char_task_type_id='F14_T2',
+                                txt_description='copy sparkip to namenode hosts',
+                                txt_agent_worker_version_path='/opt/agent/application/modules/workers/hostdns.py',
+                                txt_agent_worker_version='1.0',
+                                int_vm_roles=1
+                                )
+spark_task_type_3 = TblTaskType(char_task_type_id='F14_T3',
+                                txt_description='copy sparkip to datanode hosts',
+                                txt_agent_worker_version_path='/opt/agent/application/modules/workers/hostdns.py',
+                                txt_agent_worker_version='1.0',
+                                int_vm_roles=2
+                                )
+spark_task_type_4 = TblTaskType(char_task_type_id='F14_T4',
+                                txt_description='spark-configuration',
+                                txt_agent_worker_version_path='/opt/scripts/spark-hadoop-config.sh',
+                                txt_agent_worker_version='1.0',
+                                int_vm_roles=4
+                                )
+spark_task_type_5 = TblTaskType(char_task_type_id='F14_T5',
+                                txt_description='star-livyServer',
+                                txt_agent_worker_version_path='/opt/scripts/livy-server-start.sh',
+                                txt_agent_worker_version='1.0',
+                                int_vm_roles=4
+                                )
 cluster_type_1 = TblClusterType(uid_cluster_type_id='f5826f72-d135-11e8-84db-3ca9f49ab2cc',
                                 char_name='azure')
 
@@ -247,6 +296,9 @@ tbl_image_3 = TblImage(txt_image_desc='hadoop_image',
 
 tbl_image_4 = TblImage(txt_image_desc='hadoop_image',
                        var_service_name='hive',
+                       txt_image_id='/subscriptions/cfed96cf-1241-4c76-827e-785b6d5cff7c/resourceGroups/haas/providers/Microsoft.Compute/images/hadoop')
+tbl_image_5 = TblImage(txt_image_desc='hadoop_image',
+                       var_service_name='spark',
                        txt_image_id='/subscriptions/cfed96cf-1241-4c76-827e-785b6d5cff7c/resourceGroups/haas/providers/Microsoft.Compute/images/hadoop')
 
 tbl_meta_cloud_type_1 = TblMetaCloudType(var_vm_type='Standard_B1ms',
@@ -531,7 +583,6 @@ tbl_meta_vm_size_19 = TblMetaVmSize(int_plan_id=1,
                                     int_size_id=1,
                                     var_role='hive',
                                     var_vm_type='Standard_DS1_v2')
-
 tbl_meta_vm_size_20 = TblMetaVmSize(int_plan_id=1,
                                     int_size_id=2,
                                     var_role='hive',
@@ -563,6 +614,42 @@ tbl_meta_vm_size_26 = TblMetaVmSize(int_plan_id=3,
 tbl_meta_vm_size_27 = TblMetaVmSize(int_plan_id=3,
                                     int_size_id=3,
                                     var_role='hive',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_28 = TblMetaVmSize(int_plan_id=1,
+                                    int_size_id=1,
+                                    var_role='spark',
+                                    var_vm_type='Standard_DS1_v2')
+tbl_meta_vm_size_29 = TblMetaVmSize(int_plan_id=1,
+                                    int_size_id=2,
+                                    var_role='spark',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_30 = TblMetaVmSize(int_plan_id=1,
+                                    int_size_id=3,
+                                    var_role='spark',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_31 = TblMetaVmSize(int_plan_id=2,
+                                    int_size_id=1,
+                                    var_role='spark',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_32 = TblMetaVmSize(int_plan_id=2,
+                                    int_size_id=2,
+                                    var_role='spark',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_33 = TblMetaVmSize(int_plan_id=2,
+                                    int_size_id=3,
+                                    var_role='spark',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_34 = TblMetaVmSize(int_plan_id=3,
+                                    int_size_id=1,
+                                    var_role='spark',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_35 = TblMetaVmSize(int_plan_id=3,
+                                    int_size_id=2,
+                                    var_role='spark',
+                                    var_vm_type='Standard_B2ms')
+tbl_meta_vm_size_36 = TblMetaVmSize(int_plan_id=3,
+                                    int_size_id=3,
+                                    var_role='spark',
                                     var_vm_type='Standard_B2ms')
 
 tbl_meta_file_upload_1 = TblMetaFileUpload(uid_customer_id=Uid_customer_id,
@@ -695,6 +782,51 @@ tbl_edgenode_9 = TblEdgenode(int_plan_id=3,
                              char_feature_id=11,
                              var_role='hive',
                              int_role_count=1)
+tbl_edgenode_10 = TblEdgenode(int_plan_id=1,
+                             int_size_id=1,
+                             char_feature_id=13,
+                             var_role='spark',
+                             int_role_count=1)
+tbl_edgenode_11 = TblEdgenode(int_plan_id=1,
+                             int_size_id=2,
+                             char_feature_id=13,
+                             var_role='spark',
+                             int_role_count=1)
+tbl_edgenode_12 = TblEdgenode(int_plan_id=1,
+                             int_size_id=3,
+                             char_feature_id=13,
+                             var_role='spark',
+                             int_role_count=1)
+tbl_edgenode_13 = TblEdgenode(int_plan_id=2,
+                             int_size_id=1,
+                             char_feature_id=13,
+                             var_role='spark',
+                             int_role_count=1)
+tbl_edgenode_14 = TblEdgenode(int_plan_id=2,
+                             int_size_id=2,
+                             char_feature_id=13,
+                             var_role='spark',
+                             int_role_count=1)
+tbl_edgenode_15 = TblEdgenode(int_plan_id=2,
+                             int_size_id=3,
+                             char_feature_id=13,
+                             var_role='spark',
+                             int_role_count=1)
+tbl_edgenode_16 = TblEdgenode(int_plan_id=3,
+                             int_size_id=1,
+                             char_feature_id=13,
+                             var_role='spark',
+                             int_role_count=1)
+tbl_edgenode_17 = TblEdgenode(int_plan_id=3,
+                             int_size_id=2,
+                             char_feature_id=13,
+                             var_role='spark',
+                             int_role_count=1)
+tbl_edgenode_18 = TblEdgenode(int_plan_id=3,
+                             int_size_id=3,
+                             char_feature_id=13,
+                             var_role='spark',
+                             int_role_count=1)
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -716,27 +848,7 @@ tbl_cluster_1 = TblCluster(uid_cluster_id=Uid_cluster_id,
                            char_cluster_region='South India'
                            )
 
-tbl_vm_creation_1 = TblVmCreation(uid_cluster_id=Uid_cluster_id,
-                                  uid_customer_id=Uid_customer_id,
-                                  uid_agent_id='5e00f01a-0cf4-11e9-8adb-3ca9f49ab2cc',
-                                  uid_vm_id='777a536a-0cf4-11e9-8adb-3ca9f49ab2cc',
-                                  var_ip='192.168.100.45',
-                                  bool_edge=False,
-                                  )
-tbl_vm_creation_2 = TblVmCreation(uid_cluster_id=Uid_cluster_id,
-                                  uid_customer_id=Uid_customer_id,
-                                  uid_agent_id='a9ad9568-0cf4-11e9-8adb-3ca9f49ab2cc',
-                                  uid_vm_id='b50d33b4-0cf4-11e9-8adb-3ca9f49ab2cc',
-                                  var_ip='192.168.100.46',
-                                  bool_edge=False,
-                                  )
-tbl_vm_creation_3 = TblVmCreation(uid_cluster_id=Uid_cluster_id,
-                                  uid_customer_id=Uid_customer_id,
-                                  uid_agent_id='c7ca3772-0cf4-11e9-8adb-3ca9f49ab2cc',
-                                  uid_vm_id='cdf3a62e-0cf4-11e9-8adb-3ca9f49ab2cc',
-                                  var_ip='192.168.100.49',
-                                  bool_edge=True,
-                                  )
+
 
 tbl_customer = TblCustomer(srl_id=1000000,
                            uid_customer_id=Uid_customer_id,
@@ -755,42 +867,6 @@ tbl_azure_resource_group=TblCustomerAzureResourceGroup(
 )
 
 
-tbl_vm_info_1 = TblVmInformation(uid_vm_id='777a536a-0cf4-11e9-8adb-3ca9f49ab2cc',
-                                 macad_mac_id='FF:AE:48:E1:D5:60',
-                                 uid_customer_id=Uid_customer_id,
-                                 var_resource_group_name='resource1',
-                                 var_virtual_network_name=None,
-                                 txt_subnet_id='subnetid',
-                                 txt_ip='192.168.100.45',
-                                 txt_nic_name='nic1',
-                                 var_user_name='sampleuser',
-                                 txt_password='password')
-
-tbl_vm_info_2 = TblVmInformation(uid_vm_id='b50d33b4-0cf4-11e9-8adb-3ca9f49ab2cc',
-                                 macad_mac_id='FF:AE:48:E1:D5:60',
-                                 uid_customer_id=Uid_customer_id,
-                                 var_resource_group_name='resource1',
-                                 var_virtual_network_name=None,
-                                 txt_subnet_id='subnetid',
-                                 txt_nic_name='nic1',
-                                 var_user_name='sampleuser',
-                                 txt_password='password',
-                                 txt_ip='192.168.100.46'
-
-                                 )
-tbl_vm_info_3 = TblVmInformation(uid_vm_id='cdf3a62e-0cf4-11e9-8adb-3ca9f49ab2cc',
-                                 macad_mac_id='FF:AE:48:E1:D5:60',
-                                 uid_customer_id=Uid_customer_id,
-                                 var_resource_group_name='resource1',
-                                 var_virtual_network_name=None,
-                                 txt_subnet_id='subnetid',
-
-                                 txt_nic_name='nic1',
-                                 var_user_name='sampleuser',
-                                 txt_password='password',
-                                 txt_ip='192.168.100.49'
-
-                                 )
 
 
 tbl_azure_credentials = TblAzureFileStorageCredentials(account_name='sbvsolutions',
@@ -811,6 +887,9 @@ db_session.add(cluster_feature_provision)
 db_session.add(cluster_feature_configuration)
 db_session.add(hive_feature_provision)
 db_session.add(hive_feature_configuration)
+db_session.add(spark_feature_provision)
+db_session.add(spark_feature_configuration)
+
 db_session.add(tbl_feature_type_tbl_task_typeid_1)
 db_session.add(tbl_feature_type_tbl_task_typeid_2)
 db_session.add(tbl_feature_type_tbl_task_typeid_3)
@@ -829,6 +908,11 @@ db_session.add(tbl_feature_type_hive_typeid_4)
 db_session.add(tbl_feature_type_hive_typeid_5)
 db_session.add(tbl_feature_type_hive_typeid_6)
 db_session.add(tbl_feature_type_hive_typeid_7)
+db_session.add(tbl_feature_type_spark_typeid_1)
+db_session.add(tbl_feature_type_spark_typeid_2)
+db_session.add(tbl_feature_type_spark_typeid_3)
+db_session.add(tbl_feature_type_spark_typeid_4)
+db_session.add(tbl_feature_type_spark_typeid_5)
 db_session.add(node_role_1)
 db_session.add(node_role_2)
 db_session.add(node_role_3)
@@ -873,11 +957,17 @@ db_session.add(hive_task_type_4)
 db_session.add(hive_task_type_5)
 db_session.add(hive_task_type_6)
 db_session.add(hive_task_type_7)
+db_session.add(spark_task_type_1)
+db_session.add(spark_task_type_2)
+db_session.add(spark_task_type_3)
+db_session.add(spark_task_type_4)
+db_session.add(spark_task_type_5)
 db_session.add(cluster_type_1)
 db_session.add(tbl_image_1)
 db_session.add(tbl_image_2)
 db_session.add(tbl_image_3)
 db_session.add(tbl_image_4)
+db_session.add(tbl_image_5)
 db_session.add(tbl_meta_cloud_type_1)
 db_session.add(tbl_meta_cloud_type_2)
 db_session.add(tbl_meta_cloud_type_3)
@@ -950,6 +1040,16 @@ db_session.add(tbl_meta_vm_size_24)
 db_session.add(tbl_meta_vm_size_25)
 db_session.add(tbl_meta_vm_size_26)
 db_session.add(tbl_meta_vm_size_27)
+db_session.add(tbl_meta_vm_size_28)
+db_session.add(tbl_meta_vm_size_29)
+db_session.add(tbl_meta_vm_size_30)
+db_session.add(tbl_meta_vm_size_31)
+db_session.add(tbl_meta_vm_size_32)
+db_session.add(tbl_meta_vm_size_33)
+db_session.add(tbl_meta_vm_size_34)
+db_session.add(tbl_meta_vm_size_35)
+db_session.add(tbl_meta_vm_size_36)
+
 
 db_session.add(tbl_meta_file_upload_1)
 db_session.add(tbl_hive_meta_status_1)
@@ -997,12 +1097,19 @@ db_session.add(tbl_edgenode_6)
 db_session.add(tbl_edgenode_7)
 db_session.add(tbl_edgenode_8)
 db_session.add(tbl_edgenode_9)
+db_session.add(tbl_edgenode_10)
+db_session.add(tbl_edgenode_11)
+db_session.add(tbl_edgenode_12)
+db_session.add(tbl_edgenode_13)
+db_session.add(tbl_edgenode_14)
+db_session.add(tbl_edgenode_15)
+db_session.add(tbl_edgenode_16)
+db_session.add(tbl_edgenode_17)
+db_session.add(tbl_edgenode_18)
+
 
 
 db_session.add(tbl_cluster_1)
-db_session.add(tbl_vm_creation_1)
-db_session.add(tbl_vm_creation_2)
-db_session.add(tbl_vm_creation_3)
 
 db_session.flush();
 db_session.commit();
@@ -1051,3 +1158,4 @@ def addCluster(customerId):
 #customer_id = customer_response['data']['customer_id']
 # .data['customer_id']
 #print addCluster(customer_id)
+

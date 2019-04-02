@@ -1,8 +1,5 @@
-from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm import sessionmaker
-
-from application import session_factory, SQLALCHEMY_DATABASE_URI
+from application import session_factory
 import pymongo
 import uuid
 import sys, os
@@ -16,55 +13,50 @@ from application.common.loggerfile import my_logger
 
 def configure_spark(request_id):
     try:
-        engine = create_engine(SQLALCHEMY_DATABASE_URI, pool_size=100)
-        session_factory = sessionmaker(bind=engine)
-        print "in configuring sparkkkkkk"
         session = scoped_session(session_factory)
 
         customer_feature_ids = session.query(TblCustomerRequest.uid_customer_id,
                                              TblCustomerRequest.char_feature_id,
-                                             TblCustomerRequest.txt_dependency_request_id).filter(TblCustomerRequest.uid_request_id == request_id).first()
-        customer_id, feature_id, dependent_request_id = customer_feature_ids[0], customer_feature_ids[1], customer_feature_ids[2]
-        print customer_id, feature_id, dependent_request_id,"00000000000000000000000000000000000000000000000000000000000000"
-        cluster_id_query = session.query(TblCustomerRequest.uid_cluster_id).filter(TblCustomerRequest.uid_request_id == dependent_request_id).first()
-        cluster_id = cluster_id_query[0]
+                                             TblCustomerRequest.uid_cluster_id).filter(TblCustomerRequest.uid_request_id == request_id).first()
+        customer_id, feature_id, cluster_id = customer_feature_ids[0], customer_feature_ids[1], customer_feature_ids[2]
 
-        print cluster_id,"111111111111111111111111111111111111111111111111111"
+
         task_types_list = session.query(TblFeatureType.char_task_type_id).filter(TblFeatureType.char_feature_id == feature_id).all()
-        print task_types_list,"222222222222222222222222222222222222222222222"
+
         dependenttasks_workerpaths_0 = session.query(TblTaskType.char_task_type_id,
                                                      TblTaskType.txt_dependency_task_id,
                                                      TblTaskType.txt_agent_worker_version_path,
                                                      TblTaskType.int_vm_roles).filter(TblTaskType.char_task_type_id.in_(task_types_list)).all()
-        print dependenttasks_workerpaths_0,"333333333333333333333333333333333333333333333333333333333333"
         node_roles_query_dict = dict(session.query(TblMetaNodeRoles.srl_id,
                                          TblMetaNodeRoles.vm_roles).all())
-        print node_roles_query_dict,"4444444444444444444444444444444444444444444444444444444444444444444444444444"
+
 ###################################################### tasks generation #######################################################################
 
         dependenttasks_workerpaths = []
+        #this for loop generates a list(dependenttasks_workerpaths) that contains role in character and eliminate role integer
         for each_tuplee in dependenttasks_workerpaths_0:
             each_tuplee = list(each_tuplee)
             each_tuplee[3] = node_roles_query_dict[each_tuplee[3]]
             dependenttasks_workerpaths.append(each_tuplee)
-        print dependenttasks_workerpaths,"555555555555555555555555555555555555555555555555555555555555555"
+        print dependenttasks_workerpaths,'111111111111111111111111111111111111111111'
+
         nodes_count_dicty = dict(session.query(TblVmCreation.uid_agent_id,
                                                TblVmCreation.var_role).filter(TblVmCreation.uid_cluster_id == cluster_id).all())
 
-        print nodes_count_dicty,"666666666666666666666666666666666666666666666666666666666666666"
         dependenttasks_workerpaths_dicty = {}
         dependenttasks_workerpaths_dicty.update({task_typeid:[dep_task_typeid,worker_path,role] for task_typeid,dep_task_typeid,worker_path,role in dependenttasks_workerpaths})
         tasks_list = []
-        print dependenttasks_workerpaths_dicty,"77777777777777777777777777777777777777777777777777777777777777777777777"
+        #this for loop attaches agentid to the dependenttasks_workerpaths list
         for agid,agrole in nodes_count_dicty.items():
             for ttid,dttid in dependenttasks_workerpaths_dicty.items():
                 if(agrole == dttid[2]):
                     taskid = str(uuid.uuid1())
                     tasks_list.append([ttid,dttid[0],agrole,agid,dttid[1],taskid])
-        print tasks_list,"8888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888"
+        print tasks_list,'222222222222222222222222222222222222222222222222222'
         task_dependencytask_workerpaths_dict_list = []
         for each_listy in tasks_list:
             task_dependencytask_workerpaths_dict_list.append({each_listy[0]:[each_listy[1],each_listy[2],each_listy[3],each_listy[4],each_listy[5]]})
+        print task_dependencytask_workerpaths_dict_list,'333333333333333333333333333333333333333333'
         #my_logger.info(task_dependencytask_workerpaths_dict_list)
         task_depttask_dict ={}
         for depttask in task_dependencytask_workerpaths_dict_list:
@@ -73,7 +65,8 @@ def configure_spark(request_id):
                     pass
                 else:
                     task_depttask_dict.update({keys:[values[0]]})
-
+        print task_depttask_dict,'444444444444444444444444444444444444'
+#
         for bigdicty in task_dependencytask_workerpaths_dict_list:
             for keykey,listy in bigdicty.items():
                 for tk,dv in task_depttask_dict.items():
@@ -85,13 +78,13 @@ def configure_spark(request_id):
                 for tk,dv in task_depttask_dict.items():
                     if tk==keykey:
                         listy.append(dv[1])
-        my_logger.info(task_dependencytask_workerpaths_dict_list)
+        print task_dependencytask_workerpaths_dict_list,'555555555555555555555555555555'
 
 
 
 
-##############################################################end of tasks generation #########################################################
-
+# ##############################################################end of tasks generation #########################################################
+#
         agentid_ip_vmid = session.query(TblVmCreation.uid_agent_id,
                                          TblVmCreation.var_ip,
                                          TblVmCreation.uid_vm_id).filter(TblVmCreation.uid_customer_id == customer_id,
@@ -261,11 +254,6 @@ if __name__ == '__main__':
 #     my_logger.error(exc_type)
 #     my_logger.error(fname)
 #     my_logger.error(exc_tb.tb_lineno)
-
-
-
-
-
 
 
 

@@ -1,4 +1,4 @@
-from flask import Flask, url_for,request,jsonify,g,make_response
+from flask import Flask, url_for,jsonify,make_response
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
@@ -7,7 +7,6 @@ from sqlalchemy.orm import sessionmaker
 from application.config.config_file import  *
 from logging.config import dictConfig
 
-# from application.modules.spark.spark_job_api import sparkupdate
 
 dictConfig({
     'version': 1,
@@ -64,6 +63,7 @@ from multiprocessing import Process
 
 from application.modules.core.api.hg_api import api
 from application.modules.core.api.az_api import azapi
+from application.modules.spark.spark_job_api import sparkupdate
 
 from application.modules.hive.api.hive_query_request import hivequery
 from application.modules.hive.api.hive_query_output_api import hivequeryoutput
@@ -72,8 +72,6 @@ from application.modules.core.api.customeruserlist import customerusers
 from application.modules.core.api.get_cluster_size import clustersize
 from application.modules.core.api.get_cluster_location import clusterlocation
 from application.modules.core.api.hg_file_browser import filebrowser
-from application.modules.core.api.hdfs_requests_sender_api import hdfsrequestsender
-from application.modules.core.api.hdfs_result_upload_api import hdfsoutputupload
 
 from application.modules.mapr.api.hg_mr_job import mrapi
 from application.modules.mapr.api.hg_mr_job import mrjobstatus
@@ -91,19 +89,15 @@ from application.modules.core.daemons.hg_supervisor import hgsuper
 from application.modules.mapr.daemons.job_diagnostic_consumer import jobdiagnostics
 from application.modules.mapr.daemons.job_status_consumer import jobstatusapi
 from application.modules.mapr.daemons.customer_job_request_consumer import mrjobupdate
-#from application.modules.hive.daemons.hive_status_consumer import kafkaHiveStatusConsumer
 from application.modules.core.daemons.kafka_job_producer import mrjobproducer
 from application.modules.hive.daemons.hive_selectquery_url import hgSelectQueryUrlScheduler
 from application.modules.core.daemons.metrics_consumer import kafkaconsumer
-#from application.modules.core.daemons.task_status_consumer import kafkataskconsumer
-#from application.common.util import azure_upload_host_slave
+from application.modules.core.daemons.task_updation_daemon import taskupdationscheduler
+from application.modules.hdfs.api.hg_hdfs_api import hdfsapi
 
-# app.register_blueprint(sparkupdate,url_prefix='')
-#from application.modules.cluster.workers.provision_cluster_sprint2 import installcluster
-#from application.modules.cluster.workers.configure_cluster import configure_cluster
+app.register_blueprint(sparkupdate, url_prefix='')
 
-app.register_blueprint(hdfsoutputupload, url_prefix='')
-app.register_blueprint(hdfsrequestsender, url_prefix='')
+app.register_blueprint(hdfsapi, url_prefix='')
 app.register_blueprint(jobstatusapi, url_prefix='')
 app.register_blueprint(mrjobupdate, url_prefix='')
 app.register_blueprint(hivequeryoutput, url_prefix='')
@@ -122,7 +116,6 @@ app.register_blueprint(filebrowser, url_prefix='')
 app.register_blueprint(mapreduce, url_prefix='')
 app.register_blueprint(jobdiagnostics, url_prefix='')
 app.register_blueprint(clusterlocation, url_prefix='')
-#app.register_blueprint(cloudtype, url_prefix='')
 app.register_blueprint(clustersize, url_prefix='')
 app.register_blueprint(customerusers, url_prefix='')
 app.register_blueprint(jobdetails, url_prefix='')
@@ -156,9 +149,10 @@ def site_map():
     print (links)
 
 
-# hgSelectQueryUrlScheduler()
+hgSelectQueryUrlScheduler()
+taskupdationscheduler()
+
 def runProcess():
-    #edgenodeProvision('bd17dcb4-251b-11e9-8b29-000d3af26ae2')
     #selecturl_process = Process(target=hgSelectQueryUrlScheduler)
     #selecturl_process.start()
     # kafkataskconsumer_process = Process(target=kafkataskconsumer)

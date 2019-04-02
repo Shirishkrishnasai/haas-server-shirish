@@ -22,9 +22,9 @@ file_upload_url="http://104.211.222.41:5000/fileupload"
 path="/opt/hadoop/etc/hadoop/mapred-site.xml"
 
 
-conn_string = "host='104.211.222.41' user='postgres' password='!$Nov@)!&Started' dbname='haas_demo3'"
-postgres_conn = 'postgres://postgres:!$Nov@)!&Started@104.211.222.41/haas_demo3'
+conn_string = "host='104.211.222.41' user='postgres' password='!$Nov@)!&Started' dbname='april2'"
+postgres_conn = 'postgres://postgres:!$Nov@)!&Started@104.211.222.41/april2'
 
-SQLALCHEMY_DATABASE_URI = 'postgres://postgres:!$Nov@)!&Started@104.211.222.41/haas_demo3'
+SQLALCHEMY_DATABASE_URI = 'postgres://postgres:!$Nov@)!&Started@104.211.222.41/april2'
 mongo_conn_string="mongodb://104.211.222.41:27017"
 sqlite_string= "/opt/agent/haas"

@@ -947,7 +947,7 @@ class TblMetaCloudLocation(ItemBase,OutputMixin):
     var_cloud_type = Column(String(40))
     var_location = Column(Text)
 
-    class TblCustomerSparkRequest(ItemBase, OutputMixin):
+class TblCustomerSparkRequest(ItemBase, OutputMixin):
         __tablename__ = 'tbl_customer_spark_request'
         __table_args__ = {u'schema': 'highgear'}
 
