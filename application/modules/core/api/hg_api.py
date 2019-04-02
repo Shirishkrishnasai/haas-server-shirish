@@ -756,3 +756,34 @@ def hiveStatusPostedFromAgent():
             my_logger.error(fname)
             my_logger.error(exc_tb.tb_lineno)
 
+@api.route("/api/addsparknode", methods=['POST'])
+def sparknodeProvisionRequest():
+    try:
+        customer_request = request.json
+        db_session = scoped_session(session_factory)
+        customer_id=customer_request['customer_id']
+        cluster_id = customer_request['cluster_id']
+        request_id1 = str(uuid.uuid1())
+        request_id2 = str(uuid.uuid1())
+        insert_customer = TblCustomerRequest(uid_request_id=request_id1,
+                                                        uid_customer_id=customer_id,
+                                                        char_feature_id=13,
+                                                        uid_cluster_id=cluster_id)
+        db_session.add(insert_customer)
+        db_session.commit()
+        insert_customer = TblCustomerRequest(uid_request_id=request_id2,
+                                                    uid_customer_id=customer_id,
+                                                     txt_dependency_request_id=request_id1,
+                                                    char_feature_id=14,
+                                                     uid_cluster_id=cluster_id)
+        db_session.add(insert_customer)
+        db_session.commit()
+        return jsonify(request_id=request_id1, message='success')
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        my_logger.error(exc_type)
+        my_logger.error(fname)
+        my_logger.error(exc_tb.tb_lineno)
+    finally:
+        db_session.close()

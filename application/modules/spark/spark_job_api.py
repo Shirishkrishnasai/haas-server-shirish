@@ -2,33 +2,23 @@ import datetime
 import io, sys, uuid, os
 from ConfigParser import ConfigParser
 
-from sqlalchemy import create_engine
-from sqlalchemy.dialects.mysql import json
-from sqlalchemy.orm import sessionmaker
+from application import session_factory
 from azure.storage.file import FileService
 from application.common.loggerfile import my_logger
-from application.models.models import TblCustomerSparkRequest, TblFileUpload, TblMetaMrRequestStatus, TblNodeInformation, \
-    TblVmCreation
+from application.models.models import  TblFileUpload,TblCustomerSparkRequest, TblVmCreation
 from application.config.config_file import SQLALCHEMY_DATABASE_URI
 from sqlalchemy.orm import scoped_session
 from flask import Blueprint, request, jsonify
 
-engine = create_engine(SQLALCHEMY_DATABASE_URI, pool_size=100)
-session_factory = sessionmaker(bind=engine)
-
-spark_update = Blueprint('spark_update', __name__)
-
-
-@spark_update.route('/sparkjobstatus', methods=['POST'])
+sparkupdate = Blueprint('sparkupdate', __name__)
+@sparkupdate.route('/sparkjobstatus', methods=['POST'])
 def sparkJobStatus():
     try:
         db_session = scoped_session(session_factory)
         data = request.json
-        print data,"rei ide dataaaaaaa"
         spark_status = data['status']
         request_id = data['request_id']
         app_id=data['application_id']
-        print spark_status,request_id
         spark_insert = db_session.query(TblCustomerSparkRequest).filter(TblCustomerSparkRequest.uid_request_id == request_id)
         spark_insert.update({"var_status": spark_status,"var_application_id":app_id})
         db_session.commit()
@@ -43,7 +33,7 @@ def sparkJobStatus():
         db_session.close()
 
 
-@spark_update.route('/api/add_spark_job', methods=['POST'])
+@sparkupdate.route('/api/add_spark_job', methods=['POST'])
 def sparkJobInsert():
     try:
         customer_request = request.values.to_dict()
@@ -94,7 +84,6 @@ def sparkJobInsert():
                                        var_spark_job_name=job_name,
                                        txt_job_description=job_description,
                                        var_job_parameters=job_parameters,
-                                       int_request_status=1,
                                        var_created_by='system',
                                        var_modified_by='system',
                                        ts_modified_datetime=date_time,
@@ -118,7 +107,7 @@ def fileProgres(start, size):
     my_logger.debug("%d%d", start, size)
 
 
-@spark_update.route('/sparkjob/<agent_id>', methods=['GET'])
+@sparkupdate.route('/sparkjob/<agent_id>', methods=['GET'])
 def sparkJobSubmit(agent_id):
     try:
         db_session = scoped_session(session_factory)
@@ -139,7 +128,8 @@ def sparkJobSubmit(agent_id):
                 job_description = req_data[3]
                 uid_jar_upload_id = req_data[4]
                 job_parameters = req_data[5]
-                resourcemanager_ip="192.168.100.179"
+                namenode_ip=db_session.query(TblVmCreation.var_ip).filter(TblVmCreation.uid_cluster_id==clusterid,TblVmCreation.var_role=='namenode').first()
+                resourcemanager_ip=namenode_ip[0]
                 file_information = db_session.query(TblFileUpload.var_file_name).filter(
                     TblFileUpload.uid_upload_id == uid_jar_upload_id)
                 filename = file_information[0][0]
@@ -156,7 +146,7 @@ def sparkJobSubmit(agent_id):
                 update_customer_request_query = db_session.query(TblCustomerSparkRequest).filter(TblCustomerSparkRequest.uid_request_id == request_id)
                 update_customer_request_query.update({"bool_assigned": 1})
                 db_session.commit()
-                return jsonify(message=list_spark_job)
+            return jsonify(message=list_spark_job)
         else:
             return jsonify("null")
     except Exception as e:
@@ -169,7 +159,7 @@ def sparkJobSubmit(agent_id):
         db_session.close()
 
 
-@spark_update.route('/sparkjobdiagnostics', methods=['POST'])
+@sparkupdate.route('/sparkjobdiagnostics', methods=['POST'])
 def sparkJobDiagnotics():
     try:
         db_session = scoped_session(session_factory)
@@ -191,7 +181,7 @@ def sparkJobDiagnotics():
         db_session.close()
 
 
-@spark_update.route("/sparklist/<customer_id>/<cluster_id>", methods=['GET'])
+@sparkupdate.route("/sparklist/<customer_id>/<cluster_id>", methods=['GET'])
 def job_list(customer_id, cluster_id):
     try:
         db_session = scoped_session(session_factory)
@@ -229,7 +219,7 @@ def job_list(customer_id, cluster_id):
     finally:
         db_session.close()
 
-@spark_update.route("/spark_status/<request_id>",methods=['GET'])
+@sparkupdate.route("/spark_status/<request_id>",methods=['GET'])
 def mrJobStatus(request_id):
     try :
         session = scoped_session(session_factory)
