@@ -231,7 +231,7 @@ def fileProgress(start, size):
     my_logger.info("%d%d", start, size)
 
 
-@azfile.route("/createdirectory", methods=['POST'])
+@azfile.route("/createdirectory", methods=['GET'])
 def createDirectory():
     # u should have clusterid,customerid
 
@@ -260,5 +260,8 @@ def createDirectory():
                                                        metadata=None, fail_on_exist=True, timeout=None)
     if directory_creation:
         my_logger.info("directory created")
+	return jsonify(message='directory created')
     else:
         my_logger.info("directory nottttttt created, try again")
+	return jsonify(message='directory not created')
+

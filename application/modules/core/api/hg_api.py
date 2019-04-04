@@ -433,7 +433,7 @@ def cluster_info(customer_id):
                     collection = database_conn[cluster_info[0]]
                     customer_id_metrics_list = list(collection.find({"cluster_id": cluster_info[1]}))
                     if customer_id_metrics_list == []:
-                        available_storage = 'NA'
+                        available_storage = 0
 
                     else:
                         storage = customer_id_metrics_list[-1]['payload'][1]
@@ -711,7 +711,7 @@ def hiveStatusAfterConfiguration(customer_id,cluster_id,from_time_params_str,to_
         else:
             payload = req_data[0]['payload']
             status = payload['status']
-            if status == 'runnning':
+            if status == 'running':
                 edgenode_status = {}
                 edgenode_status['name'] = hive_node[0]
                 edgenode_status['message'] = 'Running'

@@ -6,7 +6,7 @@ from application import session_factory
 from azure.storage.file import FileService
 from application.common.loggerfile import my_logger
 from application.models.models import  TblFileUpload,TblCustomerSparkRequest, TblVmCreation
-from application.config.config_file import SQLALCHEMY_DATABASE_URI
+from application.config.config_file import SQLALCHEMY_DATABASE_URI,account_name,key
 from sqlalchemy.orm import scoped_session
 from flask import Blueprint, request, jsonify
 
@@ -35,7 +35,7 @@ def sparkJobStatus():
 
 @sparkupdate.route('/api/add_spark_job', methods=['POST'])
 def sparkJobInsert():
-    try:
+    #try:
         customer_request = request.values.to_dict()
         db_session = scoped_session(session_factory)
         request_id = str(uuid.uuid1())
@@ -53,13 +53,18 @@ def sparkJobInsert():
         no_of_bytes = len(str_posted_file)
         # converting unicoded file to bytestream
         byte_stream = io.BytesIO(str_posted_file)
-        cfg = ConfigParser()
-        cfg.read('application/config/azure_config.ini')
-        account_name = cfg.get('file_storage', 'account_name')
-        account_key = cfg.get('file_storage', 'key')
-        file_service = FileService(account_name=account_name, account_key=account_key)
+	#cfg = ConfigParser()
+    	#cfg.read('application/config/azure_config.ini')
+	#account_name = cfg.get('file_storage', 'account_name')
+	accountname = account_name
+	account_key = key
+	#account_key = cfg.get('file_storage', 'key')
+	#print cfg,'<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'
+	print accountname,'????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????'
+	print account_key
+        file_service = FileService(account_name=accountname, account_key=account_key)
         file_service.create_file_from_stream(share_name=cluster_id,
-                                             directory_name="SPARK",
+                                             directory_name="spark",
                                              file_name=filename,
                                              stream=byte_stream,
                                              count=no_of_bytes,
@@ -92,15 +97,16 @@ def sparkJobInsert():
                                        )
         db_session.add(data)
         db_session.commit()
-        return jsonify(requestid=request_id, status="success")
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
-        db_session.close()
+        print "job inserted successfullyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+	return jsonify(requestid=request_id, status="success")
+    #except Exception as e:
+     #   exc_type, exc_obj, exc_tb = sys.exc_info()
+      #  fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+       # my_logger.error(exc_type)
+        #my_logger.error(fname)
+        #my_logger.error(exc_tb.tb_lineno)
+    #finally:
+     #   db_session.close()
 
 
 def fileProgres(start, size):
@@ -181,43 +187,43 @@ def sparkJobDiagnotics():
         db_session.close()
 
 
-@sparkupdate.route("/sparklist/<customer_id>/<cluster_id>", methods=['GET'])
-def job_list(customer_id, cluster_id):
-    try:
+@sparkupdate.route("/sparklist/<cluster_id>", methods=['GET'])
+def job_list(cluster_id):
+    #try:
         db_session = scoped_session(session_factory)
         spark_request_query = db_session.query(TblCustomerSparkRequest.var_application_id,
                                                TblCustomerSparkRequest.var_job_diagnostics,
                                                TblCustomerSparkRequest.uid_request_id,
                                                TblCustomerSparkRequest.txt_job_description,
                                                TblCustomerSparkRequest.var_spark_job_name).filter(
-            TblCustomerSparkRequest.uid_customer_id == customer_id,
             TblCustomerSparkRequest.uid_cluster_id == cluster_id).all()
         spark_list = []
         if len(spark_request_query) != 0:
             for each_job in spark_request_query:
-                if each_job[2] is not None:
-                    sri_job= eval(each_job[2])
+                if each_job[1] is not None:
+		    print each_job[1],type(each_job[1])
+                    sparky_job= eval(each_job[1])
                     spark_diagnostics = {}
-                    spark_details=sri_job.values()
+                    spark_details=sparky_job.values()
                     for valuessss in spark_details:
                         spark_diagnostics['application_id'] = each_job[0]
                         spark_diagnostics['task_startedTime'] = valuessss["startedTime"]
                         spark_diagnostics['task_endTime'] = valuessss["finishedTime"]
-                        spark_diagnostics['spark_request_id'] = each_job[3]
-                        spark_diagnostics['spark_app_description'] = each_job[4]
-                        spark_diagnostics['spark_file_name'] = each_job[5]
+                        spark_diagnostics['spark_request_id'] = each_job[2]
+                        spark_diagnostics['spark_app_description'] = each_job[3]
+                        spark_diagnostics['spark_file_name'] = each_job[4]
                         spark_list.append(spark_diagnostics)
             return jsonify(spark_records=spark_list)
         else:
             return jsonify(spark_records='null')
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
-        db_session.close()
+    #except Exception as e:
+     #   exc_type, exc_obj, exc_tb = sys.exc_info()
+      #  fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+       # my_logger.error(exc_type)
+        #my_logger.error(fname)
+        #my_logger.error(exc_tb.tb_lineno)
+    #finally:
+     #   db_session.close()
 
 @sparkupdate.route("/spark_status/<request_id>",methods=['GET'])
 def mrJobStatus(request_id):

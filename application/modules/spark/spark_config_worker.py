@@ -13,6 +13,8 @@ from application.common.loggerfile import my_logger
 
 def configure_spark(request_id):
     try:
+	print "in configure spark worker ***********************************$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
+
         session = scoped_session(session_factory)
 
         customer_feature_ids = session.query(TblCustomerRequest.uid_customer_id,
@@ -190,6 +192,26 @@ def configure_spark(request_id):
                                                     )
                         session.add(tasks_tbl_inserts)
                         session.commit()
+
+                    elif tasktype == 'F14_T4':
+                        tasks_tbl_inserts = TblTask(uid_task_id=deptasktypelist[4],
+                                                    char_task_type_id=tasktype,
+                                                    uid_request_id=request_id,
+                                                    char_feature_id=feature_id,
+                                                    uid_customer_id=customer_id,
+                                                    uid_agent_id=agent_id,
+                                                    txt_dependent_task_id=deptasktypelist[5],
+                                                    txt_payload_id=namenodeip_query_objectid,
+                                                    int_task_status=task_status_value,
+                                                    txt_agent_worker_version_path=deptasktypelist[3],
+                                                    var_created_by="spark-config-worker",
+                                                    var_modified_by="spark-config-worker",
+                                                    ts_created_datetime=datetime.now(),
+                                                    ts_modified_datetime=datetime.now()
+                                                    )
+                        session.add(tasks_tbl_inserts)
+                        session.commit()
+
 
                     else:
                         tasks_tbl_inserts = TblTask(uid_task_id=deptasktypelist[4],

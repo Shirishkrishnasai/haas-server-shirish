@@ -66,14 +66,14 @@ def configuration():
 @mrapi.route("/api/addmrjob", methods=['POST'])
 def hg_mrjob_client():
 
-    try:
+    #try:
         db_session = scoped_session(session_factory)
         request_id = str(uuid.uuid1())
         date_time = datetime.datetime.now()
         posted_args = request.args
         customer_request = request.values.to_dict()
-        customer_id = uuid.UUID(customer_request["customer_id"]).hex
-        cluster_id = uuid.UUID(customer_request['cluster_id']).hex
+        customer_id = str(customer_request["customer_id"])
+        cluster_id = str(customer_request['cluster_id'])
         user_name = customer_request['user_name']
         job_name = customer_request['job_name']
         job_description = customer_request['job_description']
@@ -82,7 +82,7 @@ def hg_mrjob_client():
         posted_file = request.files
         str_posted_file = posted_file['files'].read()
         no_of_bytes=len(str_posted_file)
-
+	print cluster_id,"yyyyyyyyyyyyyyyyy"
         # converting unicoded file to bytestream
         byte_stream = io.BytesIO(str_posted_file)
 
@@ -95,10 +95,8 @@ def hg_mrjob_client():
         # passing accountname and key to function
         file_service = FileService(account_name=account_name, account_key=account_key)
         # connecting to database to get sharename and directoryname against customerid
-        share_values = db_session.query(TblMetaFileUpload.var_share_name, TblMetaFileUpload.var_directory_name).\
-            filter(TblMetaFileUpload.uid_customer_id == customer_id).first()
-        file_service.create_file_from_stream(share_name=share_values[0],
-                                             directory_name=share_values[1],
+        file_service.create_file_from_stream(share_name=cluster_id,
+                                             directory_name="mapreduce",
                                              file_name=filename,
                                              stream=byte_stream,
                                              count=no_of_bytes,
@@ -107,8 +105,8 @@ def hg_mrjob_client():
         file_upload_id = str(uuid.uuid1())
         file_insert_values = TblFileUpload(uid_upload_id=file_upload_id,
                                            uid_customer_id=customer_id,
-                                           var_share_name=share_values[0],
-                                           var_directory_name=share_values[1],
+                                           var_share_name=cluster_id,
+                                           var_directory_name="mapreduce",
                                            var_file_name=filename,
                                            var_username=user_name,
                                            ts_uploaded_time=datetime.datetime.now())
@@ -139,14 +137,14 @@ def hg_mrjob_client():
         db_session.add(data)
         db_session.commit()
         return jsonify(requestid=request_id,status="success")
-    except Exception as e:
-         exc_type, exc_obj, exc_tb = sys.exc_info()
-         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-         my_logger.error(exc_type)
-         my_logger.error(fname)
-         my_logger.error(exc_tb.tb_lineno)
-    finally:
-         db_session.close()
+    #except Exception as e:
+     #    exc_type, exc_obj, exc_tb = sys.exc_info()
+      #   fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+       #  my_logger.error(exc_type)
+        # my_logger.error(fname)
+         #my_logger.error(exc_tb.tb_lineno)
+    #finally:
+     #    db_session.close()
 
 
 def fileProgress(start, size):

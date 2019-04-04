@@ -269,7 +269,7 @@ spark_task_type_3 = TblTaskType(char_task_type_id='F14_T3',
                                 )
 spark_task_type_4 = TblTaskType(char_task_type_id='F14_T4',
                                 txt_description='spark-configuration',
-                                txt_agent_worker_version_path='/opt/scripts/spark-hadoop-config.sh',
+                                txt_agent_worker_version_path='/opt/scripts/hadoop-spark-config.py',
                                 txt_agent_worker_version='1.0',
                                 int_vm_roles=4
                                 )

@@ -182,11 +182,11 @@ def clusterNodeLevel(cusid, cluid, vm_id):
                         else:
                             pass
         if metric == 'ram':
-            return jsonify(data=ram)
+            return jsonify(ram)
         elif metric == 'storage':
-            return jsonify(data=storage)
+            return jsonify(storage)
         elif metric == 'cpu':
-            return jsonify(data=cpu)
+            return jsonify(cpu)
         else:
             metricss = ram + cpu + storage
             return jsonify(data=metricss)

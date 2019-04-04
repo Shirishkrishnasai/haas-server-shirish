@@ -22,7 +22,7 @@ hdfsapi = Blueprint('hdfsapi', __name__)
 @hdfsapi.route("/api/hdfs/directorylisting/<customer_id>/<cluster_id>/<user_name>", methods=['GET'])
 
 def hdfs_listing_api(customer_id,cluster_id,user_name):
-    try:
+#    try:
         db_session = scoped_session(session_factory)
         hdfs_request_parameters = request.args
         print hdfs_request_parameters,"statusssssssss"
@@ -64,14 +64,14 @@ def hdfs_listing_api(customer_id,cluster_id,user_name):
                 print output
                 print type(x),"tttttttttttttttttttttttttttttttttttttttttttttttt"
                 return jsonify(command_output=x)
-    except Exception as e:
+ #   except Exception as e:
 
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        my_logger.error(exc_type)
-        my_logger.error(fname)
-        my_logger.error(exc_tb.tb_lineno)
-    finally:
+  #      exc_type, exc_obj, exc_tb = sys.exc_info()
+   #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #    my_logger.error(exc_type)
+     #   my_logger.error(fname)
+      #  my_logger.error(exc_tb.tb_lineno)
+   # finally:
         db_session.close()
 
 @hdfsapi.route("/api/hdfs/status/<customer_id>/<cluster_id>/<user_name>", methods=['GET'])

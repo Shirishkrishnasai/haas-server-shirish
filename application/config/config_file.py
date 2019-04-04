@@ -28,3 +28,9 @@ postgres_conn = 'postgres://postgres:!$Nov@)!&Started@104.211.222.41/april2'
 SQLALCHEMY_DATABASE_URI = 'postgres://postgres:!$Nov@)!&Started@104.211.222.41/april2'
 mongo_conn_string="mongodb://104.211.222.41:27017"
 sqlite_string= "/opt/agent/haas"
+#file storage credentials
+account_name = 'sbvsolutions'
+key = 'HLkFq07o9m9Nr/IJWXgKMiS1j5O65p1ojrpWydYEtbD7xzBBbQ95LFYoeQHOhLupzJCTUunayaIoUqiAYWv4XQ=='
+secondary_key = '9fASv4JGbIhzM03rGFb84TuYtHVVNjfIE35N54IL4rFBOlrnqGnQTUpLPRvPHWURGqmo0QyalFtrY8fBc5JBvw=='
+
+

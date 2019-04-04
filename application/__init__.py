@@ -58,9 +58,6 @@ from application.common.util import azure_upload_host_slave
 from application.modules.azure.create_customer_api import customers
 from multiprocessing import Process
 
-
-
-
 from application.modules.core.api.hg_api import api
 from application.modules.core.api.az_api import azapi
 from application.modules.spark.spark_job_api import sparkupdate
@@ -94,9 +91,10 @@ from application.modules.hive.daemons.hive_selectquery_url import hgSelectQueryU
 from application.modules.core.daemons.metrics_consumer import kafkaconsumer
 from application.modules.core.daemons.task_updation_daemon import taskupdationscheduler
 from application.modules.hdfs.api.hg_hdfs_api import hdfsapi
+from application.modules.core.api.server_task_updation import servertaskstatus
 
 app.register_blueprint(sparkupdate, url_prefix='')
-
+app.register_blueprint(servertaskstatus, url_prefix='')
 app.register_blueprint(hdfsapi, url_prefix='')
 app.register_blueprint(jobstatusapi, url_prefix='')
 app.register_blueprint(mrjobupdate, url_prefix='')
