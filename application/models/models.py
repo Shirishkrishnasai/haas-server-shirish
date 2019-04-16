@@ -337,6 +337,8 @@ class TblCustomerRequestHdfs(ItemBase,OutputMixin):
     uid_cluster_id = Column(ForeignKey(u'highgear.tbl_cluster.uid_cluster_id'))
     var_user_name = Column(ForeignKey(u'highgear.tbl_users.var_user_name'))
     ts_requested_time = Column(DateTime)
+    uid_upload_id = Column(UUID)
+
     txt_command_string = Column(Text)
     txt_hdfs_parameters = Column(Text)
     txt_directory_name = Column(Text)

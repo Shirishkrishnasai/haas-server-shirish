@@ -20,11 +20,6 @@ def server_task_status_update(task_id):
         task_status_update.update({"int_task_status": meta_task_status_dict[str(status)]})
         db_session.commit()
         my_logger.info("task status updation commiting doneeeeee")
-        request_id_task_query = db_session.query(TblTask.uid_request_id).filter(TblTask.uid_task_id == task_id).all()
-        request_id = request_id_task_query[0][0]
-        my_logger.info(request_id)
-        task_status_query = db_session.query(TblTask.int_task_status).filter(TblTask.uid_request_id == request_id).all()
-        my_logger.info(task_status_query)
         return jsonify(message="success", taskid=task_id, return_status=status)
 
     except Exception as e:

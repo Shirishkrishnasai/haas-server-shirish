@@ -675,7 +675,7 @@ def StatusWithMetrics(customer_id,cluster_id) :
                 failed_data={}
                 failed_data['cluster_id'] = cluster_id
                 failed_data['status'] = 0
-                failed_data['message'] = "Failed"
+                failed_data['message'] ='Cluster configuration in progress'
                 fail.append(failed_data)
                 return jsonify(fail)
         else :
