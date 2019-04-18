@@ -527,7 +527,7 @@ def hdfs_request_sender(agent_id):
 			customer_request_hdfs_query=db_session.query(TblCustomerRequestHdfs).filter(TblCustomerRequestHdfs.uid_hdfs_request_id == hdfs_request_dict['request_id'])
 			customer_request_hdfs_query.update({'bool_assigned':1})
 			db_session.commit()
-			return jsonify(message=requests_list)
+		return jsonify(message=requests_list)
 	except Exception as e:
 	   exc_type, exc_obj, exc_tb = sys.exc_info()
 	   fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
