@@ -522,6 +522,7 @@ def hdfs_request_sender(agent_id):
 				if hdfs_request_dict['command_type'] ==  'upload':
 					fileuploaddata=db_session.query(TblFileUpload.var_file_name).filter(TblFileUpload.uid_upload_id == requests[8]).all()
 					hdfs_request_dict['input_path']='/opt/mnt/azurefileshare/hdfs/'+fileuploaddata[0][0]
+				if hdfs_request_dict['command_type']== "mkdir":
 					hdfs_request_dict['directory_name']=requests[7]
 			requests_list.append(hdfs_request_dict)
 			customer_request_hdfs_query=db_session.query(TblCustomerRequestHdfs).filter(TblCustomerRequestHdfs.uid_hdfs_request_id == hdfs_request_dict['request_id'])
@@ -615,7 +616,6 @@ def hdfs_rename_api():
 	try:
 		hdfs_request_parameters = request.json
 		db_session = scoped_session(session_factory)
-		print hdfs_request_parameters, "-----------------------"
 		customer_id = hdfs_request_parameters['customer_id']
 		cluster_id = hdfs_request_parameters['cluster_id']
 		user_name = hdfs_request_parameters['user_name']
@@ -623,7 +623,6 @@ def hdfs_rename_api():
 		hdfs_parameters = hdfs_request_parameters['hdfs_parameters'] + " " + hdfs_request_parameters['new_folder']
 		hdfs_request_id = uuid.uuid1()
 		nodeinformationquery=db_session.query(TblNodeInformation.uid_node_id).filter(TblNodeInformation.uid_cluster_id==cluster_id,TblNodeInformation.char_role=='namenode').all()
-		print nodeinformationquery,"hvZXDfgJZUDGvkjsgvuj"
 		agentinfoquery=db_session.query(TblAgent.uid_agent_id).filter(TblAgent.uid_node_id==nodeinformationquery[0][0]).all()
 		hdfs_request_values = TblCustomerRequestHdfs(uid_hdfs_request_id=str(hdfs_request_id),
 												 uid_customer_id=customer_id,
