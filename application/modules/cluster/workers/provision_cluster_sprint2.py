@@ -57,6 +57,7 @@ def installcluster(request_id):
         file_service.create_directory(cluster_id, 'mapreduce')
         file_service.create_directory(cluster_id,'hostfile')
         file_service.create_file(cluster_id, 'hostfile', 'host', content_length=10000)
+        file_service.create_directory(cluster_id,'keys')
         my_logger.info("doneeee")
         db_session.close()
         #time.sleep(60)

@@ -1,5 +1,6 @@
 import io
 from ConfigParser import ConfigParser
+from Crypto.PublicKey import RSA
 
 from azure.storage.file import FileService
 from sqlalchemy.orm import scoped_session
@@ -184,7 +185,28 @@ def configure_cluster(request_id):
                                                  count=no_of_bytes)
             # Appending hosts payload to list
             print "\n\n\n\n\n","successssss","\n\n\n\n\n\n\n"
+            key = RSA.generate(1024)
+            private_key = key.exportKey('PEM')
+            print private_key
+            byte_stream_private = io.BytesIO(private_key)
+            no_of_bytes = len(private_key)
+            file_service.create_file_from_stream(share_name=str(cluster_id),
+                                                 directory_name='keys',
+                                                 file_name="id_rsa",
+                                                 stream=byte_stream_private,
+                                                 count=no_of_bytes)
 
+            pubkey = key.publickey()
+            public_key = pubkey.exportKey('OpenSSH')
+            print public_key
+            byte_stream_public = io.BytesIO(public_key)
+            no_of_bytes = len(public_key)
+            file_service.create_file_from_stream(share_name=str(cluster_id),
+                                                directory_name='keys',
+                                                file_name="id_rsa.pub",
+                                                stream=byte_stream_public,
+                                                count=no_of_bytes)
+            print "keys sucessfully generated and exported in to mount"
             database_connection.configurenamenode.insert_one({"content": namenode_payload})
             namenode_ip_info = database_connection.configurenamenode.find_one({"content": namenode_payload})
             namenode_ip_payload = namenode_ip_info["_id"]
