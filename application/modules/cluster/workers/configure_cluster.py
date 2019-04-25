@@ -1,3 +1,7 @@
+import io
+from ConfigParser import ConfigParser
+
+from azure.storage.file import FileService
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 from application.common.util import generate_tasks, find_dep_tasks
@@ -166,19 +170,20 @@ def configure_cluster(request_id):
                 if task_information[2] == 'F1_T3':
                     task_information.append(slaves_content_objectid)
 
-            # Inserting hostdns string to mongodb
-
-            host_content = {"file_name": "host.txt", "content": host_dns_string}
-            database_connection.hostdns.insert_one(host_content)
-            host_content_query = database_connection.hostdns.find_one(host_content)
-            host_content_objectid = str(host_content_query["_id"])
-            my_logger.info(host_content_objectid)
+            cfg = ConfigParser()
+            cfg.read('application/config/azure_config.ini')
+            account_name = cfg.get('file_storage', 'account_name')
+            account_key = cfg.get('file_storage', 'key')
+            byte_stream = io.BytesIO(host_dns_string)
+            no_of_bytes=len(host_dns_string)
+            file_service = FileService(account_name=account_name, account_key=account_key)
+            file_service.create_file_from_stream(share_name=str(cluster_id),
+                                                 directory_name='hostfile',
+                                                 file_name="host",
+                                                 stream=byte_stream,
+                                                 count=no_of_bytes)
             # Appending hosts payload to list
-
-            for task_information in task_generator:
-                if task_information[2] in ('F1_T1', 'F1_T2'):
-                    task_information.append(host_content_objectid)
-            # inserting name node ip mongo
+            print "\n\n\n\n\n","successssss","\n\n\n\n\n\n\n"
 
             database_connection.configurenamenode.insert_one({"content": namenode_payload})
             namenode_ip_info = database_connection.configurenamenode.find_one({"content": namenode_payload})

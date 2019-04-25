@@ -1,3 +1,7 @@
+import io
+from ConfigParser import ConfigParser
+
+from azure.storage.file import FileService
 from sqlalchemy.orm import scoped_session
 from application import session_factory
 import pymongo
@@ -134,44 +138,37 @@ def configure_spark(request_id):
                                                TblVmCreation.uid_agent_id).filter(TblVmCreation.uid_cluster_id == cluster_id).all()
         for each_node in namenode_datanode_spark:
             host_file = host_file + each_node[0] + ' ' + each_node[1] + '\n'
+        cfg = ConfigParser()
+        cfg.read('application/config/azure_config.ini')
+        account_name = cfg.get('file_storage', 'account_name')
+        account_key = cfg.get('file_storage', 'key')
+        byte_stream = io.BytesIO(host_file)
+        no_of_bytes = len(host_file)
+        file_service = FileService(account_name=account_name, account_key=account_key)
+        file_service.create_file_from_stream(share_name=str(cluster_id),
+                                             directory_name="hostfile",
+                                             file_name="host",
+                                             stream=byte_stream,
+                                             count=no_of_bytes)
+        # Appending hosts payload to list
+        print "\n\n\n\n\n", "successssss", "\n\n\n\n\n\n\n"
+###################################################### for name node ip ##############################################
 
-################################################### spark host file generation over ###############################################
+        namenode_ip = [nnode[0] + ' ' + nnode[1] + '\n' for nnode in namenode_datanode_spark if nnode[2] == 'namenode'][0]
 
-
-#         namenode_agentid = [nn[3] for nn in namenode_datanode_spark if nn[2] == 'namenode']
-#
-#         datanode_agentid = [nn[3] for nn in namenode_datanode_spark if nn[2] == 'datanode']
-###################################################### for name node and datanode host file ##############################################
-
-        spark_ip_name = [sparkip[0] + ' ' + sparkip[1] + '\n' for sparkip in namenode_datanode_spark if sparkip[2] == 'spark'][0]
-
-        host_content = {"file_name": "host.txt", "content": spark_ip_name}
 
         mongo_connection = pymongo.MongoClient(mongo_conn_string)
         database_connection = mongo_connection['haas']
 
-        database_connection.hostdns.insert_one(host_content)
-        host_content_query = database_connection.hostdns.find_one(host_content)
-        host_content_objectid = str(host_content_query["_id"])
-################################## namenode n datanode payloadid generation over #############################################
+        database_connection.sparkconfig.insert_one({"namenode_ip": namenode_ip})
 
-########################################### spark host content in mongo #######################################################
-
-        database_connection.sparkconfig.insert_one({"namenode_ip": host_file})
-
-        # querying the same for object id to insert into tasks table(payloadid)
-        namenodeip_query = database_connection.sparkconfig.find_one({"namenode_ip": host_file})
-        # my_logger.info(namenodeip_query, 'checccccccccccckkkkkkkkkkkkkkkkkkkkk'
-        # getting the same objectid to insert into tasks table
+        namenodeip_query = database_connection.sparkconfig.find_one({"namenode_ip": namenode_ip})
         namenodeip_query_objectid = str(namenodeip_query["_id"])
 ############################################# spark host payload generation over ###############################################
 
         metatabletaskstatus = session.query(TblMetaTaskStatus.var_task_status, TblMetaTaskStatus.srl_id).all()
         table_status_values = dict(metatabletaskstatus)
         task_status_value = table_status_values['CREATED']
-
-
-        #for tasktypeid, dependent_tasktypeiddependent_tasktypeid in task_dependencytask_workerpaths_dict.items():
         for each_dicty in task_dependencytask_workerpaths_dict_list:
             for tasktype,deptasktypelist in each_dicty.items():
                 if deptasktypelist[1] == 'spark':
@@ -237,7 +234,6 @@ def configure_spark(request_id):
                                                 char_feature_id=feature_id,
                                                 uid_customer_id=customer_id,
                                                 uid_agent_id=deptasktypelist[2],
-                                                txt_payload_id=host_content_objectid,
                                                 int_task_status=task_status_value,
                                                 txt_agent_worker_version_path=deptasktypelist[3],
                                                 var_created_by="spark-config-worker",
